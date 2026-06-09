@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useApp } from "../context/AppContext";
 import {
   BACKGROUND_PRESETS,
   DEFAULT_BACKGROUND,
+  DEFAULT_TITLE_COLOR,
+  DEFAULT_TITLE_TEXT,
+  getDisplayTitle,
+  getPresetLabel,
+  MAX_TITLE_TEXT_LENGTH,
+  TITLE_PRESETS,
+  type ColorPreset,
 } from "../utils/theme";
 import { Modal } from "./Modal";
 
@@ -18,14 +25,202 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   );
 }
 
+type SettingsDropdownProps = {
+  title: string;
+  summary?: ReactNode;
+  defaultOpen?: boolean;
+  children: ReactNode;
+};
+
+function SettingsDropdown({
+  title,
+  summary,
+  defaultOpen = false,
+  children,
+}: SettingsDropdownProps) {
+  const [open, setOpen] = useState(defaultOpen);
+  const panelId = useId();
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-base/50">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left transition-colors hover:bg-white/5"
+      >
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="text-sm font-medium text-zinc-200">{title}</span>
+          {summary}
+        </span>
+        <span
+          aria-hidden
+          className={`shrink-0 text-xs text-zinc-500 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        >
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div
+          id={panelId}
+          className="border-t border-white/5 px-3.5 py-3"
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type ColorPickerFieldProps = {
+  label: string;
+  color: string;
+  presets: ColorPreset[];
+  defaultColor: string;
+  inputId: string;
+  onChange: (color: string) => void;
+};
+
+function ColorPickerField({
+  label,
+  color,
+  presets,
+  defaultColor,
+  inputId,
+  onChange,
+}: ColorPickerFieldProps) {
+  const activeLabel = getPresetLabel(presets, color);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm text-zinc-300">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {presets.map((preset) => {
+          const isSelected = color === preset.color;
+          return (
+            <button
+              key={preset.color}
+              type="button"
+              title={preset.label}
+              aria-label={`${preset.label} ${label.toLowerCase()}`}
+              aria-pressed={isSelected}
+              onClick={() => onChange(preset.color)}
+              className={`size-9 rounded-md border transition-transform hover:scale-105 ${
+                isSelected
+                  ? "border-white/50 ring-2 ring-white/20"
+                  : "border-white/10"
+              }`}
+              style={{ backgroundColor: preset.color }}
+            />
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-3">
+        <input
+          id={inputId}
+          type="color"
+          value={color}
+          onChange={(e) => onChange(e.target.value)}
+          className="size-10 cursor-pointer rounded-md border border-white/10 bg-transparent p-0.5"
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate font-mono text-sm text-zinc-200">
+            {color}
+          </span>
+          <span className="text-xs text-zinc-500">{activeLabel}</span>
+        </div>
+        {color !== defaultColor && (
+          <button
+            type="button"
+            onClick={() => onChange(defaultColor)}
+            className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SettingsContent() {
-  const { state, deleteCard, setBackgroundColor } = useApp();
+  const {
+    state,
+    deleteCard,
+    updateCard,
+    setBackgroundColor,
+    setTitleColor,
+    setTitleText,
+  } = useApp();
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editHolder, setEditHolder] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [savingCard, setSavingCard] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const confirmCard =
     state.cards.find((card) => card.id === confirmCardId) ?? null;
+
+  function startEditingCard(
+    cardId: string,
+    currentName: string,
+    currentHolder: string,
+  ) {
+    setEditingCardId(cardId);
+    setEditName(currentName);
+    setEditHolder(currentHolder);
+    setError(null);
+  }
+
+  function cancelEditingCard() {
+    setEditingCardId(null);
+    setEditName("");
+    setEditHolder("");
+    setError(null);
+  }
+
+  async function handleSaveCard(
+    cardId: string,
+    currentName: string,
+    currentHolder: string,
+  ) {
+    const trimmedName = editName.trim();
+    const trimmedHolder = editHolder.trim();
+    if (!trimmedName) {
+      setError("Card name is required.");
+      return;
+    }
+    if (!trimmedHolder) {
+      setError("Cardholder name is required.");
+      return;
+    }
+    if (
+      trimmedName === currentName &&
+      trimmedHolder === currentHolder
+    ) {
+      cancelEditingCard();
+      return;
+    }
+
+    setSavingCard(true);
+    setError(null);
+    const errorMessage = await updateCard(cardId, {
+      name: trimmedName,
+      holder: trimmedHolder,
+    });
+    setSavingCard(false);
+
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+    cancelEditingCard();
+  }
 
   async function handleDelete() {
     if (!confirmCard || deleting) return;
@@ -85,114 +280,229 @@ function SettingsContent() {
     );
   }
 
-  const { backgroundColor } = state.settings;
+  const { backgroundColor, titleColor, titleText } = state.settings;
+  const displayTitle = getDisplayTitle(titleText);
 
-  // Card list
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Personalization
-        </p>
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="settings-background-color"
-            className="text-sm text-zinc-300"
-          >
-            Background color
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {BACKGROUND_PRESETS.map((preset) => {
-              const isSelected = backgroundColor === preset.color;
-              return (
-                <button
-                  key={preset.color}
-                  type="button"
-                  title={preset.label}
-                  aria-label={`${preset.label} background`}
-                  aria-pressed={isSelected}
-                  onClick={() => setBackgroundColor(preset.color)}
-                  className={`size-9 rounded-md border transition-transform hover:scale-105 ${
-                    isSelected
-                      ? "border-white/50 ring-2 ring-white/20"
-                      : "border-white/10"
-                  }`}
-                  style={{ backgroundColor: preset.color }}
-                />
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              id="settings-background-color"
-              type="color"
-              value={backgroundColor}
-              onChange={(e) => setBackgroundColor(e.target.value)}
-              className="size-10 cursor-pointer rounded-md border border-white/10 bg-transparent p-0.5"
+    <div className="flex flex-col gap-3">
+      <SettingsDropdown
+        title="Personalize"
+        summary={
+          <>
+            <span
+              className="size-4 shrink-0 rounded border border-white/10"
+              style={{ backgroundColor }}
             />
-            <div className="flex flex-col gap-0.5">
-              <span className="font-mono text-sm text-zinc-200">
-                {backgroundColor}
+            <span
+              className="size-4 shrink-0 rounded border border-white/10"
+              style={{ backgroundColor: titleColor }}
+            />
+            <span className="truncate text-xs text-zinc-500">{displayTitle}</span>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="settings-title-text"
+              className="text-sm text-zinc-300"
+            >
+              Title text
+            </label>
+            <input
+              id="settings-title-text"
+              type="text"
+              value={titleText}
+              maxLength={MAX_TITLE_TEXT_LENGTH}
+              onChange={(e) => setTitleText(e.target.value)}
+              placeholder={DEFAULT_TITLE_TEXT}
+              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-zinc-500">
+                {titleText.length}/{MAX_TITLE_TEXT_LENGTH}
               </span>
-              <span className="text-xs text-zinc-500">Custom color</span>
-            </div>
-            {backgroundColor !== DEFAULT_BACKGROUND && (
-              <button
-                type="button"
-                onClick={() => setBackgroundColor(DEFAULT_BACKGROUND)}
-                className="ml-auto rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Cards
-        </p>
-      {state.cards.length === 0 ? (
-        <p className="py-2 text-sm text-zinc-500">No cards yet.</p>
-      ) : (
-        <ul className="flex flex-col">
-          {state.cards.map((card) => {
-            const expenseCount = state.expenses.filter(
-              (e) => e.cardId === card.id,
-            ).length;
-
-            return (
-              <li
-                key={card.id}
-                className="flex items-center justify-between gap-3 border-b border-white/5 py-2.5 last:border-b-0"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: card.color }}
-                  />
-                  <span className="truncate text-sm font-medium text-zinc-200">
-                    {card.name}
-                  </span>
-                  <span className="shrink-0 text-xs text-zinc-500">
-                    {card.holder} · {expenseCount}{" "}
-                    {expenseCount === 1 ? "expense" : "expenses"}
-                  </span>
-                </span>
+              {titleText !== DEFAULT_TITLE_TEXT && (
                 <button
                   type="button"
-                  onClick={() => setConfirmCardId(card.id)}
-                  className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                  onClick={() => setTitleText(DEFAULT_TITLE_TEXT)}
+                  className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                 >
-                  Delete
+                  Reset
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      </section>
+              )}
+            </div>
+          </div>
+
+          <ColorPickerField
+            label="Background color"
+            color={backgroundColor}
+            presets={BACKGROUND_PRESETS}
+            defaultColor={DEFAULT_BACKGROUND}
+            inputId="settings-background-color"
+            onChange={setBackgroundColor}
+          />
+          <ColorPickerField
+            label="Title color"
+            color={titleColor}
+            presets={TITLE_PRESETS}
+            defaultColor={DEFAULT_TITLE_COLOR}
+            inputId="settings-title-color"
+            onChange={setTitleColor}
+          />
+          <p
+            className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm font-semibold"
+            style={{ color: titleColor }}
+          >
+            {displayTitle}
+          </p>
+        </div>
+      </SettingsDropdown>
+
+      <SettingsDropdown
+        title="Cards"
+        summary={
+          <span className="text-xs text-zinc-500">
+            {state.cards.length}{" "}
+            {state.cards.length === 1 ? "card" : "cards"}
+          </span>
+        }
+      >
+        {state.cards.length === 0 ? (
+          <p className="py-1 text-sm text-zinc-500">No cards yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {error && editingCardId && (
+              <p role="alert" className="text-xs text-red-400">
+                {error}
+              </p>
+            )}
+            <ul className="flex flex-col">
+              {state.cards.map((card) => {
+                const expenseCount = state.expenses.filter(
+                  (e) => e.cardId === card.id,
+                ).length;
+                const isEditing = editingCardId === card.id;
+
+                return (
+                  <li
+                    key={card.id}
+                    className="border-b border-white/5 py-2.5 last:border-b-0"
+                  >
+                    {isEditing ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="size-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: card.color }}
+                          />
+                          <span className="text-xs text-zinc-500">
+                            {expenseCount}{" "}
+                            {expenseCount === 1 ? "expense" : "expenses"}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label
+                            htmlFor={`edit-card-name-${card.id}`}
+                            className="text-xs font-medium text-zinc-400"
+                          >
+                            Card name
+                          </label>
+                          <input
+                            id={`edit-card-name-${card.id}`}
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            autoFocus
+                            className="rounded-md border border-white/10 bg-base px-2.5 py-1.5 text-sm text-white focus:border-white/30 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label
+                            htmlFor={`edit-card-holder-${card.id}`}
+                            className="text-xs font-medium text-zinc-400"
+                          >
+                            Holder
+                          </label>
+                          <input
+                            id={`edit-card-holder-${card.id}`}
+                            type="text"
+                            value={editHolder}
+                            onChange={(e) => setEditHolder(e.target.value)}
+                            className="rounded-md border border-white/10 bg-base px-2.5 py-1.5 text-sm text-white focus:border-white/30 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={cancelEditingCard}
+                            disabled={savingCard}
+                            className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200 disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleSaveCard(
+                                card.id,
+                                card.name,
+                                card.holder,
+                              )
+                            }
+                            disabled={savingCard}
+                            className="rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
+                          >
+                            {savingCard ? "Saving…" : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="size-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: card.color }}
+                          />
+                          <span className="truncate text-sm font-medium text-zinc-200">
+                            {card.name}
+                          </span>
+                          <span className="shrink-0 text-xs text-zinc-500">
+                            {card.holder} · {expenseCount}{" "}
+                            {expenseCount === 1 ? "expense" : "expenses"}
+                          </span>
+                        </span>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              startEditingCard(
+                                card.id,
+                                card.name,
+                                card.holder,
+                              )
+                            }
+                            className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmCardId(card.id)}
+                            className="rounded-md px-2.5 py-1 text-xs font-medium text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </SettingsDropdown>
     </div>
   );
 }

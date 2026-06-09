@@ -3,6 +3,7 @@
 @theme {
   --color-base: #0f0f13;
   --color-surface: #1a1a22;
+  --color-title: #ffffff;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

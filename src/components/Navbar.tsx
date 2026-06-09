@@ -1,6 +1,7 @@
 import type { CurrencySymbol } from "../types";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
+import { getDisplayTitle } from "../utils/theme";
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
 
@@ -16,8 +17,12 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
   return (
     <header className="sticky top-0 z-10 border-b border-white/5 bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 w-full min-w-0 max-w-5xl items-center justify-between gap-2 px-4 sm:gap-3">
-        <h1 className="shrink-0 text-base font-semibold tracking-tight text-white">
-          Card Tracker
+        <h1
+          className="min-w-0 truncate text-sm font-semibold tracking-tight sm:text-base"
+          style={{ color: "var(--color-title)" }}
+          title={getDisplayTitle(state.settings.titleText)}
+        >
+          {getDisplayTitle(state.settings.titleText)}
         </h1>
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">
           <span

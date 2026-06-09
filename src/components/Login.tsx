@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
+import { getDisplayTitle } from "../utils/theme";
 import { DevSignature } from "./DevSignature";
 
 type Mode = "sign-in" | "sign-up";
 
 export function Login() {
+  const { state } = useApp();
   const { signIn, signUp } = useAuth();
+  const title = getDisplayTitle(state.settings.titleText);
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,8 +44,11 @@ export function Login() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
       <div className="w-full max-w-sm rounded-xl border border-white/10 bg-surface p-6">
-        <h1 className="text-center text-lg font-semibold text-white">
-          Card Tracker
+        <h1
+          className="text-center text-lg font-semibold"
+          style={{ color: "var(--color-title)" }}
+        >
+          {title}
         </h1>
         <p className="mt-1 text-center text-xs text-zinc-500">
           {mode === "sign-in"

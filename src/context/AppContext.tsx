@@ -9,9 +9,12 @@ import {
 import type { Card, CardHolder, CurrencySymbol, Expense } from "../types";
 import { supabase } from "../lib/supabase";
 import {
-  applyThemeColors,
+  applyTheme,
   DEFAULT_BACKGROUND,
+  DEFAULT_TITLE_COLOR,
+  DEFAULT_TITLE_TEXT,
   isValidHexColor,
+  MAX_TITLE_TEXT_LENGTH,
 } from "../utils/theme";
 import { useAuth } from "./AuthContext";
 
@@ -23,6 +26,8 @@ export type AppSettings = {
   /** 0 = alert disabled */
   budgetAlert: number;
   backgroundColor: string;
+  titleColor: string;
+  titleText: string;
 };
 
 export type AppState = {
@@ -37,6 +42,10 @@ type AppContextValue = {
   state: AppState;
   /** Resolve to an error message, or null on success. */
   addCard: (input: Omit<Card, "id">) => Promise<string | null>;
+  updateCard: (
+    id: string,
+    input: Partial<Pick<Card, "name" | "holder" | "color">>,
+  ) => Promise<string | null>;
   deleteCard: (id: string) => Promise<string | null>;
   addExpense: (input: Omit<Expense, "id">) => Promise<string | null>;
   addExpenses: (inputs: Omit<Expense, "id">[]) => Promise<string | null>;
@@ -44,6 +53,8 @@ type AppContextValue = {
   setCurrency: (currency: CurrencySymbol) => void;
   setBudgetAlert: (amount: number) => void;
   setBackgroundColor: (color: string) => void;
+  setTitleColor: (color: string) => void;
+  setTitleText: (text: string) => void;
 };
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
@@ -53,6 +64,8 @@ function loadSettings(): AppSettings {
     currency: "$",
     budgetAlert: 0,
     backgroundColor: DEFAULT_BACKGROUND,
+    titleColor: DEFAULT_TITLE_COLOR,
+    titleText: DEFAULT_TITLE_TEXT,
   };
   try {
     // Settings used to live inside the legacy localStorage state blob.
@@ -74,6 +87,13 @@ function loadSettings(): AppSettings {
       backgroundColor: isValidHexColor(parsed.backgroundColor ?? "")
         ? parsed.backgroundColor!
         : defaults.backgroundColor,
+      titleColor: isValidHexColor(parsed.titleColor ?? "")
+        ? parsed.titleColor!
+        : defaults.titleColor,
+      titleText:
+        typeof parsed.titleText === "string"
+          ? parsed.titleText.slice(0, MAX_TITLE_TEXT_LENGTH)
+          : defaults.titleText,
     };
   } catch {
     return defaults;
@@ -130,7 +150,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(() => {
     const loaded = loadSettings();
-    applyThemeColors(loaded.backgroundColor);
+    applyTheme({
+      backgroundColor: loaded.backgroundColor,
+      titleColor: loaded.titleColor,
+      titleText: loaded.titleText,
+    });
     return loaded;
   });
 
@@ -139,8 +163,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   useEffect(() => {
-    applyThemeColors(settings.backgroundColor);
-  }, [settings.backgroundColor]);
+    applyTheme({
+      backgroundColor: settings.backgroundColor,
+      titleColor: settings.titleColor,
+      titleText: settings.titleText,
+    });
+  }, [settings.backgroundColor, settings.titleColor, settings.titleText]);
 
   // (Re)load all data whenever the signed-in user changes.
   useEffect(() => {
@@ -204,6 +232,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return error?.message ?? "Failed to add card";
     }
     setCards((prev) => [...prev, mapCard(data as CardRow)]);
+    stamp();
+    return null;
+  }
+
+  async function updateCard(
+    id: string,
+    input: Partial<Pick<Card, "name" | "holder" | "color">>,
+  ) {
+    const current = cards.find((card) => card.id === id);
+    if (!current) return "Card not found";
+
+    const name = input.name !== undefined ? input.name.trim() : current.name;
+    const holder =
+      input.holder !== undefined ? input.holder.trim() : current.holder;
+    const color = input.color ?? current.color;
+
+    if (!name) return "Card name is required";
+    if (!holder) return "Cardholder name is required";
+
+    const { data, error } = await supabase
+      .from("cards")
+      .update({ name, holder, color })
+      .eq("id", id)
+      .select("id, name, holder, color")
+      .single();
+
+    if (error || !data) {
+      console.error("Failed to update card:", error);
+      return error?.message ?? "Failed to update card";
+    }
+
+    setCards((prev) =>
+      prev.map((card) => (card.id === id ? mapCard(data as CardRow) : card)),
+    );
     stamp();
     return null;
   }
@@ -303,6 +365,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, backgroundColor: color }));
   }
 
+  function setTitleColor(color: string) {
+    if (!isValidHexColor(color)) return;
+    setSettings((prev) => ({ ...prev, titleColor: color }));
+  }
+
+  function setTitleText(text: string) {
+    setSettings((prev) => ({
+      ...prev,
+      titleText: text.slice(0, MAX_TITLE_TEXT_LENGTH),
+    }));
+  }
+
   const state: AppState = { cards, expenses, settings, lastUpdated, loading };
 
   return (
@@ -310,6 +384,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         state,
         addCard,
+        updateCard,
         deleteCard,
         addExpense,
         addExpenses,
@@ -317,6 +392,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCurrency,
         setBudgetAlert,
         setBackgroundColor,
+        setTitleColor,
+        setTitleText,
       }}
     >
       {children}
