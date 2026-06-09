@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import {
+  BACKGROUND_PRESETS,
+  DEFAULT_BACKGROUND,
+} from "../utils/theme";
 import { Modal } from "./Modal";
 
 type SettingsModalProps = {
@@ -15,7 +19,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 }
 
 function SettingsContent() {
-  const { state, deleteCard } = useApp();
+  const { state, deleteCard, setBackgroundColor } = useApp();
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,12 +85,74 @@ function SettingsContent() {
     );
   }
 
+  const { backgroundColor } = state.settings;
+
   // Card list
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-        Cards
-      </p>
+    <div className="flex flex-col gap-6">
+      <section className="flex flex-col gap-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Personalization
+        </p>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="settings-background-color"
+            className="text-sm text-zinc-300"
+          >
+            Background color
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {BACKGROUND_PRESETS.map((preset) => {
+              const isSelected = backgroundColor === preset.color;
+              return (
+                <button
+                  key={preset.color}
+                  type="button"
+                  title={preset.label}
+                  aria-label={`${preset.label} background`}
+                  aria-pressed={isSelected}
+                  onClick={() => setBackgroundColor(preset.color)}
+                  className={`size-9 rounded-md border transition-transform hover:scale-105 ${
+                    isSelected
+                      ? "border-white/50 ring-2 ring-white/20"
+                      : "border-white/10"
+                  }`}
+                  style={{ backgroundColor: preset.color }}
+                />
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              id="settings-background-color"
+              type="color"
+              value={backgroundColor}
+              onChange={(e) => setBackgroundColor(e.target.value)}
+              className="size-10 cursor-pointer rounded-md border border-white/10 bg-transparent p-0.5"
+            />
+            <div className="flex flex-col gap-0.5">
+              <span className="font-mono text-sm text-zinc-200">
+                {backgroundColor}
+              </span>
+              <span className="text-xs text-zinc-500">Custom color</span>
+            </div>
+            {backgroundColor !== DEFAULT_BACKGROUND && (
+              <button
+                type="button"
+                onClick={() => setBackgroundColor(DEFAULT_BACKGROUND)}
+                className="ml-auto rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Cards
+        </p>
       {state.cards.length === 0 ? (
         <p className="py-2 text-sm text-zinc-500">No cards yet.</p>
       ) : (
@@ -126,6 +192,7 @@ function SettingsContent() {
           })}
         </ul>
       )}
+      </section>
     </div>
   );
 }

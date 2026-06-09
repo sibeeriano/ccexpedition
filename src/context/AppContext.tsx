@@ -8,6 +8,11 @@ import {
 } from "react";
 import type { Card, CardHolder, CurrencySymbol, Expense } from "../types";
 import { supabase } from "../lib/supabase";
+import {
+  applyThemeColors,
+  DEFAULT_BACKGROUND,
+  isValidHexColor,
+} from "../utils/theme";
 import { useAuth } from "./AuthContext";
 
 const SETTINGS_KEY = "ccexpedition-settings";
@@ -17,6 +22,7 @@ export type AppSettings = {
   currency: CurrencySymbol;
   /** 0 = alert disabled */
   budgetAlert: number;
+  backgroundColor: string;
 };
 
 export type AppState = {
@@ -37,12 +43,17 @@ type AppContextValue = {
   deleteExpense: (id: string) => Promise<string | null>;
   setCurrency: (currency: CurrencySymbol) => void;
   setBudgetAlert: (amount: number) => void;
+  setBackgroundColor: (color: string) => void;
 };
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
 
 function loadSettings(): AppSettings {
-  const defaults: AppSettings = { currency: "$", budgetAlert: 0 };
+  const defaults: AppSettings = {
+    currency: "$",
+    budgetAlert: 0,
+    backgroundColor: DEFAULT_BACKGROUND,
+  };
   try {
     // Settings used to live inside the legacy localStorage state blob.
     const raw =
@@ -60,6 +71,9 @@ function loadSettings(): AppSettings {
         typeof parsed.budgetAlert === "number" && parsed.budgetAlert >= 0
           ? parsed.budgetAlert
           : defaults.budgetAlert,
+      backgroundColor: isValidHexColor(parsed.backgroundColor ?? "")
+        ? parsed.backgroundColor!
+        : defaults.backgroundColor,
     };
   } catch {
     return defaults;
@@ -114,11 +128,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [settings, setSettings] = useState<AppSettings>(loadSettings);
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    const loaded = loadSettings();
+    applyThemeColors(loaded.backgroundColor);
+    return loaded;
+  });
 
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
+
+  useEffect(() => {
+    applyThemeColors(settings.backgroundColor);
+  }, [settings.backgroundColor]);
 
   // (Re)load all data whenever the signed-in user changes.
   useEffect(() => {
@@ -276,6 +298,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, budgetAlert: Math.max(0, amount) }));
   }
 
+  function setBackgroundColor(color: string) {
+    if (!isValidHexColor(color)) return;
+    setSettings((prev) => ({ ...prev, backgroundColor: color }));
+  }
+
   const state: AppState = { cards, expenses, settings, lastUpdated, loading };
 
   return (
@@ -289,6 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteExpense,
         setCurrency,
         setBudgetAlert,
+        setBackgroundColor,
       }}
     >
       {children}
