@@ -7,13 +7,17 @@ import {
   type ReactNode,
 } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
+import { setRememberMe, supabase } from "../lib/supabase";
 
 type AuthContextValue = {
   session: Session | null;
   /** True while the initial session is being restored. */
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signIn: (
+    email: string,
+    password: string,
+    remember?: boolean,
+  ) => Promise<string | null>;
   signUp: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 };
@@ -38,7 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, remember = true) {
+    setRememberMe(remember);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -47,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string) {
+    setRememberMe(true);
     const { error } = await supabase.auth.signUp({ email, password });
     return error?.message ?? null;
   }

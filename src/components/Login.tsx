@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { DevSignature } from "./DevSignature";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -8,6 +9,7 @@ export function Login() {
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -20,7 +22,7 @@ export function Login() {
 
     const errorMessage =
       mode === "sign-in"
-        ? await signIn(email, password)
+        ? await signIn(email, password, remember)
         : await signUp(email, password);
 
     setSubmitting(false);
@@ -36,7 +38,7 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
       <div className="w-full max-w-sm rounded-xl border border-white/10 bg-surface p-6">
         <h1 className="text-center text-lg font-semibold text-white">
           Card Tracker
@@ -90,6 +92,18 @@ export function Login() {
             />
           </div>
 
+          {mode === "sign-in" && (
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-400">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="size-3.5 cursor-pointer accent-zinc-300"
+              />
+              Keep me signed in
+            </label>
+          )}
+
           {error && (
             <p role="alert" className="text-xs text-red-400">
               {error}
@@ -124,6 +138,8 @@ export function Login() {
             : "Already have an account? Sign in"}
         </button>
       </div>
+
+      <DevSignature />
     </div>
   );
 }

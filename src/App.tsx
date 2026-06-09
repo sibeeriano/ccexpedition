@@ -6,6 +6,7 @@ import { ConsolidatedView } from "./components/ConsolidatedView";
 import { AddCardModal } from "./components/AddCardModal";
 import { AddExpenseModal } from "./components/AddExpenseModal";
 import { SettingsModal } from "./components/SettingsModal";
+import { DevSignature } from "./components/DevSignature";
 import { Login } from "./components/Login";
 import { useApp } from "./context/AppContext";
 import { useAuth } from "./context/AuthContext";
@@ -28,8 +29,9 @@ function App() {
 
   if (authLoading || state.loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4">
         <p className="text-sm text-zinc-500">Loading…</p>
+        <DevSignature />
       </div>
     );
   }
@@ -79,10 +81,11 @@ function App() {
         )}
       </main>
 
-      <footer className="mx-auto w-full max-w-5xl px-4 pb-5 text-center text-xs text-zinc-600">
-        {state.lastUpdated
-          ? `Last updated: ${formatTimestamp(state.lastUpdated)}`
-          : "Card Tracker — data stays on this device"}
+      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-1 px-4 pb-5 text-center text-xs text-zinc-600">
+        {state.lastUpdated && (
+          <span>Last updated: {formatTimestamp(state.lastUpdated)}</span>
+        )}
+        <DevSignature />
       </footer>
 
       {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
