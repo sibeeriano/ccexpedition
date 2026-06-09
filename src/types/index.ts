@@ -13,7 +13,8 @@ export type Expense = {
   id: string;
   cardId: string;
   description: string;
-  totalAmount: number;
+  totalAmount: number; // ARS / pesos (0 if USD-only)
+  totalAmountUsd: number; // USD (0 if ARS-only)
   installments: number; // 1 = one-time payment
   startMonth: string; // format: "YYYY-MM" e.g. "2026-06"
 };
@@ -22,5 +23,6 @@ export type Expense = {
 export type MonthlyEntry = {
   expenseId: string;
   month: string; // "YYYY-MM"
-  amount: number; // totalAmount / installments
+  amount: number; // ARS monthly installment
+  amountUsd: number; // USD monthly installment
 };

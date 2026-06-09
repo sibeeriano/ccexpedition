@@ -15,9 +15,11 @@ create table public.expenses (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   card_id uuid not null references public.cards (id) on delete cascade,
   description text not null,
-  total_amount numeric not null check (total_amount > 0),
+  total_amount numeric not null default 0 check (total_amount >= 0),
+  total_amount_usd numeric not null default 0 check (total_amount_usd >= 0),
   installments integer not null default 1 check (installments between 1 and 48),
   start_month text not null check (start_month ~ '^\d{4}-\d{2}$'),
+  constraint expenses_has_amount check (total_amount > 0 or total_amount_usd > 0),
   created_at timestamptz not null default now()
 );
 

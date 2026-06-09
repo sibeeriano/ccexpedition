@@ -33,6 +33,7 @@ type AppContextValue = {
   addCard: (input: Omit<Card, "id">) => Promise<string | null>;
   deleteCard: (id: string) => Promise<string | null>;
   addExpense: (input: Omit<Expense, "id">) => Promise<string | null>;
+  addExpenses: (inputs: Omit<Expense, "id">[]) => Promise<string | null>;
   deleteExpense: (id: string) => Promise<string | null>;
   setCurrency: (currency: CurrencySymbol) => void;
   setBudgetAlert: (amount: number) => void;
@@ -77,6 +78,7 @@ type ExpenseRow = {
   card_id: string;
   description: string;
   total_amount: number | string;
+  total_amount_usd?: number | string;
   installments: number;
   start_month: string;
 };
@@ -96,6 +98,7 @@ function mapExpense(row: ExpenseRow): Expense {
     cardId: row.card_id,
     description: row.description,
     totalAmount: Number(row.total_amount),
+    totalAmountUsd: Number(row.total_amount_usd ?? 0),
     installments: row.installments,
     startMonth: row.start_month,
   };
@@ -136,7 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       supabase
         .from("expenses")
         .select(
-          "id, card_id, description, total_amount, installments, start_month",
+          "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
         )
         .order("created_at"),
     ]).then(([cardsResult, expensesResult]) => {
@@ -203,12 +206,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         card_id: input.cardId,
         description: input.description,
         total_amount: input.totalAmount,
+        total_amount_usd: input.totalAmountUsd,
         installments: input.installments,
         start_month: input.startMonth,
         user_id: userId,
       })
       .select(
-        "id, card_id, description, total_amount, installments, start_month",
+        "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
       )
       .single();
 
@@ -217,6 +221,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return error?.message ?? "Failed to add expense";
     }
     setExpenses((prev) => [...prev, mapExpense(data as ExpenseRow)]);
+    stamp();
+    return null;
+  }
+
+  async function addExpenses(inputs: Omit<Expense, "id">[]) {
+    if (inputs.length === 0) return null;
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert(
+        inputs.map((input) => ({
+          card_id: input.cardId,
+          description: input.description,
+          total_amount: input.totalAmount,
+          total_amount_usd: input.totalAmountUsd,
+          installments: input.installments,
+          start_month: input.startMonth,
+          user_id: userId,
+        })),
+      )
+      .select(
+        "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
+      );
+
+    if (error || !data) {
+      console.error("Failed to import expenses:", error);
+      return error?.message ?? "Failed to import expenses";
+    }
+    setExpenses((prev) => [
+      ...prev,
+      ...(data as ExpenseRow[]).map(mapExpense),
+    ]);
     stamp();
     return null;
   }
@@ -249,6 +285,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addCard,
         deleteCard,
         addExpense,
+        addExpenses,
         deleteExpense,
         setCurrency,
         setBudgetAlert,

@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
-import { getMonthlyBreakdown, getMonthlyTotalByCard } from "../utils/expenses";
+import {
+  getMonthlyBreakdown,
+  getMonthlyTotalByCard,
+  getMonthlyTotalUsdByCard,
+} from "../utils/expenses";
+import { AmountDisplay } from "./AmountDisplay";
 import { getMonthsRange, monthDiff } from "../utils/months";
 import { buildExpensesCsv, downloadCsv } from "../utils/csv";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
@@ -12,7 +17,11 @@ type CellPopover = {
   y: number;
 };
 
-export function ConsolidatedView() {
+type ConsolidatedViewProps = {
+  onImport: () => void;
+};
+
+export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
   const { state, setBudgetAlert } = useApp();
   const { currency, budgetAlert } = state.settings;
   const currentMonth = getCurrentMonth();
@@ -42,10 +51,18 @@ export function ConsolidatedView() {
     totals: monthsRange.map((month) =>
       getMonthlyTotalByCard(card.id, month, state.expenses),
     ),
+    totalsUsd: monthsRange.map((month) =>
+      getMonthlyTotalUsdByCard(card.id, month, state.expenses),
+    ),
   }));
 
   const grandTotals = monthsRange.map((_, i) => {
     const sum = rows.reduce((acc, row) => acc + row.totals[i], 0);
+    return Math.round(sum * 100) / 100;
+  });
+
+  const grandTotalsUsd = monthsRange.map((_, i) => {
+    const sum = rows.reduce((acc, row) => acc + row.totalsUsd[i], 0);
     return Math.round(sum * 100) / 100;
   });
 
@@ -103,18 +120,27 @@ export function ConsolidatedView() {
           </span>
         </label>
 
-        <button
-          type="button"
-          onClick={() =>
-            downloadCsv(
-              "card-tracker-export.csv",
-              buildExpensesCsv(state.cards, state.expenses),
-            )
-          }
-          className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
-        >
-          Export CSV
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onImport}
+            className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+          >
+            Import XLSX
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadCsv(
+                "card-tracker-export.csv",
+                buildExpensesCsv(state.cards, state.expenses),
+              )
+            }
+            className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Consolidated table */}
@@ -145,7 +171,7 @@ export function ConsolidatedView() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ card, totals }) => (
+            {rows.map(({ card, totals, totalsUsd }) => (
               <tr key={card.id} className="border-b border-white/5">
                 <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5">
                   <span className="flex items-center gap-1.5">
@@ -173,14 +199,18 @@ export function ConsolidatedView() {
                       onClick={(e) =>
                         toggleCellPopover(e, card.id, monthsRange[i])
                       }
-                      aria-label={`${card.name}, ${formatMonthLabel(monthsRange[i])}: ${formatMoney(total, currency)}. Show details`}
-                      className={`w-full rounded px-2 py-1.5 text-right font-mono whitespace-nowrap transition-colors hover:bg-white/5 ${
+                      aria-label={`${card.name}, ${formatMonthLabel(monthsRange[i])}. Show details`}
+                      className={`flex w-full flex-col items-end rounded px-2 py-1.5 transition-colors hover:bg-white/5 ${
                         monthsRange[i] < currentMonth
                           ? "text-zinc-500"
                           : "text-zinc-100"
                       }`}
                     >
-                      {formatMoney(total, currency)}
+                      <AmountDisplay
+                        ars={total}
+                        usd={totalsUsd[i]}
+                        className="items-end text-sm"
+                      />
                     </button>
                   </td>
                 ))}
@@ -193,7 +223,7 @@ export function ConsolidatedView() {
               {grandTotals.map((total, i) => (
                 <td
                   key={monthsRange[i]}
-                  className={`px-3.5 py-2.5 text-right font-mono font-semibold whitespace-nowrap ${
+                  className={`px-3.5 py-2.5 text-right ${
                     isOverBudget[i]
                       ? "bg-amber-500/10 text-amber-400"
                       : monthsRange[i] < currentMonth
@@ -201,7 +231,11 @@ export function ConsolidatedView() {
                         : "text-white"
                   }`}
                 >
-                  {formatMoney(total, currency)}
+                  <AmountDisplay
+                    ars={total}
+                    usd={grandTotalsUsd[i]}
+                    className="items-end font-semibold"
+                  />
                 </td>
               ))}
             </tr>
@@ -265,9 +299,11 @@ export function ConsolidatedView() {
                           </span>
                         )}
                       </span>
-                      <span className="shrink-0 font-mono text-zinc-100">
-                        {formatMoney(entry.amount, currency)}
-                      </span>
+                      <AmountDisplay
+                        ars={entry.amount}
+                        usd={entry.amountUsd}
+                        className="shrink-0 items-end text-sm"
+                      />
                     </li>
                   );
                 })}

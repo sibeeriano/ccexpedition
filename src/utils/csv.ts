@@ -10,7 +10,7 @@ function csvField(value: string | number): string {
 
 /**
  * Builds a CSV with one row per expense:
- * Card | Holder | Description | Total | Installments | [one column per visible month]
+ * Card | Holder | Description | Total ARS | Total USD | Installments | [month ARS columns]
  */
 export function buildExpensesCsv(cards: Card[], expenses: Expense[]): string {
   const monthsRange = getMonthsRange(expenses);
@@ -18,24 +18,31 @@ export function buildExpensesCsv(cards: Card[], expenses: Expense[]): string {
     "Card",
     "Holder",
     "Description",
-    "Total",
+    "Total ARS",
+    "Total USD",
     "Installments",
-    ...monthsRange.map(formatMonthLabel),
+    ...monthsRange.map((m) => `${formatMonthLabel(m)} ARS`),
+    ...monthsRange.map((m) => `${formatMonthLabel(m)} USD`),
   ];
 
   const rows = expenses.map((expense) => {
     const card = cards.find((c) => c.id === expense.cardId);
     const byMonth = getMonthlyBreakdown([expense]);
-    const monthColumns = monthsRange.map(
+    const monthArs = monthsRange.map(
       (month) => byMonth.get(month)?.[0]?.amount ?? "",
+    );
+    const monthUsd = monthsRange.map(
+      (month) => byMonth.get(month)?.[0]?.amountUsd ?? "",
     );
     return [
       card?.name ?? "Unknown",
       card?.holder ?? "",
       expense.description,
       expense.totalAmount,
+      expense.totalAmountUsd,
       expense.installments,
-      ...monthColumns,
+      ...monthArs,
+      ...monthUsd,
     ];
   });
 

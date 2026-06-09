@@ -1,5 +1,5 @@
 import { useApp } from "../context/AppContext";
-import { formatMoney } from "../utils/format";
+import { AmountDisplay } from "./AmountDisplay";
 
 export const ALL_CARDS_VIEW = "all";
 
@@ -10,19 +10,22 @@ type CardListProps = {
 
 export function CardList({ selectedId, onSelect }: CardListProps) {
   const { state } = useApp();
-  const currency = state.settings.currency;
 
-  // Total debt = sum of every expense's full amount (all installments).
-  const totalDebtByCard = new Map<string, number>();
+  const debtByCard = new Map<string, { ars: number; usd: number }>();
   for (const expense of state.expenses) {
-    totalDebtByCard.set(
-      expense.cardId,
-      (totalDebtByCard.get(expense.cardId) ?? 0) + expense.totalAmount,
-    );
+    const current = debtByCard.get(expense.cardId) ?? { ars: 0, usd: 0 };
+    debtByCard.set(expense.cardId, {
+      ars: current.ars + expense.totalAmount,
+      usd: current.usd + expense.totalAmountUsd,
+    });
   }
-  const grandTotal = state.expenses.reduce(
-    (sum, expense) => sum + expense.totalAmount,
-    0,
+
+  const grandDebt = state.expenses.reduce(
+    (acc, expense) => ({
+      ars: acc.ars + expense.totalAmount,
+      usd: acc.usd + expense.totalAmountUsd,
+    }),
+    { ars: 0, usd: 0 },
   );
 
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
@@ -40,14 +43,16 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       >
         <span className="text-sm font-medium text-white">All Cards</span>
         <span className="text-xs text-zinc-400">Consolidated</span>
-        <span className="font-mono text-sm text-zinc-100">
-          {formatMoney(grandTotal, currency)}
-        </span>
+        <AmountDisplay
+          ars={grandDebt.ars}
+          usd={grandDebt.usd}
+          className="text-sm text-zinc-100"
+        />
       </button>
 
       {state.cards.map((card) => {
         const isSelected = card.id === selectedId;
-        const totalDebt = totalDebtByCard.get(card.id) ?? 0;
+        const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
 
         return (
           <button
@@ -75,9 +80,11 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
               </span>
             </span>
             <span className="text-xs text-zinc-400">{card.holder}</span>
-            <span className="font-mono text-sm text-zinc-100">
-              {formatMoney(totalDebt, currency)}
-            </span>
+            <AmountDisplay
+              ars={debt.ars}
+              usd={debt.usd}
+              className="text-sm text-zinc-100"
+            />
           </button>
         );
       })}

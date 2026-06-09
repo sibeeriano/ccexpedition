@@ -6,12 +6,19 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function spreadTotal(
+  total: number,
+  installments: number,
+): { base: number; last: number } {
+  const count = Math.max(1, Math.floor(installments));
+  const base = round2(total / count);
+  const last = round2(total - base * (count - 1));
+  return { base, last };
+}
+
 /**
  * Spreads each expense across its installment months.
  * Returns a Map keyed by month ("YYYY-MM") with all entries falling in that month.
- *
- * The last installment absorbs any rounding remainder so the entries
- * always add up exactly to the expense's totalAmount.
  */
 export function getMonthlyBreakdown(
   expenses: Expense[],
@@ -20,17 +27,16 @@ export function getMonthlyBreakdown(
 
   for (const expense of expenses) {
     const installments = Math.max(1, Math.floor(expense.installments));
-    const baseAmount = round2(expense.totalAmount / installments);
-    const lastAmount = round2(
-      expense.totalAmount - baseAmount * (installments - 1),
-    );
+    const ars = spreadTotal(expense.totalAmount, installments);
+    const usd = spreadTotal(expense.totalAmountUsd, installments);
 
     for (let i = 0; i < installments; i++) {
       const month = addMonths(expense.startMonth, i);
       const entry: MonthlyEntry = {
         expenseId: expense.id,
         month,
-        amount: i === installments - 1 ? lastAmount : baseAmount,
+        amount: i === installments - 1 ? ars.last : ars.base,
+        amountUsd: i === installments - 1 ? usd.last : usd.base,
       };
 
       const entries = breakdown.get(month);
@@ -45,7 +51,14 @@ export function getMonthlyBreakdown(
   return breakdown;
 }
 
-/** Total owed on a given card for a given month ("YYYY-MM"). */
+function sumField(
+  entries: MonthlyEntry[],
+  field: "amount" | "amountUsd",
+): number {
+  return round2(entries.reduce((sum, entry) => sum + entry[field], 0));
+}
+
+/** Total ARS owed on a given card for a given month ("YYYY-MM"). */
 export function getMonthlyTotalByCard(
   cardId: string,
   month: string,
@@ -53,5 +66,16 @@ export function getMonthlyTotalByCard(
 ): number {
   const cardExpenses = expenses.filter((e) => e.cardId === cardId);
   const entries = getMonthlyBreakdown(cardExpenses).get(month) ?? [];
-  return round2(entries.reduce((sum, entry) => sum + entry.amount, 0));
+  return sumField(entries, "amount");
+}
+
+/** Total USD owed on a given card for a given month ("YYYY-MM"). */
+export function getMonthlyTotalUsdByCard(
+  cardId: string,
+  month: string,
+  expenses: Expense[],
+): number {
+  const cardExpenses = expenses.filter((e) => e.cardId === cardId);
+  const entries = getMonthlyBreakdown(cardExpenses).get(month) ?? [];
+  return sumField(entries, "amountUsd");
 }

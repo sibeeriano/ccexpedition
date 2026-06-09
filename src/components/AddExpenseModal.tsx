@@ -27,11 +27,11 @@ export function AddExpenseModal({ card, onClose }: AddExpenseModalProps) {
 function ExpenseForm({ card }: { card: Card }) {
   const { state, addExpense } = useApp();
   const close = useModalClose();
-  const currency = state.settings.currency;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [amountInput, setAmountInput] = useState("");
+  const [usdAmountInput, setUsdAmountInput] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("one-time");
   const [installmentsInput, setInstallmentsInput] = useState("3");
   // Selectable start months: from 12 months back through the end of the
@@ -49,14 +49,15 @@ function ExpenseForm({ card }: { card: Card }) {
   );
   const [startMonth, setStartMonth] = useState(currentMonth);
 
-  const totalAmount = Number.parseFloat(amountInput);
+  const totalAmount = Number.parseFloat(amountInput) || 0;
+  const totalAmountUsd = Number.parseFloat(usdAmountInput) || 0;
   const installments =
     paymentType === "one-time"
       ? 1
       : Math.floor(Number.parseInt(installmentsInput, 10) || 0);
 
   const isPreviewable =
-    Number.isFinite(totalAmount) && totalAmount > 0 && installments >= 1;
+    (totalAmount > 0 || totalAmountUsd > 0) && installments >= 1;
 
   const previewRows = isPreviewable
     ? [
@@ -66,11 +67,16 @@ function ExpenseForm({ card }: { card: Card }) {
             cardId: card.id,
             description,
             totalAmount,
+            totalAmountUsd,
             installments,
             startMonth,
           },
         ]).entries(),
-      ].map(([month, entries]) => ({ month, amount: entries[0].amount }))
+      ].map(([month, entries]) => ({
+        month,
+        amount: entries[0].amount,
+        amountUsd: entries[0].amountUsd,
+      }))
     : [];
 
   async function handleSubmit(e: React.FormEvent) {
@@ -86,6 +92,7 @@ function ExpenseForm({ card }: { card: Card }) {
       cardId: card.id,
       description: trimmed,
       totalAmount,
+      totalAmountUsd,
       installments,
       startMonth,
     });
@@ -123,17 +130,36 @@ function ExpenseForm({ card }: { card: Card }) {
           htmlFor="expense-amount"
           className="text-xs font-medium text-zinc-400"
         >
-          Total Amount
+          Total Amount (ARS)
         </label>
         <input
           id="expense-amount"
           type="number"
-          required
-          min="0.01"
+          min="0"
           step="0.01"
           inputMode="decimal"
           value={amountInput}
           onChange={(e) => setAmountInput(e.target.value)}
+          placeholder="0.00"
+          className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="expense-amount-usd"
+          className="text-xs font-medium text-zinc-400"
+        >
+          Total Amount (USD)
+        </label>
+        <input
+          id="expense-amount-usd"
+          type="number"
+          min="0"
+          step="0.01"
+          inputMode="decimal"
+          value={usdAmountInput}
+          onChange={(e) => setUsdAmountInput(e.target.value)}
           placeholder="0.00"
           className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
@@ -236,7 +262,9 @@ function ExpenseForm({ card }: { card: Card }) {
                   )}
                 </span>
                 <span className="font-mono text-zinc-100">
-                  {formatMoney(row.amount, currency)}
+                  {row.amount > 0 && formatMoney(row.amount, "ARS")}
+                  {row.amount > 0 && row.amountUsd > 0 && " · "}
+                  {row.amountUsd > 0 && formatMoney(row.amountUsd, "$")}
                 </span>
               </li>
             ))}

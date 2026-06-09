@@ -6,6 +6,7 @@ import { ConsolidatedView } from "./components/ConsolidatedView";
 import { AddCardModal } from "./components/AddCardModal";
 import { AddExpenseModal } from "./components/AddExpenseModal";
 import { SettingsModal } from "./components/SettingsModal";
+import { ImportModal } from "./components/ImportModal";
 import { DevSignature } from "./components/DevSignature";
 import { Login } from "./components/Login";
 import { useApp } from "./context/AppContext";
@@ -20,6 +21,7 @@ function App() {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Falls back to consolidated view if the selected card was deleted.
   const selectedCard =
@@ -75,7 +77,7 @@ function App() {
                 onAddExpense={() => setIsAddExpenseOpen(true)}
               />
             ) : (
-              <ConsolidatedView />
+              <ConsolidatedView onImport={() => setIsImportOpen(true)} />
             )}
           </>
         )}
@@ -91,6 +93,9 @@ function App() {
       {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
       {isSettingsOpen && (
         <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
+      {isImportOpen && (
+        <ImportModal onClose={() => setIsImportOpen(false)} />
       )}
       {isAddExpenseOpen && selectedCard && (
         <AddExpenseModal

@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
-import { getMonthlyBreakdown, getMonthlyTotalByCard } from "../utils/expenses";
+import {
+  getMonthlyBreakdown,
+  getMonthlyTotalByCard,
+  getMonthlyTotalUsdByCard,
+} from "../utils/expenses";
+import { AmountDisplay } from "./AmountDisplay";
 import { getMonthsRange, monthDiff } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 
@@ -12,7 +17,6 @@ type CardDetailProps = {
 
 export function CardDetail({ card, onAddExpense }: CardDetailProps) {
   const { state, deleteExpense } = useApp();
-  const currency = state.settings.currency;
   const currentMonth = getCurrentMonth();
   const monthsRange = getMonthsRange(state.expenses);
   const [selectedMonth, setSelectedMonth] = useState(() =>
@@ -33,7 +37,9 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
     getMonthlyBreakdown(expenses).get(selectedMonth) ?? [];
   const monthRows = monthEntries.flatMap((entry) => {
     const expense = expenses.find((e) => e.id === entry.expenseId);
-    return expense ? [{ expense, amount: entry.amount }] : [];
+    return expense
+      ? [{ expense, amount: entry.amount, amountUsd: entry.amountUsd }]
+      : [];
   });
 
   return (
@@ -54,6 +60,11 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
           const isCurrent = month === currentMonth;
           const isPast = month < currentMonth;
           const total = getMonthlyTotalByCard(card.id, month, state.expenses);
+          const totalUsd = getMonthlyTotalUsdByCard(
+            card.id,
+            month,
+            state.expenses,
+          );
 
           return (
             <button
@@ -84,13 +95,13 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                   {isCurrent && " •"}
                 </span>
               </p>
-              <p
-                className={`mt-0.5 font-mono text-sm ${
+              <AmountDisplay
+                ars={total}
+                usd={totalUsd}
+                className={`mt-0.5 text-sm ${
                   isPast && !isSelected ? "text-zinc-500" : "text-zinc-100"
                 }`}
-              >
-                {formatMoney(total, currency)}
-              </p>
+              />
             </button>
           );
         })}
@@ -114,7 +125,8 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
             <thead>
               <tr className="border-b border-white/5 text-left text-xs text-zinc-500">
                 <th className="px-3.5 py-2.5 font-medium">Description</th>
-                <th className="px-3.5 py-2.5 text-right font-medium">Total</th>
+                <th className="px-3.5 py-2.5 text-right font-medium">Total ARS</th>
+                <th className="px-3.5 py-2.5 text-right font-medium">Total USD</th>
                 <th className="px-3.5 py-2.5 text-right font-medium">
                   Installment
                 </th>
@@ -128,7 +140,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
               </tr>
             </thead>
             <tbody>
-              {monthRows.map(({ expense, amount }) => (
+              {monthRows.map(({ expense, amount, amountUsd }) => (
                 <tr
                   key={expense.id}
                   className="group border-b border-white/5 last:border-b-0"
@@ -137,7 +149,14 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                     {expense.description}
                   </td>
                   <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                    {formatMoney(expense.totalAmount, currency)}
+                    {expense.totalAmount > 0
+                      ? formatMoney(expense.totalAmount, "ARS")
+                      : "—"}
+                  </td>
+                  <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
+                    {expense.totalAmountUsd > 0
+                      ? formatMoney(expense.totalAmountUsd, "$")
+                      : "—"}
                   </td>
                   <td className="px-3.5 py-2.5 text-right text-zinc-400">
                     {expense.installments === 1
@@ -147,8 +166,8 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                   <td className="px-3.5 py-2.5 text-right text-zinc-400">
                     {formatMonthLabel(expense.startMonth)}
                   </td>
-                  <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                    {formatMoney(amount, currency)}
+                  <td className="px-3.5 py-2.5 text-right">
+                    <AmountDisplay ars={amount} usd={amountUsd} className="items-end text-sm" />
                   </td>
                   <td className="px-2 py-2.5 text-center">
                     <button
