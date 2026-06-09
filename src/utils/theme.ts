@@ -3,24 +3,24 @@ export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_TITLE_TEXT = "ccExpedition - Expense Tracker";
 export const MAX_TITLE_TEXT_LENGTH = 80;
 
-export type ColorPreset = { label: string; color: string };
+export type ColorPreset = { id: string; color: string };
 
 export const BACKGROUND_PRESETS: ColorPreset[] = [
-  { label: "Default", color: DEFAULT_BACKGROUND },
-  { label: "Midnight", color: "#0d1117" },
-  { label: "Purple", color: "#1a1025" },
-  { label: "Forest", color: "#0f1712" },
-  { label: "Warm", color: "#171310" },
-  { label: "Slate", color: "#141820" },
+  { id: "default", color: DEFAULT_BACKGROUND },
+  { id: "midnight", color: "#0d1117" },
+  { id: "purple", color: "#1a1025" },
+  { id: "forest", color: "#0f1712" },
+  { id: "warm", color: "#171310" },
+  { id: "slate", color: "#141820" },
 ];
 
 export const TITLE_PRESETS: ColorPreset[] = [
-  { label: "White", color: DEFAULT_TITLE_COLOR },
-  { label: "Silver", color: "#d4d4d8" },
-  { label: "Gold", color: "#fbbf24" },
-  { label: "Sky", color: "#38bdf8" },
-  { label: "Mint", color: "#34d399" },
-  { label: "Rose", color: "#fb7185" },
+  { id: "white", color: DEFAULT_TITLE_COLOR },
+  { id: "silver", color: "#d4d4d8" },
+  { id: "gold", color: "#fbbf24" },
+  { id: "sky", color: "#38bdf8" },
+  { id: "mint", color: "#34d399" },
+  { id: "rose", color: "#fb7185" },
 ];
 
 export type ThemeSettings = {
@@ -34,11 +34,11 @@ export function getDisplayTitle(titleText: string): string {
   return trimmed || DEFAULT_TITLE_TEXT;
 }
 
-export function getPresetLabel(
+export function getPresetId(
   presets: ColorPreset[],
   color: string,
-): string {
-  return presets.find((preset) => preset.color === color)?.label ?? "Custom";
+): string | null {
+  return presets.find((preset) => preset.color === color)?.id ?? null;
 }
 
 export function isValidHexColor(value: string): boolean {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import {
@@ -16,6 +17,7 @@ type CardDetailProps = {
 };
 
 export function CardDetail({ card, onAddExpense }: CardDetailProps) {
+  const { t } = useTranslation();
   const { state, deleteExpense } = useApp();
   const currentMonth = getCurrentMonth();
   const monthsRange = getMonthsRange(state.expenses);
@@ -44,7 +46,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
 
   const installmentLabel = (expense: (typeof monthRows)[number]["expense"]) =>
     expense.installments === 1
-      ? "One-time"
+      ? t("common.oneTime")
       : `${monthDiff(expense.startMonth, selectedMonth) + 1}/${expense.installments}`;
 
   return (
@@ -119,12 +121,14 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
       {monthRows.length === 0 ? (
         <div className="rounded-lg border border-dashed border-white/10 px-4 py-10 text-center">
           <p className="text-sm text-zinc-400">
-            No expenses in {formatMonthLabel(selectedMonth)}.
+            {t("cardDetail.noExpensesInMonth", {
+              month: formatMonthLabel(selectedMonth),
+            })}
           </p>
           <p className="mt-1 text-xs text-zinc-500">
             {expenses.length === 0
-              ? "Add your first purchase to see it spread across the months above."
-              : "Pick another month above or add a new expense."}
+              ? t("cardDetail.noExpensesHintEmpty")
+              : t("cardDetail.noExpensesHintPick")}
           </p>
         </div>
       ) : (
@@ -143,19 +147,21 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                   <button
                     type="button"
                     onClick={() => deleteExpense(expense.id)}
-                    aria-label={`Delete ${expense.description}`}
+                    aria-label={t("cardDetail.deleteExpense", {
+                      description: expense.description,
+                    })}
                     className="shrink-0 rounded px-1.5 text-zinc-600 transition-colors hover:bg-red-500/10 hover:text-red-400"
                   >
                     ×
                   </button>
                 </div>
                 <p className="mt-1 text-xs text-zinc-500">
-                  {installmentLabel(expense)} · Start{" "}
+                  {installmentLabel(expense)} · {t("cardDetail.startLabel")}{" "}
                   {formatMonthLabel(expense.startMonth)}
                 </p>
                 <div className="mt-3 flex items-end justify-between gap-3 border-t border-white/5 pt-3">
                   <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                    This month
+                    {t("cardDetail.thisMonth")}
                   </span>
                   <AmountDisplay
                     ars={amount}
@@ -165,7 +171,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                 </div>
                 {(expense.totalAmount > 0 || expense.totalAmountUsd > 0) && (
                   <div className="mt-2 flex items-end justify-between gap-3 text-xs text-zinc-500">
-                    <span>Total purchase</span>
+                    <span>{t("cardDetail.totalPurchase")}</span>
                     <AmountDisplay
                       ars={expense.totalAmount}
                       usd={expense.totalAmountUsd}
@@ -182,23 +188,27 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
             <table className="w-full min-w-130 text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-left text-xs text-zinc-500">
-                  <th className="px-3.5 py-2.5 font-medium">Description</th>
-                  <th className="px-3.5 py-2.5 text-right font-medium">
-                    Total ARS
-                  </th>
-                  <th className="px-3.5 py-2.5 text-right font-medium">
-                    Total USD
-                  </th>
-                  <th className="px-3.5 py-2.5 text-right font-medium">
-                    Installment
-                  </th>
-                  <th className="px-3.5 py-2.5 text-right font-medium">Start</th>
-                  <th className="px-3.5 py-2.5 text-right font-medium">
-                    This Month
-                  </th>
-                  <th className="w-10 px-2 py-2.5">
-                    <span className="sr-only">Actions</span>
-                  </th>
+                <th className="px-3.5 py-2.5 font-medium">
+                  {t("common.description")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.totalArs")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.totalUsd")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.installment")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("common.start")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.thisMonth")}
+                </th>
+                <th className="w-10 px-2 py-2.5">
+                  <span className="sr-only">{t("common.actions")}</span>
+                </th>
                 </tr>
               </thead>
               <tbody>
@@ -237,7 +247,9 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                       <button
                         type="button"
                         onClick={() => deleteExpense(expense.id)}
-                        aria-label={`Delete ${expense.description}`}
+                        aria-label={t("cardDetail.deleteExpense", {
+                      description: expense.description,
+                    })}
                         className="rounded px-1.5 text-zinc-600 transition-colors hover:bg-red-500/10 hover:text-red-400"
                       >
                         ×
@@ -257,7 +269,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         className="self-start rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: card.color }}
       >
-        + Add Expense
+        {t("cardDetail.addExpense")}
       </button>
     </section>
   );

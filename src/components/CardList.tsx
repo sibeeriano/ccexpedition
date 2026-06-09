@@ -1,14 +1,16 @@
+import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { AmountDisplay } from "./AmountDisplay";
 
 export const ALL_CARDS_VIEW = "all";
 
 type CardListProps = {
-  selectedId: string; // card id or ALL_CARDS_VIEW
+  selectedId: string;
   onSelect: (id: string) => void;
 };
 
 export function CardList({ selectedId, onSelect }: CardListProps) {
+  const { t } = useTranslation();
   const { state } = useApp();
 
   const debtByCard = new Map<string, { ars: number; usd: number }>();
@@ -41,8 +43,12 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
             : "border-white/5 bg-transparent hover:bg-surface/60"
         }`}
       >
-        <span className="text-sm font-medium text-white">All Cards</span>
-        <span className="text-xs text-zinc-400">Consolidated</span>
+        <span className="text-sm font-medium text-white">
+          {t("cardList.allCards")}
+        </span>
+        <span className="text-xs text-zinc-400">
+          {t("cardList.consolidated")}
+        </span>
         <AmountDisplay
           ars={grandDebt.ars}
           usd={grandDebt.usd}

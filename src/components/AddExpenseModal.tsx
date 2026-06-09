@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown } from "../utils/expenses";
 import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
-
-const START_MONTH_LOOKBACK = 12; // how many past months can be picked
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { Modal, useModalClose } from "./Modal";
+
+const START_MONTH_LOOKBACK = 12;
 
 type PaymentType = "one-time" | "installments";
 
@@ -16,15 +17,16 @@ type AddExpenseModalProps = {
 };
 
 export function AddExpenseModal({ card, onClose }: AddExpenseModalProps) {
+  const { t } = useTranslation();
   return (
-    <Modal title={`Add Expense — ${card.name}`} onClose={onClose}>
+    <Modal title={t("addExpense.title", { card: card.name })} onClose={onClose}>
       <ExpenseForm card={card} />
     </Modal>
   );
 }
 
-// Rendered inside <Modal> so useModalClose can trigger the exit animation.
 function ExpenseForm({ card }: { card: Card }) {
+  const { t } = useTranslation();
   const { state, addExpense } = useApp();
   const close = useModalClose();
   const [saving, setSaving] = useState(false);
@@ -34,8 +36,6 @@ function ExpenseForm({ card }: { card: Card }) {
   const [usdAmountInput, setUsdAmountInput] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("one-time");
   const [installmentsInput, setInstallmentsInput] = useState("3");
-  // Selectable start months: from 12 months back through the end of the
-  // visible range, so older dragged-along expenses can be added too.
   const currentMonth = getCurrentMonth();
   const visibleRange = getMonthsRange(state.expenses);
   const firstOption = addMonths(currentMonth, -START_MONTH_LOOKBACK);
@@ -111,7 +111,7 @@ function ExpenseForm({ card }: { card: Card }) {
           htmlFor="expense-description"
           className="text-xs font-medium text-zinc-400"
         >
-          Description
+          {t("common.description")}
         </label>
         <input
           id="expense-description"
@@ -120,7 +120,7 @@ function ExpenseForm({ card }: { card: Card }) {
           autoFocus
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g. Groceries, new phone…"
+          placeholder={t("addExpense.descriptionPlaceholder")}
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
       </div>
@@ -130,7 +130,7 @@ function ExpenseForm({ card }: { card: Card }) {
           htmlFor="expense-amount"
           className="text-xs font-medium text-zinc-400"
         >
-          Total Amount (ARS)
+          {t("addExpense.totalArs")}
         </label>
         <input
           id="expense-amount"
@@ -150,7 +150,7 @@ function ExpenseForm({ card }: { card: Card }) {
           htmlFor="expense-amount-usd"
           className="text-xs font-medium text-zinc-400"
         >
-          Total Amount (USD)
+          {t("addExpense.totalUsd")}
         </label>
         <input
           id="expense-amount-usd"
@@ -167,13 +167,13 @@ function ExpenseForm({ card }: { card: Card }) {
 
       <fieldset>
         <legend className="mb-1.5 text-xs font-medium text-zinc-400">
-          Payment Type
+          {t("addExpense.paymentType")}
         </legend>
         <div className="grid grid-cols-2 gap-1 rounded-md bg-base p-1">
           {(
             [
-              ["one-time", "One-time"],
-              ["installments", "Installments"],
+              ["one-time", t("common.oneTime")],
+              ["installments", t("addExpense.installments")],
             ] as const
           ).map(([value, label]) => (
             <label
@@ -204,7 +204,7 @@ function ExpenseForm({ card }: { card: Card }) {
             htmlFor="expense-installments"
             className="text-xs font-medium text-zinc-400"
           >
-            Number of installments
+            {t("addExpense.installmentCount")}
           </label>
           <input
             id="expense-installments"
@@ -225,7 +225,7 @@ function ExpenseForm({ card }: { card: Card }) {
           htmlFor="expense-start-month"
           className="text-xs font-medium text-zinc-400"
         >
-          Start Month
+          {t("addExpense.startMonth")}
         </label>
         <select
           id="expense-start-month"
@@ -236,7 +236,7 @@ function ExpenseForm({ card }: { card: Card }) {
           {monthOptions.map((month) => (
             <option key={month} value={month}>
               {formatMonthLabel(month)}
-              {month < currentMonth ? " (past)" : ""}
+              {month < currentMonth ? ` ${t("common.past")}` : ""}
             </option>
           ))}
         </select>
@@ -245,7 +245,7 @@ function ExpenseForm({ card }: { card: Card }) {
       {previewRows.length > 0 && (
         <div className="rounded-md bg-base px-3 py-2">
           <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-            Payment schedule
+            {t("addExpense.paymentSchedule")}
           </p>
           <ul className="max-h-36 overflow-y-auto">
             {previewRows.map((row, i) => (
@@ -284,7 +284,7 @@ function ExpenseForm({ card }: { card: Card }) {
           onClick={close}
           className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
@@ -292,7 +292,7 @@ function ExpenseForm({ card }: { card: Card }) {
           className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: card.color }}
         >
-          {saving ? "Saving…" : "Add Expense"}
+          {saving ? t("common.saving") : t("addExpense.submit")}
         </button>
       </div>
     </form>

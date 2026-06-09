@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { getDisplayTitle } from "../utils/theme";
@@ -7,6 +8,7 @@ import { DevSignature } from "./DevSignature";
 type Mode = "sign-in" | "sign-up";
 
 export function Login() {
+  const { t } = useTranslation();
   const { state } = useApp();
   const { signIn, signUp } = useAuth();
   const title = getDisplayTitle(state.settings.titleText);
@@ -33,12 +35,9 @@ export function Login() {
     if (errorMessage) {
       setError(errorMessage);
     } else if (mode === "sign-up") {
-      setNotice(
-        "Account created. Check your email if confirmation is required, then sign in.",
-      );
+      setNotice(t("login.accountCreated"));
       setMode("sign-in");
     }
-    // On successful sign-in the session change re-renders the app.
   }
 
   return (
@@ -52,8 +51,8 @@ export function Login() {
         </h1>
         <p className="mt-1 text-center text-xs text-zinc-500">
           {mode === "sign-in"
-            ? "Sign in to your account"
-            : "Create a new account"}
+            ? t("login.signInSubtitle")
+            : t("login.signUpSubtitle")}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
@@ -62,7 +61,7 @@ export function Login() {
               htmlFor="login-email"
               className="text-xs font-medium text-zinc-400"
             >
-              Email
+              {t("login.email")}
             </label>
             <input
               id="login-email"
@@ -82,7 +81,7 @@ export function Login() {
               htmlFor="login-password"
               className="text-xs font-medium text-zinc-400"
             >
-              Password
+              {t("login.password")}
             </label>
             <input
               id="login-password"
@@ -107,7 +106,7 @@ export function Login() {
                 onChange={(e) => setRemember(e.target.checked)}
                 className="size-3.5 cursor-pointer accent-zinc-300"
               />
-              Keep me signed in
+              {t("login.keepSignedIn")}
             </label>
           )}
 
@@ -124,10 +123,10 @@ export function Login() {
             className="rounded-md bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
           >
             {submitting
-              ? "Please wait…"
+              ? t("login.pleaseWait")
               : mode === "sign-in"
-                ? "Sign In"
-                : "Sign Up"}
+                ? t("login.signIn")
+                : t("login.signUp")}
           </button>
         </form>
 
@@ -141,8 +140,8 @@ export function Login() {
           className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
         >
           {mode === "sign-in"
-            ? "Don't have an account? Sign up"
-            : "Already have an account? Sign in"}
+            ? t("login.toggleToSignUp")
+            : t("login.toggleToSignIn")}
         </button>
       </div>
 

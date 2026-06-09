@@ -1,0 +1,167 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "Delete",
+    "edit": "Edit",
+    "reset": "Reset",
+    "close": "Close",
+    "loading": "Loading…",
+    "unknown": "Unknown",
+    "custom": "Custom",
+    "expense_one": "expense",
+    "expense_other": "expenses",
+    "card_one": "card",
+    "card_other": "cards",
+    "holder": "Holder",
+    "start": "Start",
+    "description": "Description",
+    "actions": "Actions",
+    "oneTime": "One-time",
+    "selectCard": "Select a card…",
+    "past": "(past)"
+  },
+  "nav": {
+    "addCard": "+ Add Card",
+    "addCardShort": "+ Card",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "currency": "Currency"
+  },
+  "app": {
+    "noCardsTitle": "No cards yet",
+    "noCardsHint": "Add your first credit card to start tracking purchases and installments month by month.",
+    "lastUpdated": "Last updated: {{date}}"
+  },
+  "login": {
+    "signInSubtitle": "Sign in to your account",
+    "signUpSubtitle": "Create a new account",
+    "email": "Email",
+    "password": "Password",
+    "keepSignedIn": "Keep me signed in",
+    "pleaseWait": "Please wait…",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "toggleToSignUp": "Don't have an account? Sign up",
+    "toggleToSignIn": "Already have an account? Sign in",
+    "accountCreated": "Account created. Check your email if confirmation is required, then sign in."
+  },
+  "cardList": {
+    "allCards": "All Cards",
+    "consolidated": "Consolidated"
+  },
+  "cardDetail": {
+    "noExpensesInMonth": "No expenses in {{month}}.",
+    "noExpensesHintEmpty": "Add your first purchase to see it spread across the months above.",
+    "noExpensesHintPick": "Pick another month above or add a new expense.",
+    "thisMonth": "This month",
+    "totalPurchase": "Total purchase",
+    "startLabel": "Start",
+    "totalArs": "Total ARS",
+    "totalUsd": "Total USD",
+    "installment": "Installment",
+    "deleteExpense": "Delete {{description}}",
+    "addExpense": "+ Add Expense"
+  },
+  "consolidated": {
+    "budgetAlert": "Monthly budget alert:",
+    "importXlsx": "Import XLSX",
+    "exportCsv": "Export CSV",
+    "card": "Card",
+    "totalAllCards": "Total All Cards",
+    "budgetExceeded": "Highlighted months exceed your {{amount}} budget alert.",
+    "popoverLabel": "Expenses for {{card}} in {{month}}",
+    "noExpensesThisMonth": "No expenses this month.",
+    "cellDetails": "{{card}}, {{month}}. Show details"
+  },
+  "addCard": {
+    "title": "Add Card",
+    "cardName": "Card Name",
+    "cardNamePlaceholder": "e.g. Mastercard BBVA",
+    "holderPlaceholder": "e.g. Lourdes",
+    "color": "Color",
+    "colorOption": "Color {{hex}}",
+    "submit": "Add Card"
+  },
+  "addExpense": {
+    "title": "Add Expense — {{card}}",
+    "descriptionPlaceholder": "e.g. Groceries, new phone…",
+    "totalArs": "Total Amount (ARS)",
+    "totalUsd": "Total Amount (USD)",
+    "paymentType": "Payment Type",
+    "installments": "Installments",
+    "installmentCount": "Number of installments",
+    "startMonth": "Start Month",
+    "paymentSchedule": "Payment schedule",
+    "submit": "Add Expense"
+  },
+  "import": {
+    "title": "Import from Excel",
+    "chooseFile": "Choose an .xlsx file (bank statement or Card Tracker export)",
+    "rowsFound": "{{count}} expenses found ({{format}})",
+    "formatBank": "bank statement",
+    "formatTracker": "tracker export",
+    "rowsSkipped": "{{count}} rows skipped.",
+    "bankImportMode": "Bank import mode",
+    "modeStatement": "Monthly statement — all rows belong to one billing month (CUOTA 7/12 = payment 7 of 12 this month).",
+    "modePurchases": "Purchase list — FECHA is installment 1 start date.",
+    "statementMonth": "Statement month",
+    "statementTotal": "Total for {{month}}: {{amount}}",
+    "importToCard": "Import all expenses to card",
+    "mapHolders": "Map cardholders to cards",
+    "total": "Total",
+    "cuotas": "Installments",
+    "andMore": "…and {{count}} more",
+    "importing": "Importing…",
+    "importCount_one": "Import {{count}} expense",
+    "importCount_other": "Import {{count}} expenses"
+  },
+  "settings": {
+    "title": "Settings",
+    "personalize": "Personalize",
+    "cards": "Cards",
+    "language": "Language",
+    "languageEn": "English",
+    "languageEs": "Español",
+    "titleText": "Title text",
+    "backgroundColor": "Background color",
+    "titleColor": "Title color",
+    "noCards": "No cards yet.",
+    "cardName": "Card name",
+    "deleteConfirm": "Delete {{name}} ({{holder}})?",
+    "deleteWarning": "This will permanently remove the card and its {{count}} {{expenseLabel}}. This cannot be undone.",
+    "deleting": "Deleting…",
+    "deleteCard": "Delete Card",
+    "cardNameRequired": "Card name is required.",
+    "holderRequired": "Cardholder name is required."
+  },
+  "theme": {
+    "presets": {
+      "default": "Default",
+      "midnight": "Midnight",
+      "purple": "Purple",
+      "forest": "Forest",
+      "warm": "Warm",
+      "slate": "Slate",
+      "white": "White",
+      "silver": "Silver",
+      "gold": "Gold",
+      "sky": "Sky",
+      "mint": "Mint",
+      "rose": "Rose"
+    }
+  },
+  "footer": {
+    "developedBy": "Developed by"
+  },
+  "errors": {
+    "cardNotFound": "Card not found",
+    "cardNameRequired": "Card name is required",
+    "holderRequired": "Cardholder name is required",
+    "failedAddCard": "Failed to add card",
+    "failedUpdateCard": "Failed to update card",
+    "failedAddExpense": "Failed to add expense",
+    "failedImportExpenses": "Failed to import expenses"
+  }
+}

@@ -1,4 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import type { AppLanguage } from "../context/AppContext";
 import { useApp } from "../context/AppContext";
 import {
   BACKGROUND_PRESETS,
@@ -6,7 +8,7 @@ import {
   DEFAULT_TITLE_COLOR,
   DEFAULT_TITLE_TEXT,
   getDisplayTitle,
-  getPresetLabel,
+  getPresetId,
   MAX_TITLE_TEXT_LENGTH,
   TITLE_PRESETS,
   type ColorPreset,
@@ -18,8 +20,9 @@ type SettingsModalProps = {
 };
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
+  const { t } = useTranslation();
   return (
-    <Modal title="Settings" onClose={onClose}>
+    <Modal title={t("settings.title")} onClose={onClose}>
       <SettingsContent />
     </Modal>
   );
@@ -92,7 +95,11 @@ function ColorPickerField({
   inputId,
   onChange,
 }: ColorPickerFieldProps) {
-  const activeLabel = getPresetLabel(presets, color);
+  const { t } = useTranslation();
+  const presetId = getPresetId(presets, color);
+  const activeLabel = presetId
+    ? t(`theme.presets.${presetId}`)
+    : t("common.custom");
 
   return (
     <div className="flex flex-col gap-2">
@@ -100,12 +107,13 @@ function ColorPickerField({
       <div className="flex flex-wrap gap-2">
         {presets.map((preset) => {
           const isSelected = color === preset.color;
+          const presetLabel = t(`theme.presets.${preset.id}`);
           return (
             <button
-              key={preset.color}
+              key={preset.id}
               type="button"
-              title={preset.label}
-              aria-label={`${preset.label} ${label.toLowerCase()}`}
+              title={presetLabel}
+              aria-label={`${presetLabel} ${label}`}
               aria-pressed={isSelected}
               onClick={() => onChange(preset.color)}
               className={`size-9 rounded-md border transition-transform hover:scale-105 ${
@@ -138,7 +146,7 @@ function ColorPickerField({
             onClick={() => onChange(defaultColor)}
             className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
           >
-            Reset
+            {t("common.reset")}
           </button>
         )}
       </div>
@@ -147,6 +155,7 @@ function ColorPickerField({
 }
 
 function SettingsContent() {
+  const { t } = useTranslation();
   const {
     state,
     deleteCard,
@@ -154,6 +163,7 @@ function SettingsContent() {
     setBackgroundColor,
     setTitleColor,
     setTitleText,
+    setLanguage,
   } = useApp();
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
@@ -192,11 +202,11 @@ function SettingsContent() {
     const trimmedName = editName.trim();
     const trimmedHolder = editHolder.trim();
     if (!trimmedName) {
-      setError("Card name is required.");
+      setError(t("settings.cardNameRequired"));
       return;
     }
     if (!trimmedHolder) {
-      setError("Cardholder name is required.");
+      setError(t("settings.holderRequired"));
       return;
     }
     if (
@@ -244,13 +254,16 @@ function SettingsContent() {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm text-zinc-300">
-          Delete{" "}
-          <span className="font-medium text-white">{confirmCard.name}</span> (
-          {confirmCard.holder})?
+          {t("settings.deleteConfirm", {
+            name: confirmCard.name,
+            holder: confirmCard.holder,
+          })}
         </p>
         <p className="rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-300">
-          This will permanently remove the card and its {expenseCount}{" "}
-          {expenseCount === 1 ? "expense" : "expenses"}. This cannot be undone.
+          {t("settings.deleteWarning", {
+            count: expenseCount,
+            expenseLabel: t("common.expense", { count: expenseCount }),
+          })}
         </p>
 
         {error && (
@@ -265,7 +278,7 @@ function SettingsContent() {
             onClick={() => setConfirmCardId(null)}
             className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -273,20 +286,20 @@ function SettingsContent() {
             disabled={deleting}
             className="rounded-md bg-red-500/80 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
           >
-            {deleting ? "Deleting…" : "Delete Card"}
+            {deleting ? t("settings.deleting") : t("settings.deleteCard")}
           </button>
         </div>
       </div>
     );
   }
 
-  const { backgroundColor, titleColor, titleText } = state.settings;
+  const { backgroundColor, titleColor, titleText, language } = state.settings;
   const displayTitle = getDisplayTitle(titleText);
 
   return (
     <div className="flex flex-col gap-3">
       <SettingsDropdown
-        title="Personalize"
+        title={t("settings.personalize")}
         summary={
           <>
             <span
@@ -302,12 +315,30 @@ function SettingsContent() {
         }
       >
         <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="settings-language"
+              className="text-sm text-zinc-300"
+            >
+              {t("settings.language")}
+            </label>
+            <select
+              id="settings-language"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as AppLanguage)}
+              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
+            >
+              <option value="en">{t("settings.languageEn")}</option>
+              <option value="es">{t("settings.languageEs")}</option>
+            </select>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label
               htmlFor="settings-title-text"
               className="text-sm text-zinc-300"
             >
-              Title text
+              {t("settings.titleText")}
             </label>
             <input
               id="settings-title-text"
@@ -328,14 +359,14 @@ function SettingsContent() {
                   onClick={() => setTitleText(DEFAULT_TITLE_TEXT)}
                   className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                 >
-                  Reset
+                  {t("common.reset")}
                 </button>
               )}
             </div>
           </div>
 
           <ColorPickerField
-            label="Background color"
+            label={t("settings.backgroundColor")}
             color={backgroundColor}
             presets={BACKGROUND_PRESETS}
             defaultColor={DEFAULT_BACKGROUND}
@@ -343,7 +374,7 @@ function SettingsContent() {
             onChange={setBackgroundColor}
           />
           <ColorPickerField
-            label="Title color"
+            label={t("settings.titleColor")}
             color={titleColor}
             presets={TITLE_PRESETS}
             defaultColor={DEFAULT_TITLE_COLOR}
@@ -360,16 +391,15 @@ function SettingsContent() {
       </SettingsDropdown>
 
       <SettingsDropdown
-        title="Cards"
+        title={t("settings.cards")}
         summary={
           <span className="text-xs text-zinc-500">
-            {state.cards.length}{" "}
-            {state.cards.length === 1 ? "card" : "cards"}
+            {t("common.card", { count: state.cards.length })}
           </span>
         }
       >
         {state.cards.length === 0 ? (
-          <p className="py-1 text-sm text-zinc-500">No cards yet.</p>
+          <p className="py-1 text-sm text-zinc-500">{t("settings.noCards")}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {error && editingCardId && (
@@ -398,7 +428,7 @@ function SettingsContent() {
                           />
                           <span className="text-xs text-zinc-500">
                             {expenseCount}{" "}
-                            {expenseCount === 1 ? "expense" : "expenses"}
+                            {t("common.expense", { count: expenseCount })}
                           </span>
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -406,7 +436,7 @@ function SettingsContent() {
                             htmlFor={`edit-card-name-${card.id}`}
                             className="text-xs font-medium text-zinc-400"
                           >
-                            Card name
+                            {t("settings.cardName")}
                           </label>
                           <input
                             id={`edit-card-name-${card.id}`}
@@ -422,7 +452,7 @@ function SettingsContent() {
                             htmlFor={`edit-card-holder-${card.id}`}
                             className="text-xs font-medium text-zinc-400"
                           >
-                            Holder
+                            {t("common.holder")}
                           </label>
                           <input
                             id={`edit-card-holder-${card.id}`}
@@ -439,7 +469,7 @@ function SettingsContent() {
                             disabled={savingCard}
                             className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200 disabled:opacity-50"
                           >
-                            Cancel
+                            {t("common.cancel")}
                           </button>
                           <button
                             type="button"
@@ -453,7 +483,7 @@ function SettingsContent() {
                             disabled={savingCard}
                             className="rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
                           >
-                            {savingCard ? "Saving…" : "Save"}
+                            {savingCard ? t("common.saving") : t("common.save")}
                           </button>
                         </div>
                       </div>
@@ -469,7 +499,7 @@ function SettingsContent() {
                           </span>
                           <span className="shrink-0 text-xs text-zinc-500">
                             {card.holder} · {expenseCount}{" "}
-                            {expenseCount === 1 ? "expense" : "expenses"}
+                            {t("common.expense", { count: expenseCount })}
                           </span>
                         </span>
                         <div className="flex shrink-0 items-center gap-1">
@@ -484,14 +514,14 @@ function SettingsContent() {
                             }
                             className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                           >
-                            Edit
+                            {t("common.edit")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmCardId(card.id)}
                             className="rounded-md px-2.5 py-1 text-xs font-medium text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400"
                           >
-                            Delete
+                            {t("common.delete")}
                           </button>
                         </div>
                       </div>

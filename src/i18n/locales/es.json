@@ -1,0 +1,167 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "reset": "Restablecer",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "unknown": "Desconocido",
+    "custom": "Personalizado",
+    "expense_one": "gasto",
+    "expense_other": "gastos",
+    "card_one": "tarjeta",
+    "card_other": "tarjetas",
+    "holder": "Titular",
+    "start": "Inicio",
+    "description": "Descripción",
+    "actions": "Acciones",
+    "oneTime": "Pago único",
+    "selectCard": "Elegir tarjeta…",
+    "past": "(pasado)"
+  },
+  "nav": {
+    "addCard": "+ Agregar tarjeta",
+    "addCardShort": "+ Tarjeta",
+    "settings": "Ajustes",
+    "signOut": "Cerrar sesión",
+    "currency": "Moneda"
+  },
+  "app": {
+    "noCardsTitle": "Sin tarjetas aún",
+    "noCardsHint": "Agregá tu primera tarjeta de crédito para empezar a seguir compras y cuotas mes a mes.",
+    "lastUpdated": "Última actualización: {{date}}"
+  },
+  "login": {
+    "signInSubtitle": "Iniciá sesión en tu cuenta",
+    "signUpSubtitle": "Creá una cuenta nueva",
+    "email": "Email",
+    "password": "Contraseña",
+    "keepSignedIn": "Mantener sesión iniciada",
+    "pleaseWait": "Esperá un momento…",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "toggleToSignUp": "¿No tenés cuenta? Registrate",
+    "toggleToSignIn": "¿Ya tenés cuenta? Iniciá sesión",
+    "accountCreated": "Cuenta creada. Revisá tu email si hace falta confirmar, y luego iniciá sesión."
+  },
+  "cardList": {
+    "allCards": "Todas las tarjetas",
+    "consolidated": "Consolidado"
+  },
+  "cardDetail": {
+    "noExpensesInMonth": "Sin gastos en {{month}}.",
+    "noExpensesHintEmpty": "Agregá tu primera compra para verla repartida en los meses de arriba.",
+    "noExpensesHintPick": "Elegí otro mes arriba o agregá un gasto nuevo.",
+    "thisMonth": "Este mes",
+    "totalPurchase": "Total compra",
+    "startLabel": "Inicio",
+    "totalArs": "Total ARS",
+    "totalUsd": "Total USD",
+    "installment": "Cuota",
+    "deleteExpense": "Eliminar {{description}}",
+    "addExpense": "+ Agregar gasto"
+  },
+  "consolidated": {
+    "budgetAlert": "Alerta de presupuesto mensual:",
+    "importXlsx": "Importar XLSX",
+    "exportCsv": "Exportar CSV",
+    "card": "Tarjeta",
+    "totalAllCards": "Total todas las tarjetas",
+    "budgetExceeded": "Los meses resaltados superan tu alerta de {{amount}}.",
+    "popoverLabel": "Gastos de {{card}} en {{month}}",
+    "noExpensesThisMonth": "Sin gastos este mes.",
+    "cellDetails": "{{card}}, {{month}}. Ver detalle"
+  },
+  "addCard": {
+    "title": "Agregar tarjeta",
+    "cardName": "Nombre de tarjeta",
+    "cardNamePlaceholder": "ej. Mastercard BBVA",
+    "holderPlaceholder": "ej. Lourdes",
+    "color": "Color",
+    "colorOption": "Color {{hex}}",
+    "submit": "Agregar tarjeta"
+  },
+  "addExpense": {
+    "title": "Agregar gasto — {{card}}",
+    "descriptionPlaceholder": "ej. Supermercado, celular…",
+    "totalArs": "Monto total (ARS)",
+    "totalUsd": "Monto total (USD)",
+    "paymentType": "Tipo de pago",
+    "installments": "Cuotas",
+    "installmentCount": "Cantidad de cuotas",
+    "startMonth": "Mes de inicio",
+    "paymentSchedule": "Calendario de pagos",
+    "submit": "Agregar gasto"
+  },
+  "import": {
+    "title": "Importar desde Excel",
+    "chooseFile": "Elegí un archivo .xlsx (resumen bancario o exportación de Card Tracker)",
+    "rowsFound": "{{count}} gastos encontrados ({{format}})",
+    "formatBank": "resumen bancario",
+    "formatTracker": "exportación tracker",
+    "rowsSkipped": "{{count}} filas omitidas.",
+    "bankImportMode": "Modo de importación",
+    "modeStatement": "Resumen mensual — todas las filas son del mes del resumen (CUOTA 7/12 = cuota 7 de 12 este mes).",
+    "modePurchases": "Lista de compras — FECHA es el inicio de la cuota 1.",
+    "statementMonth": "Mes del resumen",
+    "statementTotal": "Total de {{month}}: {{amount}}",
+    "importToCard": "Importar todos los gastos a la tarjeta",
+    "mapHolders": "Asociar titulares a tarjetas",
+    "total": "Total",
+    "cuotas": "Cuotas",
+    "andMore": "…y {{count}} más",
+    "importing": "Importando…",
+    "importCount_one": "Importar {{count}} gasto",
+    "importCount_other": "Importar {{count}} gastos"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "personalize": "Personalizar",
+    "cards": "Tarjetas",
+    "language": "Idioma",
+    "languageEn": "English",
+    "languageEs": "Español",
+    "titleText": "Texto del título",
+    "backgroundColor": "Color de fondo",
+    "titleColor": "Color del título",
+    "noCards": "Sin tarjetas aún.",
+    "cardName": "Nombre de tarjeta",
+    "deleteConfirm": "¿Eliminar {{name}} ({{holder}})?",
+    "deleteWarning": "Esto eliminará permanentemente la tarjeta y sus {{count}} {{expenseLabel}}. No se puede deshacer.",
+    "deleting": "Eliminando…",
+    "deleteCard": "Eliminar tarjeta",
+    "cardNameRequired": "El nombre de la tarjeta es obligatorio.",
+    "holderRequired": "El nombre del titular es obligatorio."
+  },
+  "theme": {
+    "presets": {
+      "default": "Predeterminado",
+      "midnight": "Medianoche",
+      "purple": "Violeta",
+      "forest": "Bosque",
+      "warm": "Cálido",
+      "slate": "Pizarra",
+      "white": "Blanco",
+      "silver": "Plateado",
+      "gold": "Dorado",
+      "sky": "Cielo",
+      "mint": "Menta",
+      "rose": "Rosa"
+    }
+  },
+  "footer": {
+    "developedBy": "Desarrollado por"
+  },
+  "errors": {
+    "cardNotFound": "Tarjeta no encontrada",
+    "cardNameRequired": "El nombre de la tarjeta es obligatorio",
+    "holderRequired": "El nombre del titular es obligatorio",
+    "failedAddCard": "No se pudo agregar la tarjeta",
+    "failedUpdateCard": "No se pudo actualizar la tarjeta",
+    "failedAddExpense": "No se pudo agregar el gasto",
+    "failedImportExpenses": "No se pudieron importar los gastos"
+  }
+}

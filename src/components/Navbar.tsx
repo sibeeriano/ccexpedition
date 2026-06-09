@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { CurrencySymbol } from "../types";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +12,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
+  const { t } = useTranslation();
   const { state, setCurrency } = useApp();
   const { session, signOut } = useAuth();
 
@@ -32,7 +34,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             {session?.user.email}
           </span>
           <select
-            aria-label="Currency"
+            aria-label={t("nav.currency")}
             value={state.settings.currency}
             onChange={(e) => setCurrency(e.target.value as CurrencySymbol)}
             className="rounded-md border border-white/10 bg-base px-2 py-1.5 text-sm text-zinc-300 focus:border-white/30 focus:outline-none"
@@ -48,16 +50,16 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             onClick={onAddCard}
             className="shrink-0 rounded-md bg-white/10 px-2 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 active:bg-white/20 sm:px-3"
           >
-            <span className="sm:hidden">+ Card</span>
-            <span className="hidden sm:inline">+ Add Card</span>
+            <span className="sm:hidden">{t("nav.addCardShort")}</span>
+            <span className="hidden sm:inline">{t("nav.addCard")}</span>
           </button>
           <button
             type="button"
             onClick={onOpenSettings}
-            aria-label="Settings"
+            aria-label={t("nav.settings")}
             className="shrink-0 rounded-md px-2 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
           >
-            <span className="hidden sm:inline">Settings</span>
+            <span className="hidden sm:inline">{t("nav.settings")}</span>
             <span className="sm:hidden" aria-hidden>
               ⚙
             </span>
@@ -67,7 +69,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             onClick={signOut}
             className="hidden shrink-0 rounded-md px-2 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200 sm:inline"
           >
-            Sign out
+            {t("nav.signOut")}
           </button>
         </div>
       </div>

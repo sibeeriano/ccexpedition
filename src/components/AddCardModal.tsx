@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { Modal, useModalClose } from "./Modal";
 
@@ -18,15 +19,16 @@ type AddCardModalProps = {
 };
 
 export function AddCardModal({ onClose }: AddCardModalProps) {
+  const { t } = useTranslation();
   return (
-    <Modal title="Add Card" onClose={onClose}>
+    <Modal title={t("addCard.title")} onClose={onClose}>
       <CardForm />
     </Modal>
   );
 }
 
-// Rendered inside <Modal> so useModalClose can trigger the exit animation.
 function CardForm() {
+  const { t } = useTranslation();
   const { addCard } = useApp();
   const close = useModalClose();
   const [name, setName] = useState("");
@@ -60,7 +62,7 @@ function CardForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="card-name" className="text-xs font-medium text-zinc-400">
-          Card Name
+          {t("addCard.cardName")}
         </label>
         <input
           id="card-name"
@@ -69,14 +71,14 @@ function CardForm() {
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Mastercard BBVA"
+          placeholder={t("addCard.cardNamePlaceholder")}
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="card-holder" className="text-xs font-medium text-zinc-400">
-          Holder
+          {t("common.holder")}
         </label>
         <input
           id="card-holder"
@@ -84,14 +86,14 @@ function CardForm() {
           required
           value={holder}
           onChange={(e) => setHolder(e.target.value)}
-          placeholder="e.g. Lourdes"
+          placeholder={t("addCard.holderPlaceholder")}
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
       </div>
 
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-xs font-medium text-zinc-400">
-          Color
+          {t("addCard.color")}
         </legend>
         <div className="flex flex-wrap gap-2">
           {PALETTE.map((hex) => (
@@ -103,7 +105,7 @@ function CardForm() {
                 checked={color === hex}
                 onChange={() => setColor(hex)}
                 className="sr-only"
-                aria-label={`Color ${hex}`}
+                aria-label={t("addCard.colorOption", { hex })}
               />
               <span
                 className={`block size-7 rounded-full transition-transform ${
@@ -130,14 +132,14 @@ function CardForm() {
           onClick={close}
           className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={saving}
           className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Add Card"}
+          {saving ? t("common.saving") : t("addCard.submit")}
         </button>
       </div>
     </form>

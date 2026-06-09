@@ -1,4 +1,5 @@
 import { useCallback, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
@@ -16,14 +17,16 @@ type ImportModalProps = {
 };
 
 export function ImportModal({ onClose }: ImportModalProps) {
+  const { t } = useTranslation();
   return (
-    <Modal title="Import from Excel" onClose={onClose}>
+    <Modal title={t("import.title")} onClose={onClose}>
       <ImportContent />
     </Modal>
   );
 }
 
 function ImportContent() {
+  const { t } = useTranslation();
   const { state, addExpenses } = useApp();
   const close = useModalClose();
   const fileInputId = useId();
@@ -161,8 +164,14 @@ function ImportContent() {
         className="cursor-pointer rounded-md border border-dashed border-white/15 px-4 py-6 text-center text-sm text-zinc-400 transition-colors hover:border-white/30 hover:text-zinc-200"
       >
         {rows.length > 0
-          ? `${rows.length} expenses found (${format === "bank" ? "bank statement" : "tracker export"})`
-          : "Choose an .xlsx file (bank statement or Card Tracker export)"}
+          ? t("import.rowsFound", {
+              count: rows.length,
+              format:
+                format === "bank"
+                  ? t("import.formatBank")
+                  : t("import.formatTracker"),
+            })
+          : t("import.chooseFile")}
       </label>
 
       {parseErrors.length > 0 && (
@@ -174,13 +183,15 @@ function ImportContent() {
       )}
 
       {skipped > 0 && (
-        <p className="text-xs text-zinc-500">{skipped} rows skipped.</p>
+        <p className="text-xs text-zinc-500">
+          {t("import.rowsSkipped", { count: skipped })}
+        </p>
       )}
 
       {format === "bank" && rows.length > 0 && (
         <div className="flex flex-col gap-3 rounded-md border border-white/10 bg-base px-3 py-3">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-            Bank import mode
+            {t("import.bankImportMode")}
           </p>
           <div className="flex flex-col gap-2 text-sm text-zinc-300">
             <label className="flex cursor-pointer items-start gap-2">
@@ -192,8 +203,7 @@ function ImportContent() {
                 className="mt-0.5"
               />
               <span>
-                Monthly statement — all rows belong to one billing month (CUOTA
-                7/12 = payment 7 of 12 this month).
+                {t("import.modeStatement")}
               </span>
             </label>
             <label className="flex cursor-pointer items-start gap-2">
@@ -205,7 +215,7 @@ function ImportContent() {
                 className="mt-0.5"
               />
               <span>
-                Purchase list — FECHA is installment 1 start date.
+                {t("import.modePurchases")}
               </span>
             </label>
           </div>
@@ -215,7 +225,7 @@ function ImportContent() {
                 htmlFor="import-statement-month"
                 className="text-xs font-medium text-zinc-400"
               >
-                Statement month
+                {t("import.statementMonth")}
               </label>
               <select
                 id="import-statement-month"
@@ -231,10 +241,10 @@ function ImportContent() {
               </select>
               {statementPreviewTotal !== null && (
                 <p className="text-xs text-zinc-400">
-                  Total for {formatMonthLabel(statementMonth)}:{" "}
-                  <span className="font-medium text-zinc-200">
-                    {formatMoney(statementPreviewTotal)}
-                  </span>
+                  {t("import.statementTotal", {
+                    month: formatMonthLabel(statementMonth),
+                    amount: formatMoney(statementPreviewTotal),
+                  })}
                 </p>
               )}
             </div>
@@ -248,7 +258,7 @@ function ImportContent() {
             htmlFor="import-default-card"
             className="text-xs font-medium text-zinc-400"
           >
-            Import all expenses to card
+            {t("import.importToCard")}
           </label>
           <select
             id="import-default-card"
@@ -256,7 +266,7 @@ function ImportContent() {
             onChange={(e) => setDefaultCardId(e.target.value)}
             className="rounded-md border border-white/10 bg-base px-2 py-1.5 text-sm text-white focus:border-white/30 focus:outline-none"
           >
-            <option value="">Select a card…</option>
+            <option value="">{t("common.selectCard")}</option>
             {state.cards.map((card) => (
               <option key={card.id} value={card.id}>
                 {card.name} ({card.holder})
@@ -269,7 +279,7 @@ function ImportContent() {
       {uniqueHolders.length > 0 && (
         <div className="flex flex-col gap-2">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-            Map cardholders to cards
+            {t("import.mapHolders")}
           </p>
           {uniqueHolders.map((holder) => {
             const matches = cardsForHolder(holder);
@@ -288,7 +298,7 @@ function ImportContent() {
                   }
                   className="flex-1 rounded-md border border-white/10 bg-base px-2 py-1.5 text-sm text-white focus:border-white/30 focus:outline-none"
                 >
-                  <option value="">Select a card…</option>
+                  <option value="">{t("common.selectCard")}</option>
                   {(matches.length > 0 ? matches : state.cards).map((card) => (
                     <option key={card.id} value={card.id}>
                       {card.name} ({card.holder})
@@ -306,10 +316,18 @@ function ImportContent() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-white/5 text-left text-zinc-500">
-                <th className="px-2 py-1.5 font-medium">Description</th>
-                <th className="px-2 py-1.5 text-right font-medium">Total</th>
-                <th className="px-2 py-1.5 text-right font-medium">Cuotas</th>
-                <th className="px-2 py-1.5 text-right font-medium">Start</th>
+                <th className="px-2 py-1.5 font-medium">
+                  {t("common.description")}
+                </th>
+                <th className="px-2 py-1.5 text-right font-medium">
+                  {t("import.total")}
+                </th>
+                <th className="px-2 py-1.5 text-right font-medium">
+                  {t("import.cuotas")}
+                </th>
+                <th className="px-2 py-1.5 text-right font-medium">
+                  {t("common.start")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -329,7 +347,9 @@ function ImportContent() {
                     />
                   </td>
                   <td className="px-2 py-1 text-right text-zinc-400">
-                    {row.isOneTime ? "One-time" : `${row.installments}x`}
+                    {row.isOneTime
+                      ? t("common.oneTime")
+                      : `${row.installments}x`}
                   </td>
                   <td className="px-2 py-1 text-right text-zinc-400">
                     {formatMonthLabel(row.startMonth)}
@@ -340,7 +360,7 @@ function ImportContent() {
           </table>
           {rows.length > 20 && (
             <p className="px-2 py-1.5 text-center text-xs text-zinc-500">
-              …and {rows.length - 20} more
+              {t("import.andMore", { count: rows.length - 20 })}
             </p>
           )}
         </div>
@@ -358,7 +378,7 @@ function ImportContent() {
           onClick={close}
           className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="button"
@@ -367,8 +387,8 @@ function ImportContent() {
           className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
         >
           {importing
-            ? "Importing…"
-            : `Import ${readyCount} expense${readyCount === 1 ? "" : "s"}`}
+            ? t("import.importing")
+            : t("import.importCount", { count: readyCount })}
         </button>
       </div>
     </div>

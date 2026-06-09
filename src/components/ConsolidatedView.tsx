@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import {
   getMonthlyBreakdown,
@@ -22,6 +23,7 @@ type ConsolidatedViewProps = {
 };
 
 export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
+  const { t } = useTranslation();
   const { state, setBudgetAlert } = useApp();
   const { currency, budgetAlert } = state.settings;
   const currentMonth = getCurrentMonth();
@@ -103,7 +105,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-xs font-medium text-zinc-400">
-          Monthly budget alert:
+          {t("consolidated.budgetAlert")}
           <span className="flex items-center gap-1 rounded-md border border-white/10 bg-surface px-2 py-1.5 focus-within:border-white/30">
             <span className="text-zinc-500">{currency}</span>
             <input
@@ -126,7 +128,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
             onClick={onImport}
             className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
           >
-            Import XLSX
+            {t("consolidated.importXlsx")}
           </button>
           <button
             type="button"
@@ -138,7 +140,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
             }
             className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
           >
-            Export CSV
+            {t("consolidated.exportCsv")}
           </button>
         </div>
       </div>
@@ -152,7 +154,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">
               <th className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
-                Card
+                {t("consolidated.card")}
               </th>
               {monthsRange.map((month, i) => (
                 <th
@@ -202,7 +204,10 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                       onClick={(e) =>
                         toggleCellPopover(e, card.id, monthsRange[i])
                       }
-                      aria-label={`${card.name}, ${formatMonthLabel(monthsRange[i])}. Show details`}
+                      aria-label={t("consolidated.cellDetails", {
+                        card: card.name,
+                        month: formatMonthLabel(monthsRange[i]),
+                      })}
                       className={`flex w-full flex-col items-end rounded px-2 py-1.5 transition-colors hover:bg-white/5 ${
                         monthsRange[i] < currentMonth
                           ? "text-zinc-500"
@@ -221,7 +226,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
             ))}
             <tr className="bg-white/5">
               <td className="sticky left-0 z-10 border-r border-white/5 bg-[#25252e] px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300">
-                Total All Cards
+                {t("consolidated.totalAllCards")}
               </td>
               {grandTotals.map((total, i) => (
                 <td
@@ -248,8 +253,9 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
 
       {budgetAlert > 0 && isOverBudget.some(Boolean) && (
         <p className="text-xs text-amber-400/80">
-          Highlighted months exceed your {formatMoney(budgetAlert, currency)}{" "}
-          budget alert.
+          {t("consolidated.budgetExceeded", {
+            amount: formatMoney(budgetAlert, currency),
+          })}
         </p>
       )}
 
@@ -257,7 +263,10 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       {popover && popoverCard && (
         <div
           role="dialog"
-          aria-label={`Expenses for ${popoverCard.name} in ${formatMonthLabel(popover.month)}`}
+          aria-label={t("consolidated.popoverLabel", {
+            card: popoverCard.name,
+            month: formatMonthLabel(popover.month),
+          })}
           className="fixed z-30 w-72 -translate-x-1/2 rounded-lg border border-white/10 bg-surface p-3 shadow-xl"
           style={{ left: popover.x, top: popover.y }}
         >
@@ -272,7 +281,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
             <button
               type="button"
               onClick={() => setPopover(null)}
-              aria-label="Close"
+              aria-label={t("common.close")}
               className="rounded px-1.5 text-base leading-none text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
             >
               ×
@@ -280,7 +289,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
           </div>
             {popoverEntries.length === 0 ? (
               <p className="py-2 text-sm text-zinc-500">
-                No expenses this month.
+                {t("consolidated.noExpensesThisMonth")}
               </p>
             ) : (
               <ul className="max-h-48 overflow-y-auto">
@@ -294,7 +303,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                       className="flex items-center justify-between gap-3 border-b border-white/5 py-1.5 text-sm last:border-b-0"
                     >
                       <span className="truncate text-zinc-300">
-                        {expense?.description ?? "Unknown"}
+                        {expense?.description ?? t("common.unknown")}
                         {expense && expense.installments > 1 && (
                           <span className="ml-1 text-xs text-zinc-500">
                             ({monthDiff(expense.startMonth, popover.month) + 1}/

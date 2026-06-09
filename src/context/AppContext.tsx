@@ -8,6 +8,7 @@ import {
 } from "react";
 import type { Card, CardHolder, CurrencySymbol, Expense } from "../types";
 import { supabase } from "../lib/supabase";
+import i18n, { type AppLanguage } from "../i18n";
 import {
   applyTheme,
   DEFAULT_BACKGROUND,
@@ -17,6 +18,8 @@ import {
   MAX_TITLE_TEXT_LENGTH,
 } from "../utils/theme";
 import { useAuth } from "./AuthContext";
+
+export type { AppLanguage };
 
 const SETTINGS_KEY = "ccexpedition-settings";
 const LEGACY_STATE_KEY = "ccexpedition-state";
@@ -28,6 +31,7 @@ export type AppSettings = {
   backgroundColor: string;
   titleColor: string;
   titleText: string;
+  language: AppLanguage;
 };
 
 export type AppState = {
@@ -55,6 +59,7 @@ type AppContextValue = {
   setBackgroundColor: (color: string) => void;
   setTitleColor: (color: string) => void;
   setTitleText: (text: string) => void;
+  setLanguage: (language: AppLanguage) => void;
 };
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
@@ -66,6 +71,7 @@ function loadSettings(): AppSettings {
     backgroundColor: DEFAULT_BACKGROUND,
     titleColor: DEFAULT_TITLE_COLOR,
     titleText: DEFAULT_TITLE_TEXT,
+    language: i18n.language === "es" ? "es" : "en",
   };
   try {
     // Settings used to live inside the legacy localStorage state blob.
@@ -94,6 +100,10 @@ function loadSettings(): AppSettings {
         typeof parsed.titleText === "string"
           ? parsed.titleText.slice(0, MAX_TITLE_TEXT_LENGTH)
           : defaults.titleText,
+      language:
+        parsed.language === "en" || parsed.language === "es"
+          ? parsed.language
+          : defaults.language,
     };
   } catch {
     return defaults;
@@ -170,6 +180,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [settings.backgroundColor, settings.titleColor, settings.titleText]);
 
+  useEffect(() => {
+    if (i18n.language !== settings.language) {
+      void i18n.changeLanguage(settings.language);
+    }
+    document.documentElement.lang = settings.language;
+  }, [settings.language]);
+
   // (Re)load all data whenever the signed-in user changes.
   useEffect(() => {
     if (!userId) {
@@ -229,7 +246,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) {
       console.error("Failed to add card:", error);
-      return error?.message ?? "Failed to add card";
+      return error?.message ?? i18n.t("errors.failedAddCard");
     }
     setCards((prev) => [...prev, mapCard(data as CardRow)]);
     stamp();
@@ -241,15 +258,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     input: Partial<Pick<Card, "name" | "holder" | "color">>,
   ) {
     const current = cards.find((card) => card.id === id);
-    if (!current) return "Card not found";
+    if (!current) return i18n.t("errors.cardNotFound");
 
     const name = input.name !== undefined ? input.name.trim() : current.name;
     const holder =
       input.holder !== undefined ? input.holder.trim() : current.holder;
     const color = input.color ?? current.color;
 
-    if (!name) return "Card name is required";
-    if (!holder) return "Cardholder name is required";
+    if (!name) return i18n.t("errors.cardNameRequired");
+    if (!holder) return i18n.t("errors.holderRequired");
 
     const { data, error } = await supabase
       .from("cards")
@@ -260,7 +277,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) {
       console.error("Failed to update card:", error);
-      return error?.message ?? "Failed to update card";
+      return error?.message ?? i18n.t("errors.failedUpdateCard");
     }
 
     setCards((prev) =>
@@ -302,7 +319,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) {
       console.error("Failed to add expense:", error);
-      return error?.message ?? "Failed to add expense";
+      return error?.message ?? i18n.t("errors.failedAddExpense");
     }
     setExpenses((prev) => [...prev, mapExpense(data as ExpenseRow)]);
     stamp();
@@ -331,7 +348,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) {
       console.error("Failed to import expenses:", error);
-      return error?.message ?? "Failed to import expenses";
+      return error?.message ?? i18n.t("errors.failedImportExpenses");
     }
     setExpenses((prev) => [
       ...prev,
@@ -377,6 +394,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }
 
+  function setLanguage(language: AppLanguage) {
+    setSettings((prev) => ({ ...prev, language }));
+  }
+
   const state: AppState = { cards, expenses, settings, lastUpdated, loading };
 
   return (
@@ -394,6 +415,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setBackgroundColor,
         setTitleColor,
         setTitleText,
+        setLanguage,
       }}
     >
       {children}
