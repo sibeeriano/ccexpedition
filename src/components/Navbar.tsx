@@ -6,9 +6,10 @@ const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
 
 type NavbarProps = {
   onAddCard: () => void;
+  onOpenSettings: () => void;
 };
 
-export function Navbar({ onAddCard }: NavbarProps) {
+export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
   const { state, setCurrency } = useApp();
   const { session, signOut } = useAuth();
 
@@ -43,6 +44,13 @@ export function Navbar({ onAddCard }: NavbarProps) {
             className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 active:bg-white/20"
           >
             + Add Card
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="rounded-md px-2 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
+          >
+            Settings
           </button>
           <button
             type="button"

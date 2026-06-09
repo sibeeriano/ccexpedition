@@ -186,9 +186,9 @@ export function ConsolidatedView() {
                 ))}
               </tr>
             ))}
-            <tr>
-              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                Grand Total
+            <tr className="bg-white/5">
+              <td className="sticky left-0 z-10 border-r border-white/5 bg-[#25252e] px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300">
+                Total All Cards
               </td>
               {grandTotals.map((total, i) => (
                 <td

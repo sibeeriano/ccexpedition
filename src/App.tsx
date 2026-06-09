@@ -5,6 +5,7 @@ import { CardDetail } from "./components/CardDetail";
 import { ConsolidatedView } from "./components/ConsolidatedView";
 import { AddCardModal } from "./components/AddCardModal";
 import { AddExpenseModal } from "./components/AddExpenseModal";
+import { SettingsModal } from "./components/SettingsModal";
 import { Login } from "./components/Login";
 import { useApp } from "./context/AppContext";
 import { useAuth } from "./context/AuthContext";
@@ -17,6 +18,7 @@ function App() {
   const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Falls back to consolidated view if the selected card was deleted.
   const selectedCard =
@@ -38,7 +40,10 @@ function App() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <Navbar onAddCard={() => setIsAddCardOpen(true)} />
+      <Navbar
+        onAddCard={() => setIsAddCardOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-5">
         {state.cards.length === 0 ? (
@@ -81,6 +86,9 @@ function App() {
       </footer>
 
       {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
+      {isSettingsOpen && (
+        <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
       {isAddExpenseOpen && selectedCard && (
         <AddExpenseModal
           card={selectedCard}
