@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown } from "../utils/expenses";
-import { getMonthsRange } from "../utils/months";
+import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
+
+const START_MONTH_LOOKBACK = 12; // how many past months can be picked
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { Modal, useModalClose } from "./Modal";
 
@@ -15,11 +17,7 @@ type AddExpenseModalProps = {
 
 export function AddExpenseModal({ card, onClose }: AddExpenseModalProps) {
   return (
-    <Modal
-      title={`Add Expense — ${card.name}`}
-      onClose={onClose}
-      closeOnBackdropClick={false}
-    >
+    <Modal title={`Add Expense — ${card.name}`} onClose={onClose}>
       <ExpenseForm card={card} />
     </Modal>
   );
@@ -36,11 +34,20 @@ function ExpenseForm({ card }: { card: Card }) {
   const [amountInput, setAmountInput] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("one-time");
   const [installmentsInput, setInstallmentsInput] = useState("3");
-  const monthsRange = getMonthsRange(state.expenses);
-  const [startMonth, setStartMonth] = useState(() => {
-    const current = getCurrentMonth();
-    return monthsRange.includes(current) ? current : monthsRange[0];
-  });
+  // Selectable start months: from 12 months back through the end of the
+  // visible range, so older dragged-along expenses can be added too.
+  const currentMonth = getCurrentMonth();
+  const visibleRange = getMonthsRange(state.expenses);
+  const firstOption = addMonths(currentMonth, -START_MONTH_LOOKBACK);
+  const lastOption =
+    visibleRange[visibleRange.length - 1] > currentMonth
+      ? visibleRange[visibleRange.length - 1]
+      : currentMonth;
+  const monthOptions = Array.from(
+    { length: monthDiff(firstOption, lastOption) + 1 },
+    (_, i) => addMonths(firstOption, i),
+  );
+  const [startMonth, setStartMonth] = useState(currentMonth);
 
   const totalAmount = Number.parseFloat(amountInput);
   const installments =
@@ -200,9 +207,10 @@ function ExpenseForm({ card }: { card: Card }) {
           onChange={(e) => setStartMonth(e.target.value)}
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
         >
-          {monthsRange.map((month) => (
+          {monthOptions.map((month) => (
             <option key={month} value={month}>
               {formatMonthLabel(month)}
+              {month < currentMonth ? " (past)" : ""}
             </option>
           ))}
         </select>

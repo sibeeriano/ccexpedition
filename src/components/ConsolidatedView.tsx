@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown, getMonthlyTotalByCard } from "../utils/expenses";
 import { getMonthsRange, monthDiff } from "../utils/months";
@@ -28,6 +28,14 @@ export function ConsolidatedView() {
   }, [popover]);
 
   const monthsRange = getMonthsRange(state.expenses);
+
+  // Keep the current month centered in the horizontally scrolling table.
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    tableWrapRef.current
+      ?.querySelector<HTMLElement>(`th[data-month="${currentMonth}"]`)
+      ?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [currentMonth]);
 
   const rows = state.cards.map((card) => ({
     card,
@@ -110,20 +118,25 @@ export function ConsolidatedView() {
       </div>
 
       {/* Consolidated table */}
-      <div className="overflow-x-auto rounded-lg bg-surface">
+      <div ref={tableWrapRef} className="overflow-x-auto rounded-lg bg-surface">
         <table className="w-full min-w-160 text-sm">
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">
-              <th className="px-3.5 py-2.5 text-left font-medium">Card</th>
+              <th className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
+                Card
+              </th>
               {monthsRange.map((month, i) => (
                 <th
                   key={month}
+                  data-month={month}
                   className={`px-3.5 py-2.5 text-right font-medium whitespace-nowrap ${
                     isOverBudget[i]
                       ? "bg-amber-500/5 text-amber-400"
                       : month === currentMonth
                         ? "text-zinc-200"
-                        : ""
+                        : month < currentMonth
+                          ? "text-zinc-600"
+                          : ""
                   }`}
                 >
                   {formatMonthLabel(month)}
@@ -134,7 +147,7 @@ export function ConsolidatedView() {
           <tbody>
             {rows.map(({ card, totals }) => (
               <tr key={card.id} className="border-b border-white/5">
-                <td className="px-3.5 py-2.5">
+                <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5">
                   <span className="flex items-center gap-1.5">
                     <span
                       className="size-2 shrink-0 rounded-full"
@@ -161,7 +174,11 @@ export function ConsolidatedView() {
                         toggleCellPopover(e, card.id, monthsRange[i])
                       }
                       aria-label={`${card.name}, ${formatMonthLabel(monthsRange[i])}: ${formatMoney(total, currency)}. Show details`}
-                      className="w-full rounded px-2 py-1.5 text-right font-mono whitespace-nowrap text-zinc-100 transition-colors hover:bg-white/5"
+                      className={`w-full rounded px-2 py-1.5 text-right font-mono whitespace-nowrap transition-colors hover:bg-white/5 ${
+                        monthsRange[i] < currentMonth
+                          ? "text-zinc-500"
+                          : "text-zinc-100"
+                      }`}
                     >
                       {formatMoney(total, currency)}
                     </button>
@@ -170,7 +187,7 @@ export function ConsolidatedView() {
               </tr>
             ))}
             <tr>
-              <td className="px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
                 Grand Total
               </td>
               {grandTotals.map((total, i) => (
@@ -179,7 +196,9 @@ export function ConsolidatedView() {
                   className={`px-3.5 py-2.5 text-right font-mono font-semibold whitespace-nowrap ${
                     isOverBudget[i]
                       ? "bg-amber-500/10 text-amber-400"
-                      : "text-white"
+                      : monthsRange[i] < currentMonth
+                        ? "text-zinc-500"
+                        : "text-white"
                   }`}
                 >
                   {formatMoney(total, currency)}
@@ -199,24 +218,29 @@ export function ConsolidatedView() {
 
       {/* Cell detail popover */}
       {popover && popoverCard && (
-        <>
-          <div
-            className="fixed inset-0 z-20"
-            onClick={() => setPopover(null)}
-          />
-          <div
-            role="dialog"
-            aria-label={`Expenses for ${popoverCard.name} in ${formatMonthLabel(popover.month)}`}
-            className="fixed z-30 w-72 -translate-x-1/2 rounded-lg border border-white/10 bg-surface p-3 shadow-xl"
-            style={{ left: popover.x, top: popover.y }}
-          >
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+        <div
+          role="dialog"
+          aria-label={`Expenses for ${popoverCard.name} in ${formatMonthLabel(popover.month)}`}
+          className="fixed z-30 w-72 -translate-x-1/2 rounded-lg border border-white/10 bg-surface p-3 shadow-xl"
+          style={{ left: popover.x, top: popover.y }}
+        >
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
               <span
                 className="size-2 rounded-full"
                 style={{ backgroundColor: popoverCard.color }}
               />
               {popoverCard.name} — {formatMonthLabel(popover.month)}
             </p>
+            <button
+              type="button"
+              onClick={() => setPopover(null)}
+              aria-label="Close"
+              className="rounded px-1.5 text-base leading-none text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
+            >
+              ×
+            </button>
+          </div>
             {popoverEntries.length === 0 ? (
               <p className="py-2 text-sm text-zinc-500">
                 No expenses this month.
@@ -249,8 +273,7 @@ export function ConsolidatedView() {
                 })}
               </ul>
             )}
-          </div>
-        </>
+        </div>
       )}
     </section>
   );

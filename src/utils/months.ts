@@ -22,17 +22,20 @@ export function monthDiff(from: string, to: string): number {
 }
 
 /**
- * The list of visible months. Starts at RANGE_START_MONTH and extends
- * until the last installment of any expense (minimum RANGE_MIN_MONTHS).
+ * The list of visible months. Extends left to the earliest expense start
+ * (past months render grayed out) and right until the last installment,
+ * always covering at least RANGE_START_MONTH + RANGE_MIN_MONTHS.
  */
 export function getMonthsRange(expenses: Expense[]): string[] {
-  let count = RANGE_MIN_MONTHS;
+  let start = RANGE_START_MONTH;
   for (const expense of expenses) {
-    const span =
-      monthDiff(RANGE_START_MONTH, expense.startMonth) + expense.installments;
+    if (expense.startMonth < start) start = expense.startMonth;
+  }
+
+  let count = monthDiff(start, RANGE_START_MONTH) + RANGE_MIN_MONTHS;
+  for (const expense of expenses) {
+    const span = monthDiff(start, expense.startMonth) + expense.installments;
     count = Math.max(count, span);
   }
-  return Array.from({ length: count }, (_, i) =>
-    addMonths(RANGE_START_MONTH, i),
-  );
+  return Array.from({ length: count }, (_, i) => addMonths(start, i));
 }

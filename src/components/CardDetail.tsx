@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown, getMonthlyTotalByCard } from "../utils/expenses";
@@ -20,6 +20,14 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
   );
   const expenses = state.expenses.filter((e) => e.cardId === card.id);
 
+  // Keep the current month centered in the months strip.
+  const monthsBarRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    monthsBarRef.current
+      ?.querySelector<HTMLElement>(`[data-month="${currentMonth}"]`)
+      ?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [card.id, currentMonth]);
+
   // Only the installments that actually fall in the selected month.
   const monthEntries =
     getMonthlyBreakdown(expenses).get(selectedMonth) ?? [];
@@ -40,21 +48,23 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
       </div>
 
       {/* Monthly summary bar: click a month to see its expenses below */}
-      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+      <div ref={monthsBarRef} className="flex gap-1.5 overflow-x-auto pb-1">
         {monthsRange.map((month) => {
           const isSelected = month === selectedMonth;
           const isCurrent = month === currentMonth;
+          const isPast = month < currentMonth;
           const total = getMonthlyTotalByCard(card.id, month, state.expenses);
 
           return (
             <button
               key={month}
+              data-month={month}
               type="button"
               onClick={() => setSelectedMonth(month)}
               aria-pressed={isSelected}
-              className={`rounded-md px-2.5 py-2 text-left transition-colors ${
+              className={`min-w-24 shrink-0 rounded-md px-2.5 py-2 text-left transition-colors ${
                 isSelected ? "bg-surface" : "bg-surface/50 hover:bg-surface/80"
-              }`}
+              } ${isPast && !isSelected ? "opacity-50" : ""}`}
               style={
                 isSelected
                   ? { boxShadow: `inset 0 0 0 1px ${card.color}` }
@@ -65,12 +75,20 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                 className="text-[11px] font-medium uppercase tracking-wide"
                 style={{ color: isSelected ? card.color : undefined }}
               >
-                <span className={isSelected ? "" : "text-zinc-500"}>
+                <span
+                  className={
+                    isSelected ? "" : isPast ? "text-zinc-600" : "text-zinc-500"
+                  }
+                >
                   {formatMonthLabel(month)}
                   {isCurrent && " •"}
                 </span>
               </p>
-              <p className="mt-0.5 font-mono text-sm text-zinc-100">
+              <p
+                className={`mt-0.5 font-mono text-sm ${
+                  isPast && !isSelected ? "text-zinc-500" : "text-zinc-100"
+                }`}
+              >
                 {formatMoney(total, currency)}
               </p>
             </button>

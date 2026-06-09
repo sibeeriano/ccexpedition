@@ -22,7 +22,7 @@ export function useModalClose(): () => void {
 type ModalProps = {
   title: string;
   onClose: () => void;
-  /** Set to false to keep the modal open when clicking the backdrop. */
+  /** Set to true to close the modal when clicking the backdrop. */
   closeOnBackdropClick?: boolean;
   children: ReactNode;
 };
@@ -35,7 +35,7 @@ type ModalProps = {
 export function Modal({
   title,
   onClose,
-  closeOnBackdropClick = true,
+  closeOnBackdropClick = false,
   children,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
