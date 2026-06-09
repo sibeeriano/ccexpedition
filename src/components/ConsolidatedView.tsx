@@ -99,7 +99,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       : [];
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex w-full min-w-0 flex-col gap-4">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-xs font-medium text-zinc-400">
@@ -144,7 +144,10 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       </div>
 
       {/* Consolidated table */}
-      <div ref={tableWrapRef} className="overflow-x-auto rounded-lg bg-surface">
+      <div
+        ref={tableWrapRef}
+        className="w-full min-w-0 overflow-x-auto rounded-lg bg-surface"
+      >
         <table className="w-full min-w-160 text-sm">
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">

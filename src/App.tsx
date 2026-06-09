@@ -49,7 +49,7 @@ function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-5">
+      <main className="mx-auto flex w-full min-w-0 max-w-5xl flex-1 flex-col gap-5 px-4 py-5">
         {state.cards.length === 0 ? (
           <div className="rounded-lg border border-dashed border-white/10 px-4 py-16 text-center">
             <p className="text-sm font-medium text-zinc-300">No cards yet</p>
