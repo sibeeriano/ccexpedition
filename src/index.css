@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-base: #0f0f13;
+  --color-surface: #1a1a22;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  @apply bg-base text-zinc-200 font-sans antialiased;
+}
+
+/* Slim, dark scrollbars that match the theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.15) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.25);
+}
+
+/* Modal open/close animations (subtle fade + scale) */
+dialog[open] {
+  animation: modal-in 150ms ease-out;
+}
+dialog[open]::backdrop {
+  animation: backdrop-in 150ms ease-out;
+}
+dialog.modal-closing {
+  animation: modal-out 140ms ease-in forwards;
+}
+dialog.modal-closing::backdrop {
+  animation: backdrop-out 140ms ease-in forwards;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes modal-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
