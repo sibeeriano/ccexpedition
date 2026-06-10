@@ -33,7 +33,10 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
 
   return (
-    <div className="flex w-full min-w-0 gap-2 overflow-x-auto pb-1">
+    <div
+      data-tour="card-list"
+      className="flex w-full min-w-0 gap-2 overflow-x-auto pb-1"
+    >
       <button
         type="button"
         onClick={() => onSelect(ALL_CARDS_VIEW)}

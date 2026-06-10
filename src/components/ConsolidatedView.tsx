@@ -103,8 +103,14 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+      <div
+        data-tour="consolidated-toolbar"
+        className="flex flex-wrap items-center justify-between gap-3"
+      >
+        <label
+          data-tour="budget-alert"
+          className="flex items-center gap-2 text-xs font-medium text-zinc-400"
+        >
           {t("consolidated.budgetAlert")}
           <span className="flex items-center gap-1 rounded-md border border-white/10 bg-surface px-2 py-1.5 focus-within:border-white/30">
             <span className="text-zinc-500">{currency}</span>
@@ -125,6 +131,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
         <div className="flex gap-2">
           <button
             type="button"
+            data-tour="import-xlsx"
             onClick={onImport}
             className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
           >
@@ -148,6 +155,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       {/* Consolidated table */}
       <div
         ref={tableWrapRef}
+        data-tour="consolidated-table"
         className="w-full min-w-0 overflow-x-auto rounded-lg bg-surface"
       >
         <table className="w-full min-w-160 text-sm">

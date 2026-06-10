@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useOnboarding } from "./hooks/useOnboarding";
 import { Navbar } from "./components/Navbar";
 import { CardList, ALL_CARDS_VIEW } from "./components/CardList";
 import { CardDetail } from "./components/CardDetail";
@@ -28,6 +29,11 @@ function App() {
     selectedView === ALL_CARDS_VIEW
       ? null
       : (state.cards.find((card) => card.id === selectedView) ?? null);
+
+  useOnboarding({
+    userId: session?.user.id,
+    ready: !authLoading && !state.loading && Boolean(session),
+  });
 
   if (authLoading || state.loading) {
     return (
@@ -60,6 +66,7 @@ function App() {
             </p>
             <button
               type="button"
+              data-tour="empty-add-card"
               onClick={() => setIsAddCardOpen(true)}
               className="mt-4 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
             >

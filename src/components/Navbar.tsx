@@ -34,6 +34,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             {session?.user.email}
           </span>
           <select
+            data-tour="currency"
             aria-label={t("nav.currency")}
             value={state.settings.currency}
             onChange={(e) => setCurrency(e.target.value as CurrencySymbol)}
@@ -47,6 +48,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
           </select>
           <button
             type="button"
+            data-tour="add-card"
             onClick={onAddCard}
             className="shrink-0 rounded-md bg-white/10 px-2 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 active:bg-white/20 sm:px-3"
           >
@@ -55,6 +57,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
           </button>
           <button
             type="button"
+            data-tour="settings"
             onClick={onOpenSettings}
             aria-label={t("nav.settings")}
             className="shrink-0 rounded-md px-2 py-1.5 text-sm text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"

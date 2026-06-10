@@ -34,6 +34,56 @@
     "noCardsHint": "Agregá tu primera tarjeta de crédito para empezar a seguir compras y cuotas mes a mes.",
     "lastUpdated": "Última actualización: {{date}}"
   },
+  "onboarding": {
+    "next": "Siguiente",
+    "prev": "Anterior",
+    "done": "Listo",
+    "progress": "{{current}} de {{total}}",
+    "welcome": {
+      "title": "¡Bienvenido a ccExpedition!",
+      "body": "Te mostramos en un minuto cómo seguir tus gastos de tarjeta mes a mes."
+    },
+    "cardList": {
+      "title": "Tus tarjetas",
+      "body": "Elegí Todas las tarjetas para ver el consolidado, o una tarjeta para ver sus gastos en detalle."
+    },
+    "consolidated": {
+      "title": "Presupuesto máximo",
+      "body": "Definí un tope mensual y los meses que lo superen se resaltan en la grilla."
+    },
+    "table": {
+      "title": "Cuotas por mes",
+      "body": "La grilla muestra cuánto debés en cada tarjeta mes a mes. Tocá una celda para ver el detalle."
+    },
+    "import": {
+      "title": "Importar Excel",
+      "body": "Subí el resumen mensual del banco (.xlsx) para cargar gastos automáticamente."
+    },
+    "addCard": {
+      "title": "Agregar tarjeta",
+      "body": "Creá una tarjeta con nombre, titular y color para organizar tus gastos."
+    },
+    "settings": {
+      "title": "Ajustes",
+      "body": "Personalizá colores, idioma, alertas y editá el nombre de tus tarjetas."
+    },
+    "monthBar": {
+      "title": "Meses",
+      "body": "Navegá entre meses para ver qué gastos impactan en cada período."
+    },
+    "addExpense": {
+      "title": "Agregar gasto",
+      "body": "Cargá compras en cuotas, pagos únicos o suscripciones con cargo mensual."
+    },
+    "cardDetail": {
+      "title": "Detalle por tarjeta",
+      "body": "Elegí una tarjeta arriba para ver sus gastos, editar suscripciones o agregar compras nuevas."
+    },
+    "empty": {
+      "title": "Empezá acá",
+      "body": "Agregá tu primera tarjeta para comenzar a registrar gastos."
+    }
+  },
   "login": {
     "signInSubtitle": "Iniciá sesión en tu cuenta",
     "signUpSubtitle": "Creá una cuenta nueva",
@@ -134,6 +184,8 @@
     "title": "Ajustes",
     "personalize": "Personalizar",
     "cards": "Tarjetas",
+    "tutorial": "Tutorial",
+    "repeatTutorial": "Repetir tutorial",
     "language": "Idioma",
     "languageEn": "English",
     "languageEs": "Español",

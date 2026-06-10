@@ -13,7 +13,9 @@ import {
   TITLE_PRESETS,
   type ColorPreset,
 } from "../utils/theme";
-import { Modal } from "./Modal";
+import { useAuth } from "../context/AuthContext";
+import { replayOnboardingTour } from "../utils/onboarding";
+import { Modal, useModalClose } from "./Modal";
 
 type SettingsModalProps = {
   onClose: () => void;
@@ -156,6 +158,8 @@ function ColorPickerField({
 
 function SettingsContent() {
   const { t } = useTranslation();
+  const close = useModalClose();
+  const { session } = useAuth();
   const {
     state,
     deleteCard,
@@ -295,6 +299,15 @@ function SettingsContent() {
 
   const { backgroundColor, titleColor, titleText, language } = state.settings;
   const displayTitle = getDisplayTitle(titleText);
+
+  function handleRepeatTutorial() {
+    const userId = session?.user.id;
+    if (!userId) return;
+    close();
+    window.setTimeout(() => {
+      replayOnboardingTour(t, userId);
+    }, 200);
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -532,6 +545,16 @@ function SettingsContent() {
             </ul>
           </div>
         )}
+      </SettingsDropdown>
+
+      <SettingsDropdown title={t("settings.tutorial")}>
+        <button
+          type="button"
+          onClick={handleRepeatTutorial}
+          className="w-full rounded-md bg-white/10 px-3 py-2 text-left text-sm font-medium text-white transition-colors hover:bg-white/15"
+        >
+          {t("settings.repeatTutorial")}
+        </button>
       </SettingsDropdown>
     </div>
   );

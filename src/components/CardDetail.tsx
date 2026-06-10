@@ -68,6 +68,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
       {/* Monthly summary bar: click a month to see its expenses below */}
       <div
         ref={monthsBarRef}
+        data-tour="month-bar"
         className="flex w-full min-w-0 gap-1.5 overflow-x-auto pb-1"
       >
         {monthsRange.map((month) => {
@@ -298,6 +299,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
 
       <button
         type="button"
+        data-tour="add-expense"
         onClick={onAddExpense}
         className="self-start rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: card.color }}

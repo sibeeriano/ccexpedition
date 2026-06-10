@@ -34,6 +34,56 @@
     "noCardsHint": "Add your first credit card to start tracking purchases and installments month by month.",
     "lastUpdated": "Last updated: {{date}}"
   },
+  "onboarding": {
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Done",
+    "progress": "{{current}} of {{total}}",
+    "welcome": {
+      "title": "Welcome to ccExpedition!",
+      "body": "Here is a quick tour of how to track your credit card spending month by month."
+    },
+    "cardList": {
+      "title": "Your cards",
+      "body": "Pick All Cards for the consolidated view, or a single card to see its expenses in detail."
+    },
+    "consolidated": {
+      "title": "Maximum budget",
+      "body": "Set a monthly cap and months that exceed it are highlighted in the grid."
+    },
+    "table": {
+      "title": "Installments by month",
+      "body": "The grid shows what you owe on each card per month. Click a cell to see the breakdown."
+    },
+    "import": {
+      "title": "Import Excel",
+      "body": "Upload your monthly bank statement (.xlsx) to add expenses automatically."
+    },
+    "addCard": {
+      "title": "Add card",
+      "body": "Create a card with a name, holder, and color to organize your spending."
+    },
+    "settings": {
+      "title": "Settings",
+      "body": "Customize colors, language, budget alerts, and edit your card names."
+    },
+    "monthBar": {
+      "title": "Months",
+      "body": "Browse months to see which expenses hit in each billing period."
+    },
+    "addExpense": {
+      "title": "Add expense",
+      "body": "Add installment purchases, one-time charges, or monthly subscriptions."
+    },
+    "cardDetail": {
+      "title": "Card detail",
+      "body": "Select a card above to view its expenses, edit subscriptions, or add new purchases."
+    },
+    "empty": {
+      "title": "Start here",
+      "body": "Add your first card to start tracking expenses."
+    }
+  },
   "login": {
     "signInSubtitle": "Sign in to your account",
     "signUpSubtitle": "Create a new account",
@@ -134,6 +184,8 @@
     "title": "Settings",
     "personalize": "Personalize",
     "cards": "Cards",
+    "tutorial": "Tutorial",
+    "repeatTutorial": "Repeat tutorial",
     "language": "Language",
     "languageEn": "English",
     "languageEs": "Español",
