@@ -1,6 +1,8 @@
 export const DEFAULT_BACKGROUND = "#0f0f13";
 export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_TITLE_TEXT = "ccExpedition - Expense Tracker";
+/** Fixed browser tab title — not user-editable. */
+export const PAGE_TITLE = "ccExpedition";
 export const MAX_TITLE_TEXT_LENGTH = 80;
 
 export type ColorPreset = { id: string; color: string };
@@ -71,7 +73,6 @@ export function deriveSurfaceColor(baseHex: string): string {
 export function applyTheme({
   backgroundColor,
   titleColor,
-  titleText,
 }: ThemeSettings): void {
   const base = isValidHexColor(backgroundColor)
     ? backgroundColor
@@ -82,7 +83,7 @@ export function applyTheme({
   document.documentElement.style.setProperty("--color-base", base);
   document.documentElement.style.setProperty("--color-surface", surface);
   document.documentElement.style.setProperty("--color-title", title);
-  document.title = getDisplayTitle(titleText);
+  document.title = PAGE_TITLE;
   document
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute("content", base);

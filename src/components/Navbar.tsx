@@ -7,6 +7,11 @@ import { getDisplayTitle } from "../utils/theme";
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
 
+function emailWithoutAt(email: string): string {
+  const at = email.indexOf("@");
+  return at === -1 ? email : email.slice(0, at);
+}
+
 type NavbarProps = {
   onAddCard: () => void;
   onOpenSettings: () => void;
@@ -56,25 +61,35 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
     void signOut();
   }
 
+  const displayTitle = getDisplayTitle(state.settings.titleText);
+  const userEmail = session?.user.email ?? "";
+  const userLabel = userEmail ? emailWithoutAt(userEmail) : "";
+
   return (
-    <header className="sticky top-0 z-10 border-b border-white/5 bg-surface/95 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full min-w-0 max-w-5xl items-center justify-between gap-2 px-4 sm:gap-3">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-surface/95 backdrop-blur">
+      <div className="mx-auto grid h-14 w-full min-w-0 max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:gap-3">
+        {userLabel ? (
+          <span
+            className="min-w-0 truncate text-xs text-zinc-500"
+            title={userEmail}
+          >
+            {userLabel}
+          </span>
+        ) : (
+          <div className="min-w-0" aria-hidden />
+        )}
+
         <h1
-          className="min-w-0 truncate text-sm font-semibold tracking-tight sm:text-base"
+          className="max-w-[min(72vw,24rem)] truncate text-center text-sm font-semibold tracking-tight sm:max-w-md sm:text-base"
           style={{ color: "var(--color-title)" }}
-          title={getDisplayTitle(state.settings.titleText)}
+          title={displayTitle}
         >
-          {getDisplayTitle(state.settings.titleText)}
+          {displayTitle}
         </h1>
 
+        <div className="flex min-w-0 items-center justify-end gap-2">
         {/* Desktop */}
         <div className="hidden min-w-0 items-center gap-2 sm:flex">
-          <span
-            className="max-w-44 truncate text-xs text-zinc-500"
-            title={session?.user.email}
-          >
-            {session?.user.email}
-          </span>
           <select
             data-tour="currency"
             aria-label={t("nav.currency")}
@@ -122,22 +137,29 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             aria-controls={menuId}
             aria-label={t("nav.menu")}
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex size-9 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+            className="relative z-[60] flex size-9 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
           >
             <MenuIcon open={menuOpen} />
           </button>
 
           {menuOpen && (
-            <div
-              id={menuId}
-              className="absolute right-0 top-full z-20 mt-1.5 w-56 rounded-lg border border-white/10 bg-surface py-2 shadow-xl"
-            >
-              {session?.user.email && (
+            <>
+              <button
+                type="button"
+                aria-label={t("common.close")}
+                className="fixed inset-0 z-40 bg-black/25"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div
+                id={menuId}
+                className="fixed right-4 top-14 z-50 w-56 rounded-lg border border-white/10 bg-surface py-2 shadow-xl"
+              >
+              {userLabel && (
                 <p
                   className="truncate border-b border-white/5 px-3.5 py-2 text-xs text-zinc-500"
-                  title={session.user.email}
+                  title={userEmail}
                 >
-                  {session.user.email}
+                  {userLabel}
                 </p>
               )}
 
@@ -192,8 +214,10 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
                   <span>{t("nav.signOut")}</span>
                 </button>
               </div>
-            </div>
+              </div>
+            </>
           )}
+        </div>
         </div>
       </div>
     </header>

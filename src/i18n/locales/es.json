@@ -86,6 +86,9 @@
     }
   },
   "login": {
+    "brandName": "ccExpedition",
+    "language": "Idioma",
+    "slogan": "Explorá y controlá tus gastos",
     "signInSubtitle": "Iniciá sesión en tu cuenta",
     "signUpSubtitle": "Creá una cuenta nueva",
     "email": "Email",
