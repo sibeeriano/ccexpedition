@@ -138,6 +138,7 @@ function ImportContent() {
         totalAmountUsd: r.totalAmountUsd,
         installments: r.installments,
         startMonth: r.startMonth,
+        isMonthlyCharge: false,
       }));
 
     const errorMessage = await addExpenses(expenses);

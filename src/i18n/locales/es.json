@@ -62,7 +62,15 @@
     "totalUsd": "Total USD",
     "installment": "Cuota",
     "deleteExpense": "Eliminar {{description}}",
+    "editExpense": "Editar {{description}}",
     "addExpense": "+ Agregar gasto"
+  },
+  "editExpense": {
+    "title": "Editar suscripción — {{description}}",
+    "hint": "Podés acortar la suscripción eligiendo el último mes de cobro.",
+    "endMonth": "Último mes de cobro",
+    "endMonthHint": "Para dar de baja antes, elegí el último mes que se cobrará.",
+    "submit": "Guardar cambios"
   },
   "consolidated": {
     "budgetAlert": "Alerta de presupuesto mensual:",
@@ -167,6 +175,11 @@
     "failedAddCard": "No se pudo agregar la tarjeta",
     "failedUpdateCard": "No se pudo actualizar la tarjeta",
     "failedAddExpense": "No se pudo agregar el gasto",
-    "failedImportExpenses": "No se pudieron importar los gastos"
+    "failedUpdateExpense": "No se pudo actualizar el gasto",
+    "failedImportExpenses": "No se pudieron importar los gastos",
+    "expenseNotFound": "Gasto no encontrado",
+    "descriptionRequired": "La descripción es obligatoria",
+    "amountRequired": "Ingresá al menos un monto",
+    "invalidInstallments": "La cantidad de cuotas no es válida"
   }
 }

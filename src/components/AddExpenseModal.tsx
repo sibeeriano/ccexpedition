@@ -86,6 +86,7 @@ function ExpenseForm({ card }: { card: Card }) {
             totalAmountUsd,
             installments,
             startMonth,
+            isMonthlyCharge: isSubscription,
           },
         ]).entries(),
       ].map(([month, entries]) => ({
@@ -114,6 +115,7 @@ function ExpenseForm({ card }: { card: Card }) {
       totalAmountUsd,
       installments,
       startMonth,
+      isMonthlyCharge: isSubscription,
     });
     if (errorMessage) {
       setError(errorMessage);

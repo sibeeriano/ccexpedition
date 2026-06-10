@@ -19,6 +19,7 @@ create table public.expenses (
   total_amount_usd numeric not null default 0 check (total_amount_usd >= 0),
   installments integer not null default 1 check (installments between 1 and 48),
   start_month text not null check (start_month ~ '^\d{4}-\d{2}$'),
+  is_monthly_charge boolean not null default false,
   constraint expenses_has_amount check (total_amount > 0 or total_amount_usd > 0),
   created_at timestamptz not null default now()
 );

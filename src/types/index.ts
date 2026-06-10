@@ -17,6 +17,7 @@ export type Expense = {
   totalAmountUsd: number; // USD (0 if ARS-only)
   installments: number; // 1 = one-time payment
   startMonth: string; // format: "YYYY-MM" e.g. "2026-06"
+  isMonthlyCharge: boolean; // subscription created via monthly-charge checkbox
 };
 
 // Derived: spread each expense across N months starting from startMonth

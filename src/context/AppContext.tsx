@@ -53,6 +53,19 @@ type AppContextValue = {
   deleteCard: (id: string) => Promise<string | null>;
   addExpense: (input: Omit<Expense, "id">) => Promise<string | null>;
   addExpenses: (inputs: Omit<Expense, "id">[]) => Promise<string | null>;
+  updateExpense: (
+    id: string,
+    input: Partial<
+      Pick<
+        Expense,
+        | "description"
+        | "totalAmount"
+        | "totalAmountUsd"
+        | "installments"
+        | "startMonth"
+      >
+    >,
+  ) => Promise<string | null>;
   deleteExpense: (id: string) => Promise<string | null>;
   setCurrency: (currency: CurrencySymbol) => void;
   setBudgetAlert: (amount: number) => void;
@@ -125,6 +138,7 @@ type ExpenseRow = {
   total_amount_usd?: number | string;
   installments: number;
   start_month: string;
+  is_monthly_charge?: boolean;
 };
 
 function mapCard(row: CardRow): Card {
@@ -145,6 +159,7 @@ function mapExpense(row: ExpenseRow): Expense {
     totalAmountUsd: Number(row.total_amount_usd ?? 0),
     installments: row.installments,
     startMonth: row.start_month,
+    isMonthlyCharge: Boolean(row.is_monthly_charge),
   };
 }
 
@@ -206,18 +221,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       supabase
         .from("expenses")
         .select(
-          "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
+          "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
         )
         .order("created_at"),
     ]).then(([cardsResult, expensesResult]) => {
       if (cancelled) return;
-      if (cardsResult.error || expensesResult.error) {
-        console.error(
-          "Failed to load data:",
-          cardsResult.error ?? expensesResult.error,
-        );
+      if (cardsResult.error) {
+        console.error("Failed to load cards:", cardsResult.error);
       } else {
         setCards((cardsResult.data as CardRow[]).map(mapCard));
+      }
+      if (expensesResult.error) {
+        console.error("Failed to load expenses:", expensesResult.error);
+      } else {
         setExpenses((expensesResult.data as ExpenseRow[]).map(mapExpense));
       }
       setLoading(false);
@@ -310,10 +326,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         total_amount_usd: input.totalAmountUsd,
         installments: input.installments,
         start_month: input.startMonth,
+        is_monthly_charge: input.isMonthlyCharge,
         user_id: userId,
       })
       .select(
-        "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
+        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
       )
       .single();
 
@@ -339,11 +356,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           total_amount_usd: input.totalAmountUsd,
           installments: input.installments,
           start_month: input.startMonth,
+          is_monthly_charge: input.isMonthlyCharge,
           user_id: userId,
         })),
       )
       .select(
-        "id, card_id, description, total_amount, total_amount_usd, installments, start_month",
+        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
       );
 
     if (error || !data) {
@@ -354,6 +372,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...prev,
       ...(data as ExpenseRow[]).map(mapExpense),
     ]);
+    stamp();
+    return null;
+  }
+
+  async function updateExpense(
+    id: string,
+    input: Partial<
+      Pick<
+        Expense,
+        | "description"
+        | "totalAmount"
+        | "totalAmountUsd"
+        | "installments"
+        | "startMonth"
+      >
+    >,
+  ) {
+    const current = expenses.find((expense) => expense.id === id);
+    if (!current) return i18n.t("errors.expenseNotFound");
+
+    const description =
+      input.description !== undefined
+        ? input.description.trim()
+        : current.description;
+    const totalAmount = input.totalAmount ?? current.totalAmount;
+    const totalAmountUsd = input.totalAmountUsd ?? current.totalAmountUsd;
+    const installments = input.installments ?? current.installments;
+    const startMonth = input.startMonth ?? current.startMonth;
+
+    if (!description) return i18n.t("errors.descriptionRequired");
+    if (totalAmount <= 0 && totalAmountUsd <= 0) {
+      return i18n.t("errors.amountRequired");
+    }
+    if (installments < 1 || installments > 48) {
+      return i18n.t("errors.invalidInstallments");
+    }
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .update({
+        description,
+        total_amount: totalAmount,
+        total_amount_usd: totalAmountUsd,
+        installments,
+        start_month: startMonth,
+      })
+      .eq("id", id)
+      .select(
+        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
+      )
+      .single();
+
+    if (error || !data) {
+      console.error("Failed to update expense:", error);
+      return error?.message ?? i18n.t("errors.failedUpdateExpense");
+    }
+
+    setExpenses((prev) =>
+      prev.map((expense) =>
+        expense.id === id ? mapExpense(data as ExpenseRow) : expense,
+      ),
+    );
     stamp();
     return null;
   }
@@ -409,6 +489,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteCard,
         addExpense,
         addExpenses,
+        updateExpense,
         deleteExpense,
         setCurrency,
         setBudgetAlert,

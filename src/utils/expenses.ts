@@ -58,6 +58,25 @@ function sumField(
   return round2(entries.reduce((sum, entry) => sum + entry[field], 0));
 }
 
+/** Per-month amount for an expense. */
+export function getExpenseMonthlyRate(expense: Expense): {
+  ars: number;
+  usd: number;
+} {
+  const installments = Math.max(1, Math.floor(expense.installments));
+  const ars = spreadTotal(expense.totalAmount, installments);
+  const usd = spreadTotal(expense.totalAmountUsd, installments);
+  return { ars: ars.base, usd: usd.base };
+}
+
+/** Last month an expense is charged ("YYYY-MM"). */
+export function getExpenseEndMonth(expense: Expense): string {
+  return addMonths(
+    expense.startMonth,
+    Math.max(1, Math.floor(expense.installments)) - 1,
+  );
+}
+
 /** Total ARS owed on a given card for a given month ("YYYY-MM"). */
 export function getMonthlyTotalByCard(
   cardId: string,

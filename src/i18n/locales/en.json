@@ -62,7 +62,15 @@
     "totalUsd": "Total USD",
     "installment": "Installment",
     "deleteExpense": "Delete {{description}}",
+    "editExpense": "Edit {{description}}",
     "addExpense": "+ Add Expense"
+  },
+  "editExpense": {
+    "title": "Edit subscription — {{description}}",
+    "hint": "You can shorten the subscription by choosing the last billing month.",
+    "endMonth": "Last billing month",
+    "endMonthHint": "To cancel early, pick the last month that will be charged.",
+    "submit": "Save changes"
   },
   "consolidated": {
     "budgetAlert": "Monthly budget alert:",
@@ -167,6 +175,11 @@
     "failedAddCard": "Failed to add card",
     "failedUpdateCard": "Failed to update card",
     "failedAddExpense": "Failed to add expense",
-    "failedImportExpenses": "Failed to import expenses"
+    "failedUpdateExpense": "Failed to update expense",
+    "failedImportExpenses": "Failed to import expenses",
+    "expenseNotFound": "Expense not found",
+    "descriptionRequired": "Description is required",
+    "amountRequired": "Enter at least one amount",
+    "invalidInstallments": "Invalid installment count"
   }
 }

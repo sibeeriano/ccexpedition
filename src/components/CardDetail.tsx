@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Card } from "../types";
+import type { Card, Expense } from "../types";
 import { useApp } from "../context/AppContext";
+import { EditMonthlyExpenseModal } from "./EditMonthlyExpenseModal";
 import {
   getMonthlyBreakdown,
   getMonthlyTotalByCard,
@@ -24,6 +25,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
   const [selectedMonth, setSelectedMonth] = useState(() =>
     monthsRange.includes(currentMonth) ? currentMonth : monthsRange[0],
   );
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const expenses = state.expenses.filter((e) => e.cardId === card.id);
 
   // Keep the current month centered in the months strip.
@@ -48,6 +50,9 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
     expense.installments === 1
       ? t("common.oneTime")
       : `${monthDiff(expense.startMonth, selectedMonth) + 1}/${expense.installments}`;
+
+  const actionButtonClass =
+    "rounded px-1.5 text-zinc-600 transition-colors hover:bg-white/5 hover:text-zinc-300";
 
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
@@ -144,16 +149,30 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                   <p className="min-w-0 flex-1 text-sm leading-snug text-zinc-200">
                     {expense.description}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => deleteExpense(expense.id)}
-                    aria-label={t("cardDetail.deleteExpense", {
-                      description: expense.description,
-                    })}
-                    className="shrink-0 rounded px-1.5 text-zinc-600 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                  >
-                    ×
-                  </button>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {expense.isMonthlyCharge && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingExpense(expense)}
+                        aria-label={t("cardDetail.editExpense", {
+                          description: expense.description,
+                        })}
+                        className={`${actionButtonClass} hover:text-sky-400`}
+                      >
+                        <PencilIcon />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => deleteExpense(expense.id)}
+                      aria-label={t("cardDetail.deleteExpense", {
+                        description: expense.description,
+                      })}
+                      className={`${actionButtonClass} hover:bg-red-500/10 hover:text-red-400`}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <p className="mt-1 text-xs text-zinc-500">
                   {installmentLabel(expense)} · {t("cardDetail.startLabel")}{" "}
@@ -192,21 +211,21 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                   {t("common.description")}
                 </th>
                 <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.totalArs")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.totalUsd")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
                   {t("cardDetail.installment")}
+                </th>
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.thisMonth")}
                 </th>
                 <th className="px-3.5 py-2.5 text-right font-medium">
                   {t("common.start")}
                 </th>
                 <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.thisMonth")}
+                  {t("cardDetail.totalUsd")}
                 </th>
-                <th className="w-10 px-2 py-2.5">
+                <th className="px-3.5 py-2.5 text-right font-medium">
+                  {t("cardDetail.totalArs")}
+                </th>
+                <th className="w-16 px-2 py-2.5">
                   <span className="sr-only">{t("common.actions")}</span>
                 </th>
                 </tr>
@@ -220,21 +239,8 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                     <td className="px-3.5 py-2.5 text-zinc-200">
                       {expense.description}
                     </td>
-                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                      {expense.totalAmount > 0
-                        ? formatMoney(expense.totalAmount, "ARS")
-                        : "—"}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                      {expense.totalAmountUsd > 0
-                        ? formatMoney(expense.totalAmountUsd, "$")
-                        : "—"}
-                    </td>
                     <td className="px-3.5 py-2.5 text-right text-zinc-400">
                       {installmentLabel(expense)}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-right text-zinc-400">
-                      {formatMonthLabel(expense.startMonth)}
                     </td>
                     <td className="px-3.5 py-2.5 text-right">
                       <AmountDisplay
@@ -243,17 +249,44 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                         className="items-end text-sm"
                       />
                     </td>
-                    <td className="px-2 py-2.5 text-center">
-                      <button
-                        type="button"
-                        onClick={() => deleteExpense(expense.id)}
-                        aria-label={t("cardDetail.deleteExpense", {
-                      description: expense.description,
-                    })}
-                        className="rounded px-1.5 text-zinc-600 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                      >
-                        ×
-                      </button>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-400">
+                      {formatMonthLabel(expense.startMonth)}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
+                      {expense.totalAmountUsd > 0
+                        ? formatMoney(expense.totalAmountUsd, "$")
+                        : "—"}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
+                      {expense.totalAmount > 0
+                        ? formatMoney(expense.totalAmount, "ARS")
+                        : "—"}
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <div className="flex items-center justify-center gap-0.5">
+                        {expense.isMonthlyCharge && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingExpense(expense)}
+                            aria-label={t("cardDetail.editExpense", {
+                              description: expense.description,
+                            })}
+                            className={`${actionButtonClass} hover:text-sky-400`}
+                          >
+                            <PencilIcon />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteExpense(expense.id)}
+                          aria-label={t("cardDetail.deleteExpense", {
+                            description: expense.description,
+                          })}
+                          className={`${actionButtonClass} hover:bg-red-500/10 hover:text-red-400`}
+                        >
+                          ×
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -271,6 +304,28 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
       >
         {t("cardDetail.addExpense")}
       </button>
+
+      {editingExpense && (
+        <EditMonthlyExpenseModal
+          card={card}
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+        />
+      )}
     </section>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="size-3.5"
+      aria-hidden
+    >
+      <path d="m2.695 14.363-1.222 3.955a1 1 0 0 0 1.305 1.227l3.958-1.222a1 1 0 0 0 .632-.633L15.09 6.909a2.25 2.25 0 0 0 0-3.182L11.273 0a2.25 2.25 0 0 0-3.182 0L2.695 5.395a1 1 0 0 0-.633.633Z" />
+    </svg>
   );
 }
