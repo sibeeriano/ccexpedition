@@ -1,19 +1,46 @@
-import { driver, type DriveStep } from "driver.js";
+import { driver, type Driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { TFunction } from "i18next";
 
-const STORAGE_PREFIX = "ccexpedition-onboarding-";
+export type TourContext = "empty" | "consolidated" | "card-detail";
 
-export function hasCompletedOnboarding(userId: string): boolean {
-  return localStorage.getItem(`${STORAGE_PREFIX}${userId}`) === "done";
+const LEGACY_ONBOARDING_PREFIX = "ccexpedition-onboarding-";
+const WELCOME_TOUR_PREFIX = "ccexpedition-tour-welcome-";
+const CONSOLIDATED_TOUR_PREFIX = "ccexpedition-tour-consolidated-";
+const CARD_DETAIL_TOUR_PREFIX = "ccexpedition-tour-card-detail-";
+
+function isLegacyOnboardingDone(userId: string): boolean {
+  return localStorage.getItem(`${LEGACY_ONBOARDING_PREFIX}${userId}`) === "done";
 }
 
-export function markOnboardingComplete(userId: string): void {
-  localStorage.setItem(`${STORAGE_PREFIX}${userId}`, "done");
+export function markWelcomeTourComplete(userId: string): void {
+  localStorage.setItem(`${WELCOME_TOUR_PREFIX}${userId}`, "done");
+}
+
+export function hasCompletedWelcomeTour(userId: string): boolean {
+  return (
+    localStorage.getItem(`${WELCOME_TOUR_PREFIX}${userId}`) === "done" ||
+    isLegacyOnboardingDone(userId)
+  );
+}
+
+export function hasCompletedConsolidatedTour(userId: string): boolean {
+  return (
+    localStorage.getItem(`${CONSOLIDATED_TOUR_PREFIX}${userId}`) === "done" ||
+    isLegacyOnboardingDone(userId)
+  );
+}
+
+export function hasCompletedCardDetailTour(userId: string): boolean {
+  return localStorage.getItem(`${CARD_DETAIL_TOUR_PREFIX}${userId}`) === "done";
 }
 
 export function resetOnboarding(userId: string): void {
-  localStorage.removeItem(`${STORAGE_PREFIX}${userId}`);
+  localStorage.removeItem(`${LEGACY_ONBOARDING_PREFIX}${userId}`);
+  localStorage.removeItem(`${WELCOME_TOUR_PREFIX}${userId}`);
+  localStorage.removeItem(`${CONSOLIDATED_TOUR_PREFIX}${userId}`);
+  localStorage.removeItem(`${CARD_DETAIL_TOUR_PREFIX}${userId}`);
+  localStorage.removeItem("ccexpedition-tour-add-expense-" + userId);
 }
 
 function step(
@@ -42,9 +69,106 @@ function visibleSteps(steps: DriveStep[]): DriveStep[] {
   });
 }
 
-export function buildOnboardingSteps(t: TFunction): DriveStep[] {
-  return visibleSteps([
+let activeTourKey: string | null = null;
+let activeDriver: Driver | null = null;
+let completeOnDestroy = true;
+
+export function isTourActive(): boolean {
+  return activeTourKey !== null;
+}
+
+/** Stops the current tour. Pass `complete: true` only when the user finished it normally. */
+export function destroyActiveTour(complete = false): void {
+  completeOnDestroy = complete;
+  if (activeDriver?.isActive()) {
+    activeDriver.destroy();
+    return;
+  }
+  activeTourKey = null;
+  activeDriver = null;
+  completeOnDestroy = true;
+}
+
+type RunTourOptions = {
+  force?: boolean;
+};
+
+function runTour(
+  t: TFunction,
+  tourKey: string,
+  steps: DriveStep[],
+  onComplete: () => void,
+  options?: RunTourOptions,
+): void {
+  if (!options?.force && isTourActive()) return;
+
+  const visible = visibleSteps(steps);
+  if (visible.length === 0) return;
+
+  activeTourKey = tourKey;
+  completeOnDestroy = true;
+
+  const driverObj = driver({
+    showProgress: true,
+    animate: true,
+    overlayOpacity: 0.72,
+    stagePadding: 10,
+    stageRadius: 10,
+    allowClose: true,
+    nextBtnText: t("onboarding.next"),
+    prevBtnText: t("onboarding.prev"),
+    doneBtnText: t("onboarding.done"),
+    progressText: t("onboarding.progress"),
+    steps: visible,
+    onDestroyed: () => {
+      if (completeOnDestroy) onComplete();
+      activeTourKey = null;
+      activeDriver = null;
+      completeOnDestroy = true;
+    },
+  });
+
+  activeDriver = driverObj;
+  driverObj.drive();
+}
+
+function buildWelcomeTourSteps(t: TFunction): DriveStep[] {
+  return [
     step(undefined, t("onboarding.welcome.title"), t("onboarding.welcome.body")),
+    step(
+      '[data-tour="empty-add-card"]',
+      t("onboarding.empty.title"),
+      t("onboarding.empty.body"),
+      "top",
+    ),
+    step(
+      '[data-tour="add-card"]',
+      t("onboarding.addCard.title"),
+      t("onboarding.addCard.body"),
+      "bottom",
+    ),
+    step(
+      '[data-tour="language-toggle"]',
+      t("onboarding.language.title"),
+      t("onboarding.language.body"),
+      "bottom",
+    ),
+    step(
+      '[data-tour="settings"]',
+      t("onboarding.settings.title"),
+      t("onboarding.settings.body"),
+      "bottom",
+    ),
+  ];
+}
+
+function buildConsolidatedTourSteps(t: TFunction): DriveStep[] {
+  return [
+    step(
+      undefined,
+      t("onboarding.consolidatedTour.welcome.title"),
+      t("onboarding.consolidatedTour.welcome.body"),
+    ),
     step(
       '[data-tour="card-list"]',
       t("onboarding.cardList.title"),
@@ -64,10 +188,21 @@ export function buildOnboardingSteps(t: TFunction): DriveStep[] {
       "top",
     ),
     step(
-      '[data-tour="import-xlsx"]',
-      t("onboarding.import.title"),
-      t("onboarding.import.body"),
-      "bottom",
+      '[data-tour="paid-row"]',
+      t("onboarding.paidRow.title"),
+      t("onboarding.paidRow.body"),
+      "top",
+    ),
+    step(
+      undefined,
+      t("onboarding.payments.title"),
+      t("onboarding.payments.body"),
+    ),
+    step(
+      '[data-tour="export-csv"]',
+      t("onboarding.exportCsv.title"),
+      t("onboarding.exportCsv.body"),
+      "top",
     ),
     step(
       '[data-tour="add-card"]',
@@ -76,73 +211,129 @@ export function buildOnboardingSteps(t: TFunction): DriveStep[] {
       "bottom",
     ),
     step(
-      '[data-tour="settings"]',
-      t("onboarding.settings.title"),
-      t("onboarding.settings.body"),
-      "bottom",
+      undefined,
+      t("onboarding.consolidatedTour.nextCard.title"),
+      t("onboarding.consolidatedTour.nextCard.body"),
+    ),
+  ];
+}
+
+function buildCardDetailTourSteps(t: TFunction): DriveStep[] {
+  return [
+    step(
+      undefined,
+      t("onboarding.cardDetailTour.welcome.title"),
+      t("onboarding.cardDetailTour.welcome.body"),
     ),
     step(
       '[data-tour="month-bar"]',
-      t("onboarding.monthBar.title"),
-      t("onboarding.monthBar.body"),
+      t("onboarding.cardDetailTour.monthBar.title"),
+      t("onboarding.cardDetailTour.monthBar.body"),
+      "bottom",
+    ),
+    step(
+      '[data-tour="import-xlsx"]',
+      t("onboarding.cardDetailTour.import.title"),
+      t("onboarding.cardDetailTour.import.body"),
       "bottom",
     ),
     step(
       '[data-tour="add-expense"]',
-      t("onboarding.addExpense.title"),
-      t("onboarding.addExpense.body"),
+      t("onboarding.cardDetailTour.addExpense.title"),
+      t("onboarding.cardDetailTour.addExpense.body"),
+      "top",
+    ),
+    step(
+      '[data-tour="add-adjustment"]',
+      t("onboarding.cardDetailTour.addAdjustment.title"),
+      t("onboarding.cardDetailTour.addAdjustment.body"),
+      "top",
+    ),
+    step(
+      '[data-tour="card-expense-list"]',
+      t("onboarding.cardDetailTour.expenseList.title"),
+      t("onboarding.cardDetailTour.expenseList.body"),
       "top",
     ),
     step(
       undefined,
-      t("onboarding.cardDetail.title"),
-      t("onboarding.cardDetail.body"),
+      t("onboarding.cardDetailTour.edit.title"),
+      t("onboarding.cardDetailTour.edit.body"),
     ),
-    step(
-      '[data-tour="empty-add-card"]',
-      t("onboarding.empty.title"),
-      t("onboarding.empty.body"),
-      "top",
-    ),
-  ]);
+  ];
 }
 
-let activeTourUserId: string | null = null;
+export function replayTourForContext(
+  t: TFunction,
+  userId: string,
+  context: TourContext,
+): void {
+  destroyActiveTour(false);
 
-export function replayOnboardingTour(t: TFunction, userId: string): void {
-  activeTourUserId = null;
-  startOnboardingTour(t, userId, { force: true });
+  window.setTimeout(() => {
+    switch (context) {
+      case "empty":
+        startWelcomeTour(t, userId, { force: true });
+        break;
+      case "consolidated":
+        startConsolidatedTour(t, userId, { force: true });
+        break;
+      case "card-detail":
+        startCardDetailTour(t, userId, { force: true });
+        break;
+    }
+  }, 250);
 }
 
-export function startOnboardingTour(
+export function startWelcomeTour(
   t: TFunction,
   userId: string,
   options?: { force?: boolean },
 ): void {
-  if (!options?.force && activeTourUserId === userId) return;
+  if (!options?.force && hasCompletedWelcomeTour(userId)) return;
 
-  const steps = buildOnboardingSteps(t);
-  if (steps.length === 0) return;
+  runTour(
+    t,
+    `welcome:${userId}`,
+    buildWelcomeTourSteps(t),
+    () => markWelcomeTourComplete(userId),
+    options,
+  );
+}
 
-  activeTourUserId = userId;
+export function startConsolidatedTour(
+  t: TFunction,
+  userId: string,
+  options?: { force?: boolean },
+): void {
+  if (!options?.force && hasCompletedConsolidatedTour(userId)) return;
 
-  const driverObj = driver({
-    showProgress: true,
-    animate: true,
-    overlayOpacity: 0.72,
-    stagePadding: 10,
-    stageRadius: 10,
-    allowClose: true,
-    nextBtnText: t("onboarding.next"),
-    prevBtnText: t("onboarding.prev"),
-    doneBtnText: t("onboarding.done"),
-    progressText: t("onboarding.progress"),
-    steps,
-    onDestroyed: () => {
-      markOnboardingComplete(userId);
-      activeTourUserId = null;
+  runTour(
+    t,
+    `consolidated:${userId}`,
+    buildConsolidatedTourSteps(t),
+    () => {
+      localStorage.setItem(`${CONSOLIDATED_TOUR_PREFIX}${userId}`, "done");
     },
-  });
+    options,
+  );
+}
 
-  driverObj.drive();
+export function startCardDetailTour(
+  t: TFunction,
+  userId: string,
+  options?: { force?: boolean },
+): void {
+  if (!options?.force && hasCompletedCardDetailTour(userId)) return;
+  if (!options?.force && !hasCompletedConsolidatedTour(userId)) return;
+
+  runTour(
+    t,
+    `card-detail:${userId}`,
+    buildCardDetailTourSteps(t),
+    () => {
+      localStorage.setItem(`${CARD_DETAIL_TOUR_PREFIX}${userId}`, "done");
+    },
+    options,
+  );
 }

@@ -157,44 +157,46 @@ function ExpenseForm({ card }: { card: Card }) {
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="expense-amount"
-          className="text-xs font-medium text-zinc-400"
-        >
-          {arsLabel}
-        </label>
-        <input
-          id="expense-amount"
-          type="number"
-          min="0"
-          step="0.01"
-          inputMode="decimal"
-          value={amountInput}
-          onChange={(e) => setAmountInput(e.target.value)}
-          placeholder="0.00"
-          className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
-        />
-      </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="expense-amount"
+            className="text-xs font-medium text-zinc-400"
+          >
+            {arsLabel}
+          </label>
+          <input
+            id="expense-amount"
+            type="number"
+            min="0"
+            step="0.01"
+            inputMode="decimal"
+            value={amountInput}
+            onChange={(e) => setAmountInput(e.target.value)}
+            placeholder="0.00"
+            className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
+          />
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="expense-amount-usd"
-          className="text-xs font-medium text-zinc-400"
-        >
-          {usdLabel}
-        </label>
-        <input
-          id="expense-amount-usd"
-          type="number"
-          min="0"
-          step="0.01"
-          inputMode="decimal"
-          value={usdAmountInput}
-          onChange={(e) => setUsdAmountInput(e.target.value)}
-          placeholder="0.00"
-          className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="expense-amount-usd"
+            className="text-xs font-medium text-zinc-400"
+          >
+            {usdLabel}
+          </label>
+          <input
+            id="expense-amount-usd"
+            type="number"
+            min="0"
+            step="0.01"
+            inputMode="decimal"
+            value={usdAmountInput}
+            onChange={(e) => setUsdAmountInput(e.target.value)}
+            placeholder="0.00"
+            className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
+          />
+        </div>
       </div>
 
       <fieldset>

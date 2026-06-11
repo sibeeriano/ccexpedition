@@ -45,48 +45,115 @@
     "progress": "{{current}} de {{total}}",
     "welcome": {
       "title": "¡Bienvenido a ccExpedition!",
-      "body": "Te mostramos en un minuto cómo seguir tus gastos de tarjeta mes a mes."
+      "body": "Te mostramos en unos minutos cómo seguir gastos, pagos mensuales, alertas y adelantos en todas tus tarjetas."
     },
     "cardList": {
       "title": "Tus tarjetas",
       "body": "Elegí Todas las tarjetas para ver el consolidado, o una tarjeta para ver sus gastos en detalle."
     },
     "consolidated": {
-      "title": "Presupuesto máximo",
-      "body": "Definí un tope mensual y los meses que lo superen se resaltan en la grilla."
+      "title": "Alerta de presupuesto",
+      "body": "Definí un tope mensual: los meses que lo superen se resaltan en la grilla. En Ajustes podés cambiar la moneda y el color de la alerta."
     },
     "table": {
       "title": "Cuotas por mes",
-      "body": "La grilla muestra cuánto debés en cada tarjeta mes a mes. Tocá una celda para ver el detalle."
+      "body": "La grilla muestra cuánto debés en cada tarjeta mes a mes. Tocá una celda para ver el detalle de gastos, adelantos y saldos pendientes."
+    },
+    "paidRow": {
+      "title": "Fila Pagado",
+      "body": "Marcá cada tarjeta como pagada por mes. Cuando todas estén pagadas, aparece una celebración en la celda."
+    },
+    "payments": {
+      "title": "Pagos y saldo pendiente",
+      "body": "Si pagaste solo una parte, el resto pasa como saldo pendiente al mes siguiente. Los meses anteriores al actual se dan por pagados automáticamente."
+    },
+    "exportCsv": {
+      "title": "Exportar CSV",
+      "body": "Descargá todos tus gastos en un archivo CSV para usar en Excel o Google Sheets."
     },
     "import": {
       "title": "Importar Excel",
-      "body": "Subí el resumen mensual del banco (.xlsx) para cargar gastos automáticamente."
+      "body": "En la vista de cada tarjeta, subí el resumen mensual del banco (.xlsx) para cargar gastos automáticamente."
     },
     "addCard": {
       "title": "Agregar tarjeta",
       "body": "Creá una tarjeta con nombre, titular y color para organizar tus gastos."
     },
+    "language": {
+      "title": "Idioma",
+      "body": "Cambiá entre español e inglés con ES / EN. También podés elegir el idioma en Ajustes."
+    },
     "settings": {
       "title": "Ajustes",
-      "body": "Personalizá colores, idioma, alertas y editá el nombre de tus tarjetas."
+      "body": "Personalizá colores, título, moneda y color de alerta, meses visibles, fila de pagos, tarjetas y repetí este tutorial cuando quieras."
     },
     "monthBar": {
       "title": "Meses",
-      "body": "Navegá entre meses para ver qué gastos impactan en cada período."
+      "body": "Navegá entre meses para ver qué gastos impactan en cada período. Por defecto se abre en el mes siguiente."
     },
     "addExpense": {
       "title": "Agregar gasto",
-      "body": "Cargá compras en cuotas, pagos únicos o suscripciones con cargo mensual."
+      "body": "Cargá compras en cuotas, pagos únicos o suscripciones. Podés editar cualquier gasto con el ícono de lápiz."
+    },
+    "addAdjustment": {
+      "title": "Adelanto / saldo a favor",
+      "body": "Registrá un pago adelantado o un saldo a favor que resta del total de un mes en esa tarjeta."
+    },
+    "balanceAdjustment": {
+      "title": "Saldos y adelantos",
+      "body": "Los adelantos y saldos a favor aparecen en verde en el detalle del mes y en la grilla consolidada al tocar una celda."
     },
     "cardDetail": {
-      "title": "Detalle por tarjeta",
-      "body": "Elegí una tarjeta arriba para ver sus gastos, editar suscripciones o agregar compras nuevas."
+      "title": "Vista por tarjeta",
+      "body": "Elegí una tarjeta arriba para ver sus gastos mes a mes, importar el Excel del banco, editar compras y registrar adelantos."
     },
     "empty": {
       "title": "Empezá acá",
       "body": "Agregá tu primera tarjeta para comenzar a registrar gastos."
+    },
+    "consolidatedTour": {
+      "welcome": {
+        "title": "Vista consolidada",
+        "body": "Acá ves todas tus tarjetas en una grilla. Te mostramos las funciones de esta vista."
+      },
+      "nextCard": {
+        "title": "Detalle por tarjeta",
+        "body": "Tocá una tarjeta arriba para ver sus gastos mes a mes, importar el Excel del banco y registrar adelantos."
+      }
+    },
+    "cardDetailTour": {
+      "welcome": {
+        "title": "Vista de tarjeta",
+        "body": "Acá ves los gastos de una tarjeta mes a mes. Te mostramos las funciones principales."
+      },
+      "monthBar": {
+        "title": "Barra de meses",
+        "body": "Elegí el mes para ver cuotas, adelantos y saldos pendientes. El total de cada mes aparece debajo."
+      },
+      "import": {
+        "title": "Importar Excel",
+        "body": "Subí el resumen mensual del banco (.xlsx) para cargar gastos automáticamente."
+      },
+      "addExpense": {
+        "title": "Agregar gasto",
+        "body": "Cargá compras en cuotas, pagos únicos o suscripciones manualmente."
+      },
+      "addAdjustment": {
+        "title": "Adelanto / saldo a favor",
+        "body": "Registrá un pago adelantado o un saldo a favor que resta del total del mes."
+      },
+      "expenseList": {
+        "title": "Listado del mes",
+        "body": "Acá ves cada gasto con su cuota, montos y mes de inicio. Los adelantos aparecen en verde."
+      },
+      "edit": {
+        "title": "Editar y eliminar",
+        "body": "Usá el ícono de lápiz para modificar un gasto o adelanto, o la × para borrarlo."
+      }
     }
+  },
+  "landing": {
+    "coverAlt": "ccExpedition — portada"
   },
   "login": {
     "brandName": "ccExpedition",
@@ -102,6 +169,7 @@
     "signUp": "Registrarse",
     "toggleToSignUp": "¿No tenés cuenta? Registrate",
     "toggleToSignIn": "¿Ya tenés cuenta? Iniciá sesión",
+    "backToHome": "Volver al inicio",
     "accountCreated": "Cuenta creada. Revisá tu email si hace falta confirmar, y luego iniciá sesión."
   },
   "cardList": {
@@ -229,6 +297,9 @@
     "cards": "Tarjetas",
     "tutorial": "Tutorial",
     "repeatTutorial": "Repetir tutorial",
+    "repeatTutorialEmpty": "Repetir tutorial inicial",
+    "repeatTutorialConsolidated": "Repetir tutorial de vista consolidada",
+    "repeatTutorialCardDetail": "Repetir tutorial de vista de tarjeta",
     "language": "Idioma",
     "currency": "Moneda de alerta",
     "alertColor": "Color de alerta",

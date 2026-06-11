@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { BalanceAdjustment, Card, Expense } from "../types";
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
+import { useCardDetailTour } from "../hooks/useCardDetailTour";
 import { BalanceAdjustmentModal } from "./BalanceAdjustmentModal";
 import { EditExpenseModal } from "./EditExpenseModal";
 import {
@@ -18,11 +20,20 @@ import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format"
 type CardDetailProps = {
   card: Card;
   onAddExpense: () => void;
+  onImport: () => void;
+  tourPaused?: boolean;
 };
 
-export function CardDetail({ card, onAddExpense }: CardDetailProps) {
+export function CardDetail({
+  card,
+  onAddExpense,
+  onImport,
+  tourPaused = false,
+}: CardDetailProps) {
   const { t } = useTranslation();
+  const { session } = useAuth();
   const { state, deleteExpense, deleteBalanceAdjustment } = useApp();
+  useCardDetailTour({ userId: session?.user.id, paused: tourPaused });
   const currentMonth = getCurrentMonth();
   const nextMonth = addMonths(currentMonth, 1);
   const monthsRange = getMonthsRange(
@@ -96,13 +107,23 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
 
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <span
-          className="size-2.5 rounded-full"
-          style={{ backgroundColor: card.color }}
-        />
-        <h2 className="text-sm font-semibold text-white">{card.name}</h2>
-        <span className="text-xs text-zinc-500">{card.holder}</span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: card.color }}
+          />
+          <h2 className="text-sm font-semibold text-white">{card.name}</h2>
+          <span className="text-xs text-zinc-500">{card.holder}</span>
+        </div>
+        <button
+          type="button"
+          data-tour="import-xlsx"
+          onClick={onImport}
+          className="shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+        >
+          {t("consolidated.importXlsx")}
+        </button>
       </div>
 
       <div
@@ -188,7 +209,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
           </p>
         </div>
       ) : (
-        <>
+        <div data-tour="card-expense-list">
           <ul className="flex flex-col gap-2 md:hidden">
             {monthCarryover && (
               <li className="rounded-lg border border-amber-500/25 bg-amber-500/5 px-3.5 py-3">
@@ -497,7 +518,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
               </tbody>
             </table>
           </div>
-        </>
+        </div>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -512,6 +533,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         </button>
         <button
           type="button"
+          data-tour="add-adjustment"
           onClick={() => setIsAddAdjustmentOpen(true)}
           className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-500/15"
         >

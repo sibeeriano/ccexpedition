@@ -21,11 +21,7 @@ type CellPopover = {
   y: number;
 };
 
-type ConsolidatedViewProps = {
-  onImport: () => void;
-};
-
-export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
+export function ConsolidatedView() {
   const { t } = useTranslation();
   const { state, setBudgetAlert } = useApp();
   const { currency, budgetAlert, showPreviousMonths, showPaidRow } =
@@ -212,10 +208,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
   return (
     <section className="flex w-full min-w-0 shrink-0 flex-col gap-4">
       {/* Toolbar */}
-      <div
-        data-tour="consolidated-toolbar"
-        className="flex flex-wrap items-center justify-between gap-3"
-      >
+      <div data-tour="consolidated-toolbar" className="flex flex-wrap items-center gap-3">
         <label
           data-tour="budget-alert"
           className="flex items-center gap-2 text-xs font-medium text-zinc-400"
@@ -236,29 +229,6 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
             />
           </span>
         </label>
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            data-tour="import-xlsx"
-            onClick={onImport}
-            className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
-          >
-            {t("consolidated.importXlsx")}
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              downloadCsv(
-                "card-tracker-export.csv",
-                buildExpensesCsv(state.cards, state.expenses),
-              )
-            }
-            className="rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
-          >
-            {t("consolidated.exportCsv")}
-          </button>
-        </div>
       </div>
 
       {/* Consolidated table */}
@@ -374,7 +344,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
               ))}
             </tr>
             {showPaidRow && (
-            <tr className="border-t border-white/10">
+            <tr data-tour="paid-row" className="border-t border-white/10">
               <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
                 {t("payment.paidRow")}
               </td>
@@ -393,13 +363,30 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
         </div>
       </div>
 
-      {budgetAlert > 0 && isOverBudget.some(Boolean) && (
-        <p className="text-xs text-budget-alert-muted">
-          {t("consolidated.budgetExceeded", {
-            amount: formatMoney(budgetAlert, currency),
-          })}
-        </p>
-      )}
+      <div className="flex min-h-6 items-center justify-between gap-3">
+        {budgetAlert > 0 && isOverBudget.some(Boolean) ? (
+          <p className="text-xs text-budget-alert-muted">
+            {t("consolidated.budgetExceeded", {
+              amount: formatMoney(budgetAlert, currency),
+            })}
+          </p>
+        ) : (
+          <span aria-hidden />
+        )}
+        <button
+          type="button"
+          data-tour="export-csv"
+          onClick={() =>
+            downloadCsv(
+              "card-tracker-export.csv",
+              buildExpensesCsv(state.cards, state.expenses),
+            )
+          }
+          className="shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+        >
+          {t("consolidated.exportCsv")}
+        </button>
+      </div>
 
       {/* Cell detail popover */}
       {popover && popoverCard && (

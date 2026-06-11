@@ -143,7 +143,9 @@ function loadSettings(userId: string | null): AppSettings {
   };
   try {
     const key = settingsStorageKey(userId);
+    const hadSavedUserSettings = Boolean(localStorage.getItem(key));
     let raw = localStorage.getItem(key);
+    const migratingLegacyForUser = Boolean(userId) && !hadSavedUserSettings;
 
     if (!raw && userId) {
       raw =
@@ -176,8 +178,9 @@ function loadSettings(userId: string | null): AppSettings {
       titleColor: isValidHexColor(parsed.titleColor ?? "")
         ? parsed.titleColor!
         : defaults.titleColor,
-      titleText:
-        typeof parsed.titleText === "string"
+      titleText: migratingLegacyForUser
+        ? defaults.titleText
+        : typeof parsed.titleText === "string"
           ? normalizeWorkspaceTitle(parsed.titleText)
           : defaults.titleText,
       language:

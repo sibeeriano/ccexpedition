@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useOnboarding } from "./hooks/useOnboarding";
+import { useConsolidatedTour } from "./hooks/useConsolidatedTour";
+import { useWelcomeTour } from "./hooks/useOnboarding";
 import { Navbar } from "./components/Navbar";
 import { CardList, ALL_CARDS_VIEW } from "./components/CardList";
 import { CardDetail } from "./components/CardDetail";
@@ -10,10 +11,16 @@ import { AddExpenseModal } from "./components/AddExpenseModal";
 import { SettingsModal } from "./components/SettingsModal";
 import { ImportModal } from "./components/ImportModal";
 import { DevSignature } from "./components/DevSignature";
+import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
 import { useApp } from "./context/AppContext";
 import { useAuth } from "./context/AuthContext";
 import { formatTimestamp } from "./utils/format";
+import {
+  destroyActiveTour,
+  markWelcomeTourComplete,
+  type TourContext,
+} from "./utils/onboarding";
 
 function App() {
   const { t } = useTranslation();
@@ -24,15 +31,58 @@ function App() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   const selectedCard =
     selectedView === ALL_CARDS_VIEW
       ? null
       : (state.cards.find((card) => card.id === selectedView) ?? null);
 
-  useOnboarding({
+  const tourContext: TourContext =
+    state.cards.length === 0
+      ? "empty"
+      : selectedCard
+        ? "card-detail"
+        : "consolidated";
+
+  const appReady = !authLoading && !state.loading && Boolean(session);
+  const hasCards = state.cards.length > 0;
+  const isConsolidatedView = hasCards && !selectedCard;
+  const [justAddedFirstCard, setJustAddedFirstCard] = useState(false);
+  const prevCardCount = useRef(state.cards.length);
+
+  useEffect(() => {
+    const prev = prevCardCount.current;
+    const next = state.cards.length;
+    if (prev === 0 && next > 0) {
+      setSelectedView(ALL_CARDS_VIEW);
+      setJustAddedFirstCard(true);
+      const userId = session?.user.id;
+      if (userId) {
+        markWelcomeTourComplete(userId);
+        destroyActiveTour(false);
+      }
+    }
+    prevCardCount.current = next;
+  }, [state.cards.length, session?.user.id]);
+
+  useEffect(() => {
+    if (!justAddedFirstCard || !isConsolidatedView) return;
+    const timer = window.setTimeout(() => setJustAddedFirstCard(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [justAddedFirstCard, isConsolidatedView]);
+
+  useWelcomeTour({
     userId: session?.user.id,
-    ready: !authLoading && !state.loading && Boolean(session),
+    ready: appReady,
+    hasCards,
+  });
+
+  useConsolidatedTour({
+    userId: session?.user.id,
+    ready: appReady,
+    enabled: isConsolidatedView,
+    delayMs: justAddedFirstCard ? 900 : 700,
   });
 
   if (authLoading || state.loading) {
@@ -45,7 +95,10 @@ function App() {
   }
 
   if (!session) {
-    return <Login />;
+    if (!showLogin) {
+      return <LandingPage onStart={() => setShowLogin(true)} />;
+    }
+    return <Login onBackToHome={() => setShowLogin(false)} />;
   }
 
   return (
@@ -84,9 +137,11 @@ function App() {
                 <CardDetail
                   card={selectedCard}
                   onAddExpense={() => setIsAddExpenseOpen(true)}
+                  onImport={() => setIsImportOpen(true)}
+                  tourPaused={isAddExpenseOpen}
                 />
               ) : (
-                <ConsolidatedView onImport={() => setIsImportOpen(true)} />
+                <ConsolidatedView />
               )}
             </div>
           </>
@@ -106,7 +161,10 @@ function App() {
 
       {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
       {isSettingsOpen && (
-        <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+        <SettingsModal
+          tourContext={tourContext}
+          onClose={() => setIsSettingsOpen(false)}
+        />
       )}
       {isImportOpen && (
         <ImportModal onClose={() => setIsImportOpen(false)} />

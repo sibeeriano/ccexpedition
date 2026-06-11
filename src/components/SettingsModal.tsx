@@ -20,18 +20,19 @@ import {
   type ColorPreset,
 } from "../utils/theme";
 import { useAuth } from "../context/AuthContext";
-import { replayOnboardingTour } from "../utils/onboarding";
+import { replayTourForContext, type TourContext } from "../utils/onboarding";
 import { Modal, useModalClose } from "./Modal";
 
 type SettingsModalProps = {
+  tourContext: TourContext;
   onClose: () => void;
 };
 
-export function SettingsModal({ onClose }: SettingsModalProps) {
+export function SettingsModal({ tourContext, onClose }: SettingsModalProps) {
   const { t } = useTranslation();
   return (
     <Modal title={t("settings.title")} onClose={onClose}>
-      <SettingsContent />
+      <SettingsContent tourContext={tourContext} />
     </Modal>
   );
 }
@@ -201,7 +202,21 @@ function ColorPickerField({
   );
 }
 
-function SettingsContent() {
+function repeatTutorialLabel(
+  t: ReturnType<typeof useTranslation>["t"],
+  context: TourContext,
+): string {
+  switch (context) {
+    case "empty":
+      return t("settings.repeatTutorialEmpty");
+    case "consolidated":
+      return t("settings.repeatTutorialConsolidated");
+    case "card-detail":
+      return t("settings.repeatTutorialCardDetail");
+  }
+}
+
+function SettingsContent({ tourContext }: { tourContext: TourContext }) {
   const { t } = useTranslation();
   const close = useModalClose();
   const { session } = useAuth();
@@ -360,9 +375,10 @@ function SettingsContent() {
   function handleRepeatTutorial() {
     const userId = session?.user.id;
     if (!userId) return;
+    const context = tourContext;
     close();
     window.setTimeout(() => {
-      replayOnboardingTour(t, userId);
+      replayTourForContext(t, userId, context);
     }, 200);
   }
 
@@ -386,7 +402,7 @@ function SettingsContent() {
             />
             <span className="shrink-0 text-xs text-zinc-500">{currency}</span>
             <span className="truncate text-xs text-zinc-500">
-              {workspaceTitle ?? BRAND_TITLE}
+              {workspaceTitle ?? t("settings.workspaceTitleEmpty")}
             </span>
           </>
         }
@@ -664,7 +680,7 @@ function SettingsContent() {
           onClick={handleRepeatTutorial}
           className="w-full rounded-md bg-white/10 px-3 py-2 text-left text-sm font-medium text-white transition-colors hover:bg-white/15"
         >
-          {t("settings.repeatTutorial")}
+          {repeatTutorialLabel(t, tourContext)}
         </button>
       </SettingsDropdown>
 

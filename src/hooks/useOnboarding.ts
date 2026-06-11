@@ -1,25 +1,33 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  hasCompletedOnboarding,
-  startOnboardingTour,
+  hasCompletedWelcomeTour,
+  isTourActive,
+  startWelcomeTour,
 } from "../utils/onboarding";
 
-type UseOnboardingOptions = {
+type UseWelcomeTourOptions = {
   userId: string | null | undefined;
   ready: boolean;
+  hasCards: boolean;
 };
 
-export function useOnboarding({ userId, ready }: UseOnboardingOptions): void {
+/** Stage 1: welcome + add first card (empty state only). */
+export function useWelcomeTour({
+  userId,
+  ready,
+  hasCards,
+}: UseWelcomeTourOptions): void {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!userId || !ready || hasCompletedOnboarding(userId)) return;
+    if (!userId || !ready || hasCards || hasCompletedWelcomeTour(userId)) return;
 
     const timer = window.setTimeout(() => {
-      startOnboardingTour(t, userId);
+      if (isTourActive()) return;
+      startWelcomeTour(t, userId);
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [userId, ready, t]);
+  }, [userId, ready, hasCards, t]);
 }

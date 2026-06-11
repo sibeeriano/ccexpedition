@@ -6,7 +6,11 @@ import { LanguageToggle } from "./LanguageToggle";
 
 type Mode = "sign-in" | "sign-up";
 
-export function Login() {
+type LoginProps = {
+  onBackToHome: () => void;
+};
+
+export function Login({ onBackToHome }: LoginProps) {
   const { t } = useTranslation();
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<Mode>("sign-in");
@@ -40,11 +44,22 @@ export function Login() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
       <div className="relative w-full max-w-sm rounded-xl border border-white/10 bg-surface p-6">
+        <button
+          type="button"
+          onClick={onBackToHome}
+          className="absolute left-4 top-4 text-xs text-zinc-500 transition-colors hover:text-zinc-200"
+        >
+          ← {t("login.backToHome")}
+        </button>
         <LanguageToggle className="absolute right-4 top-4" />
 
-        <h1 className="brand-title text-center text-lg font-semibold">
-          {t("login.brandName")}
-        </h1>
+        <div className="flex justify-center">
+          <img
+            src="/logo2.png"
+            alt={t("login.brandName")}
+            className="h-40 w-auto max-w-full object-contain"
+          />
+        </div>
         <p className="mt-2 text-center text-sm text-zinc-300">
           {t("login.slogan")}
         </p>

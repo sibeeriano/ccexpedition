@@ -13,6 +13,7 @@ export function LanguageToggle({ className = "" }: LanguageToggleProps) {
 
   return (
     <div
+      data-tour="language-toggle"
       className={`flex shrink-0 rounded-md border border-white/10 bg-base p-0.5 ${className}`}
       role="group"
       aria-label={t("login.language")}

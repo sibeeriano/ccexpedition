@@ -45,48 +45,115 @@
     "progress": "{{current}} of {{total}}",
     "welcome": {
       "title": "Welcome to ccExpedition!",
-      "body": "Here is a quick tour of how to track your credit card spending month by month."
+      "body": "Here is a quick tour of tracking expenses, monthly payments, budget alerts, and advances across all your cards."
     },
     "cardList": {
       "title": "Your cards",
       "body": "Pick All Cards for the consolidated view, or a single card to see its expenses in detail."
     },
     "consolidated": {
-      "title": "Maximum budget",
-      "body": "Set a monthly cap and months that exceed it are highlighted in the grid."
+      "title": "Budget alert",
+      "body": "Set a monthly cap and months that exceed it are highlighted in the grid. In Settings you can change the alert currency and color."
     },
     "table": {
       "title": "Installments by month",
-      "body": "The grid shows what you owe on each card per month. Click a cell to see the breakdown."
+      "body": "The grid shows what you owe on each card per month. Click a cell for expense details, advances, and pending balances."
+    },
+    "paidRow": {
+      "title": "Paid row",
+      "body": "Mark each card as paid per month. When all cards are paid, a celebration appears in the cell."
+    },
+    "payments": {
+      "title": "Payments and pending balance",
+      "body": "If you only paid part of the total, the remainder carries over to the next month. Months before the current one are marked paid automatically."
+    },
+    "exportCsv": {
+      "title": "Export CSV",
+      "body": "Download all your expenses as a CSV file for Excel or Google Sheets."
     },
     "import": {
       "title": "Import Excel",
-      "body": "Upload your monthly bank statement (.xlsx) to add expenses automatically."
+      "body": "In each card view, upload your monthly bank statement (.xlsx) to add expenses automatically."
     },
     "addCard": {
       "title": "Add card",
       "body": "Create a card with a name, holder, and color to organize your spending."
     },
+    "language": {
+      "title": "Language",
+      "body": "Switch between Spanish and English with ES / EN. You can also set the language in Settings."
+    },
     "settings": {
       "title": "Settings",
-      "body": "Customize colors, language, budget alerts, and edit your card names."
+      "body": "Customize colors, title, alert currency and color, visible months, paid row, cards, and replay this tutorial anytime."
     },
     "monthBar": {
       "title": "Months",
-      "body": "Browse months to see which expenses hit in each billing period."
+      "body": "Browse months to see which expenses hit in each billing period. It opens on next month by default."
     },
     "addExpense": {
       "title": "Add expense",
-      "body": "Add installment purchases, one-time charges, or monthly subscriptions."
+      "body": "Add installment purchases, one-time charges, or subscriptions. Edit any expense with the pencil icon."
+    },
+    "addAdjustment": {
+      "title": "Advance / credit balance",
+      "body": "Record an advance payment or credit balance that subtracts from that card's monthly total."
+    },
+    "balanceAdjustment": {
+      "title": "Advances and credits",
+      "body": "Advances and credit balances appear in green in the month detail and in the consolidated grid when you click a cell."
     },
     "cardDetail": {
-      "title": "Card detail",
-      "body": "Select a card above to view its expenses, edit subscriptions, or add new purchases."
+      "title": "Card view",
+      "body": "Select a card above to see its expenses by month, import the bank Excel file, edit purchases, and record advances."
     },
     "empty": {
       "title": "Start here",
       "body": "Add your first card to start tracking expenses."
+    },
+    "consolidatedTour": {
+      "welcome": {
+        "title": "Consolidated view",
+        "body": "Here you see all your cards in one grid. Let's walk through this view's features."
+      },
+      "nextCard": {
+        "title": "Card detail",
+        "body": "Tap a card above to see its expenses month by month, import the bank Excel file, and record advances."
+      }
+    },
+    "cardDetailTour": {
+      "welcome": {
+        "title": "Card view",
+        "body": "Here you see one card's expenses month by month. Let's walk through the main features."
+      },
+      "monthBar": {
+        "title": "Month bar",
+        "body": "Pick a month to see installments, advances, and pending balances. Each month's total appears below."
+      },
+      "import": {
+        "title": "Import Excel",
+        "body": "Upload your monthly bank statement (.xlsx) to add expenses automatically."
+      },
+      "addExpense": {
+        "title": "Add expense",
+        "body": "Manually add installment purchases, one-time charges, or subscriptions."
+      },
+      "addAdjustment": {
+        "title": "Advance / credit balance",
+        "body": "Record an advance payment or credit balance that subtracts from that month's total."
+      },
+      "expenseList": {
+        "title": "Month list",
+        "body": "Each expense shows its installment, amounts, and start month. Advances appear in green."
+      },
+      "edit": {
+        "title": "Edit and delete",
+        "body": "Use the pencil icon to edit an expense or advance, or × to remove it."
+      }
     }
+  },
+  "landing": {
+    "coverAlt": "ccExpedition — cover"
   },
   "login": {
     "brandName": "ccExpedition",
@@ -102,6 +169,7 @@
     "signUp": "Sign Up",
     "toggleToSignUp": "Don't have an account? Sign up",
     "toggleToSignIn": "Already have an account? Sign in",
+    "backToHome": "Back to home",
     "accountCreated": "Account created. Check your email if confirmation is required, then sign in."
   },
   "cardList": {
@@ -229,6 +297,9 @@
     "cards": "Cards",
     "tutorial": "Tutorial",
     "repeatTutorial": "Repeat tutorial",
+    "repeatTutorialEmpty": "Repeat getting started tutorial",
+    "repeatTutorialConsolidated": "Repeat consolidated view tutorial",
+    "repeatTutorialCardDetail": "Repeat card view tutorial",
     "language": "Language",
     "currency": "Alert currency",
     "alertColor": "Alert color",
