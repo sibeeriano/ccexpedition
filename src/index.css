@@ -28,10 +28,20 @@
     color-mix(in srgb, var(--color-budget-alert) 25%, transparent);
 }
 
+/* Horizontal scroll only — height fits content, no inner vertical scrollbar. */
+.consolidated-table-scroll {
+  display: block;
+  width: 100%;
+  height: fit-content;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: clip;
+}
+
 html,
 body,
 #root {
-  @apply max-w-full overflow-x-hidden;
+  @apply max-w-full overflow-x-clip;
 }
 
 body {

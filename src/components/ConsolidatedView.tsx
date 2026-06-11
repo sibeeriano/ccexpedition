@@ -210,7 +210,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       : null;
 
   return (
-    <section className="flex w-full min-w-0 flex-col gap-4">
+    <section className="flex w-full min-w-0 shrink-0 flex-col gap-4">
       {/* Toolbar */}
       <div
         data-tour="consolidated-toolbar"
@@ -262,12 +262,13 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
       </div>
 
       {/* Consolidated table */}
-      <div
-        ref={tableWrapRef}
-        data-tour="consolidated-table"
-        className="w-full min-w-0 overflow-x-auto rounded-lg bg-surface"
-      >
-        <div ref={tableInnerRef} className="relative w-full min-w-160">
+      <div className="w-full min-w-0 rounded-lg bg-surface">
+        <div
+          ref={tableWrapRef}
+          data-tour="consolidated-table"
+          className="consolidated-table-scroll min-w-0"
+        >
+        <div ref={tableInnerRef} className="relative w-max min-w-full">
           {showNextMonthColumn && (
             <div
               ref={nextMonthColumnRef}
@@ -388,6 +389,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
           )}
           </tbody>
         </table>
+        </div>
         </div>
       </div>
 

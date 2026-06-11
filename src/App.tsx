@@ -55,7 +55,7 @@ function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl flex-1 flex-col gap-5 px-4 py-5">
+      <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl shrink-0 grow flex-col gap-5 px-4 py-5">
         {state.cards.length === 0 ? (
           <div className="rounded-lg border border-dashed border-white/10 px-4 py-16 text-center">
             <p className="text-sm font-medium text-zinc-300">
@@ -79,14 +79,16 @@ function App() {
               selectedId={selectedCard?.id ?? ALL_CARDS_VIEW}
               onSelect={setSelectedView}
             />
-            {selectedCard ? (
-              <CardDetail
-                card={selectedCard}
-                onAddExpense={() => setIsAddExpenseOpen(true)}
-              />
-            ) : (
-              <ConsolidatedView onImport={() => setIsImportOpen(true)} />
-            )}
+            <div className="min-w-0 shrink-0">
+              {selectedCard ? (
+                <CardDetail
+                  card={selectedCard}
+                  onAddExpense={() => setIsAddExpenseOpen(true)}
+                />
+              ) : (
+                <ConsolidatedView onImport={() => setIsImportOpen(true)} />
+              )}
+            </div>
           </>
         )}
       </main>
