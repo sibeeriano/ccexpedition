@@ -32,6 +32,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [loginMode, setLoginMode] = useState<"sign-in" | "sign-up">("sign-in");
 
   const selectedCard =
     selectedView === ALL_CARDS_VIEW
@@ -96,9 +97,25 @@ function App() {
 
   if (!session) {
     if (!showLogin) {
-      return <LandingPage onStart={() => setShowLogin(true)} />;
+      return (
+        <LandingPage
+          onSignIn={() => {
+            setLoginMode("sign-in");
+            setShowLogin(true);
+          }}
+          onSignUp={() => {
+            setLoginMode("sign-up");
+            setShowLogin(true);
+          }}
+        />
+      );
     }
-    return <Login onBackToHome={() => setShowLogin(false)} />;
+    return (
+      <Login
+        initialMode={loginMode}
+        onBackToHome={() => setShowLogin(false)}
+      />
+    );
   }
 
   return (

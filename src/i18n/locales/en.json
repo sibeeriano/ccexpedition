@@ -153,7 +153,60 @@
     }
   },
   "landing": {
-    "coverAlt": "ccExpedition — cover"
+    "logoAlt": "ccExpedition",
+    "logoSmallAlt": "ccExpedition — logo",
+    "tagline": "The painkiller for financial anxiety",
+    "headlineLine1": "Simulate your ",
+    "headlineLine2Before": "future ",
+    "headlineLine2": "spending before you",
+    "headlineLine3": "regret it.",
+    "descriptionLine1": " projects your cards and",
+    "descriptionLine2": "shows how your upcoming",
+    "descriptionLine3": "statements would look.",
+    "betaCta": "Join the Beta",
+    "privacyNote": "Sign up free with your email. We don't have access to the data you enter in your sheets. Your privacy comes first.",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "guilt": {
+      "title": "Does spending make you feel guilty?",
+      "subtitle": "Us too.",
+      "bodyLine1": "That's why we built a tool to speculate",
+      "bodyLine2": "on future scenarios before pulling out your card.",
+      "bodyLine3": "Because sometimes you need a brake.",
+      "bodyLine4": "And sometimes you need someone to tell you:",
+      "quote": "“Go ahead, buy it. You deserve it.”",
+      "imageAlt": "Cat enjoying coffee peacefully"
+    },
+    "howItWorks": {
+      "title": "How it works?",
+      "step1": {
+        "title": "Load your expenses",
+        "description": "Netflix, Steam, sneakers, installments, whatever.",
+        "imageAlt": "Cat loading expenses"
+      },
+      "step2": {
+        "title": "Simulate future purchases",
+        "description": "Before buying, without fear.",
+        "imageAlt": "Cat simulating purchases"
+      },
+      "step3": {
+        "title": "Travel to the future",
+        "description": "See how your upcoming statements look.",
+        "imageAlt": "Cat traveling to the future"
+      },
+      "step4": {
+        "title": "You decide if you're a genius or an idiot",
+        "description": "You'll know.",
+        "imageAlt": "Cat thinking"
+      }
+    },
+    "budgetPreview": {
+      "title": "Expedition detected difficult terrain",
+      "description": "Set a total monthly amount. If your projections go through the roof, months that exceed the limit turn red.",
+      "budgetLabel": "Monthly budget alert:",
+      "budgetValue": "$ 900000",
+      "imageAlt": "Explorer cat with a map"
+    }
   },
   "login": {
     "brandName": "ccExpedition",

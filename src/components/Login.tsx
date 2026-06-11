@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { DevSignature } from "./DevSignature";
@@ -8,12 +8,17 @@ type Mode = "sign-in" | "sign-up";
 
 type LoginProps = {
   onBackToHome: () => void;
+  initialMode?: Mode;
 };
 
-export function Login({ onBackToHome }: LoginProps) {
+export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
   const { t } = useTranslation();
   const { signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<Mode>("sign-in");
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);

@@ -153,7 +153,60 @@
     }
   },
   "landing": {
-    "coverAlt": "ccExpedition — portada"
+    "logoAlt": "ccExpedition",
+    "logoSmallAlt": "ccExpedition — logo",
+    "tagline": "El calmante para la ansiedad financiera",
+    "headlineLine1": "Simulá tus gastos",
+    "headlineLine2Before": "",
+    "headlineLine2": "futuros antes de",
+    "headlineLine3": "arrepentirte.",
+    "descriptionLine1": " proyecta tus tarjetas y te",
+    "descriptionLine2": "muestra como quedarían tus proximos",
+    "descriptionLine3": "resúmenes.",
+    "betaCta": "Participa de la Beta",
+    "privacyNote": "Registrate gratis con tu mail. No tenemos acceso a los datos que ingreses en las planillas. Tu privacidad primero.",
+    "signUp": "Registrarse",
+    "signIn": "Iniciar Sesión",
+    "guilt": {
+      "title": "¿Te da culpa gastar?",
+      "subtitle": "A nosotros también.",
+      "bodyLine1": "Por eso hicimos una herramienta para especular",
+      "bodyLine2": "con escenarios futuros antes de sacar la tarjeta.",
+      "bodyLine3": "Porque a veces necesitás un freno.",
+      "bodyLine4": "Y a veces necesitás que alguien te diga:",
+      "quote": "“Dale, compralo. Te lo mereces.”",
+      "imageAlt": "Gato tomando un café con tranquilidad"
+    },
+    "howItWorks": {
+      "title": "¿Cómo funciona?",
+      "step1": {
+        "title": "Cargás tus gastos",
+        "description": "Netflix, Steam, zapatillas, cuotas, lo que sea.",
+        "imageAlt": "Gato cargando gastos"
+      },
+      "step2": {
+        "title": "Simulás compras futuras",
+        "description": "Antes de comprar, sin miedo.",
+        "imageAlt": "Gato simulando compras"
+      },
+      "step3": {
+        "title": "Viajás al futuro",
+        "description": "Ves cómo quedan tus próximos resúmenes.",
+        "imageAlt": "Gato viajando al futuro"
+      },
+      "step4": {
+        "title": "Decidís si sos un genio o un idiota",
+        "description": "Vos sabrás.",
+        "imageAlt": "Gato pensando"
+      }
+    },
+    "budgetPreview": {
+      "title": "Expedición detectó terreno complicado",
+      "description": "Establece un monto mensual total. Si tus especulaciones se van por las nubes, los meses que pasen el limite se ponen en rojo.",
+      "budgetLabel": "Alerta de presupuesto mensual:",
+      "budgetValue": "$ 900000",
+      "imageAlt": "Gato explorador con mapa"
+    }
   },
   "login": {
     "brandName": "ccExpedition",
