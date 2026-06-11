@@ -11,8 +11,8 @@ import {
 import { AmountDisplay } from "./AmountDisplay";
 import { PaidMonthCell } from "./PaidMonthCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
-import { buildExpensesCsv, downloadCsv } from "../utils/csv";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { Modal } from "./Modal";
 
 type CellPopover = {
   cardId: string;
@@ -29,6 +29,7 @@ export function ConsolidatedView() {
   const currentMonth = getCurrentMonth();
   const nextMonth = addMonths(currentMonth, 1);
   const [popover, setPopover] = useState<CellPopover | null>(null);
+  const [exportComingSoonOpen, setExportComingSoonOpen] = useState(false);
 
   const isNextMonthColumn = (month: string) => month === nextMonth;
 
@@ -388,17 +389,30 @@ export function ConsolidatedView() {
         <button
           type="button"
           data-tour="export-csv"
-          onClick={() =>
-            downloadCsv(
-              "card-tracker-export.csv",
-              buildExpensesCsv(state.cards, state.expenses),
-            )
-          }
+          onClick={() => setExportComingSoonOpen(true)}
           className="shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
         >
           {t("consolidated.exportCsv")}
         </button>
       </div>
+
+      {exportComingSoonOpen && (
+        <Modal
+          title={t("consolidated.exportComingSoon")}
+          onClose={() => setExportComingSoonOpen(false)}
+        >
+          <div className="flex flex-col items-center gap-4 py-2">
+            <img
+              src="/gatito2.png"
+              alt=""
+              className="max-h-52 w-auto object-contain"
+            />
+            <p className="text-center text-sm text-zinc-400">
+              {t("consolidated.exportComingSoonHint")}
+            </p>
+          </div>
+        </Modal>
+      )}
 
       {/* Cell detail popover */}
       {popover && popoverCard && (

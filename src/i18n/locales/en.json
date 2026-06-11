@@ -290,6 +290,8 @@
     "budgetAlert": "Monthly budget alert:",
     "importXlsx": "Import XLSX",
     "exportCsv": "Export CSV",
+    "exportComingSoon": "Coming soon",
+    "exportComingSoonHint": "CSV export is still on the way.",
     "card": "Card",
     "totalAllCards": "Monthly totals",
     "budgetExceeded": "Marked months exceed your {{amount}} budget alert.",
