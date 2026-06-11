@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Card, Expense } from "../types";
+import type { BalanceAdjustment, Card, Expense } from "../types";
 import { useApp } from "../context/AppContext";
-import { EditMonthlyExpenseModal } from "./EditMonthlyExpenseModal";
+import { BalanceAdjustmentModal } from "./BalanceAdjustmentModal";
+import { EditExpenseModal } from "./EditExpenseModal";
 import {
+  getAdjustmentsForCardMonth,
+  getCarryoverForCardMonth,
   getMonthlyBreakdown,
   getMonthlyTotalByCard,
   getMonthlyTotalUsdByCard,
 } from "../utils/expenses";
 import { AmountDisplay } from "./AmountDisplay";
-import { getMonthsRange, monthDiff } from "../utils/months";
+import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 
 type CardDetailProps = {
@@ -19,24 +22,51 @@ type CardDetailProps = {
 
 export function CardDetail({ card, onAddExpense }: CardDetailProps) {
   const { t } = useTranslation();
-  const { state, deleteExpense } = useApp();
+  const { state, deleteExpense, deleteBalanceAdjustment } = useApp();
   const currentMonth = getCurrentMonth();
-  const monthsRange = getMonthsRange(state.expenses);
+  const nextMonth = addMonths(currentMonth, 1);
+  const monthsRange = getMonthsRange(
+    state.expenses,
+    state.balanceAdjustments,
+    state.pendingCarryovers,
+  );
+
+  function defaultSelectedMonth(range: string[]): string {
+    if (range.includes(nextMonth)) return nextMonth;
+    if (range.includes(currentMonth)) return currentMonth;
+    return range[0] ?? currentMonth;
+  }
+
   const [selectedMonth, setSelectedMonth] = useState(() =>
-    monthsRange.includes(currentMonth) ? currentMonth : monthsRange[0],
+    defaultSelectedMonth(monthsRange),
   );
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingAdjustment, setEditingAdjustment] =
+    useState<BalanceAdjustment | null>(null);
+  const [isAddAdjustmentOpen, setIsAddAdjustmentOpen] = useState(false);
   const expenses = state.expenses.filter((e) => e.cardId === card.id);
+  const monthAdjustments = getAdjustmentsForCardMonth(
+    card.id,
+    selectedMonth,
+    state.balanceAdjustments,
+  );
+  const monthCarryover = getCarryoverForCardMonth(
+    card.id,
+    selectedMonth,
+    state.pendingCarryovers,
+  );
 
-  // Keep the current month centered in the months strip.
   const monthsBarRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    monthsBarRef.current
-      ?.querySelector<HTMLElement>(`[data-month="${currentMonth}"]`)
-      ?.scrollIntoView({ inline: "center", block: "nearest" });
-  }, [card.id, currentMonth]);
+    setSelectedMonth(defaultSelectedMonth(monthsRange));
+  }, [card.id]);
 
-  // Only the installments that actually fall in the selected month.
+  useEffect(() => {
+    monthsBarRef.current
+      ?.querySelector<HTMLElement>(`[data-month="${selectedMonth}"]`)
+      ?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [card.id, selectedMonth]);
+
   const monthEntries =
     getMonthlyBreakdown(expenses).get(selectedMonth) ?? [];
   const monthRows = monthEntries.flatMap((entry) => {
@@ -51,8 +81,18 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
       ? t("common.oneTime")
       : `${monthDiff(expense.startMonth, selectedMonth) + 1}/${expense.installments}`;
 
+  const adjustmentTypeLabel = (type: BalanceAdjustment["type"]) =>
+    type === "payment_advance"
+      ? t("balanceAdjustment.paymentAdvance")
+      : t("balanceAdjustment.creditBalance");
+
   const actionButtonClass =
     "rounded px-1.5 text-zinc-600 transition-colors hover:bg-white/5 hover:text-zinc-300";
+
+  const hasMonthItems =
+    monthRows.length > 0 ||
+    monthAdjustments.length > 0 ||
+    monthCarryover !== null;
 
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
@@ -65,7 +105,6 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         <span className="text-xs text-zinc-500">{card.holder}</span>
       </div>
 
-      {/* Monthly summary bar: click a month to see its expenses below */}
       <div
         ref={monthsBarRef}
         data-tour="month-bar"
@@ -75,11 +114,19 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
           const isSelected = month === selectedMonth;
           const isCurrent = month === currentMonth;
           const isPast = month < currentMonth;
-          const total = getMonthlyTotalByCard(card.id, month, state.expenses);
+          const total = getMonthlyTotalByCard(
+            card.id,
+            month,
+            state.expenses,
+            state.balanceAdjustments,
+            state.pendingCarryovers,
+          );
           const totalUsd = getMonthlyTotalUsdByCard(
             card.id,
             month,
             state.expenses,
+            state.balanceAdjustments,
+            state.pendingCarryovers,
           );
 
           return (
@@ -115,7 +162,11 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                 ars={total}
                 usd={totalUsd}
                 className={`mt-0.5 text-sm ${
-                  isPast && !isSelected ? "text-zinc-500" : "text-zinc-100"
+                  total < 0 || totalUsd < 0
+                    ? "text-emerald-400"
+                    : isPast && !isSelected
+                      ? "text-zinc-500"
+                      : "text-zinc-100"
                 }`}
               />
             </button>
@@ -123,8 +174,7 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         })}
       </div>
 
-      {/* Expenses falling in the selected month */}
-      {monthRows.length === 0 ? (
+      {!hasMonthItems ? (
         <div className="rounded-lg border border-dashed border-white/10 px-4 py-10 text-center">
           <p className="text-sm text-zinc-400">
             {t("cardDetail.noExpensesInMonth", {
@@ -139,8 +189,34 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         </div>
       ) : (
         <>
-          {/* Mobile: stacked cards */}
           <ul className="flex flex-col gap-2 md:hidden">
+            {monthCarryover && (
+              <li className="rounded-lg border border-amber-500/25 bg-amber-500/5 px-3.5 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-amber-100">
+                      {t("payment.pendingBalance")}
+                    </p>
+                    <p className="mt-1 text-xs text-amber-400/80">
+                      {t("payment.pendingBalanceFrom", {
+                        month: formatMonthLabel(monthCarryover.sourceMonth),
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-end justify-between gap-3 border-t border-amber-500/10 pt-3">
+                  <span className="text-xs font-medium uppercase tracking-wide text-amber-400/70">
+                    {t("cardDetail.thisMonth")}
+                  </span>
+                  <AmountDisplay
+                    ars={monthCarryover.amount}
+                    usd={monthCarryover.amountUsd}
+                    className="items-end text-sm text-amber-200"
+                  />
+                </div>
+              </li>
+            )}
+
             {monthRows.map(({ expense, amount, amountUsd }) => (
               <li
                 key={expense.id}
@@ -151,18 +227,16 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                     {expense.description}
                   </p>
                   <div className="flex shrink-0 items-center gap-0.5">
-                    {expense.isMonthlyCharge && (
-                      <button
-                        type="button"
-                        onClick={() => setEditingExpense(expense)}
-                        aria-label={t("cardDetail.editExpense", {
-                          description: expense.description,
-                        })}
-                        className={`${actionButtonClass} hover:text-sky-400`}
-                      >
-                        <PencilIcon />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setEditingExpense(expense)}
+                      aria-label={t("cardDetail.editExpense", {
+                        description: expense.description,
+                      })}
+                      className={`${actionButtonClass} hover:text-sky-400`}
+                    >
+                      <PencilIcon />
+                    </button>
                     <button
                       type="button"
                       onClick={() => deleteExpense(expense.id)}
@@ -201,37 +275,115 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                 )}
               </li>
             ))}
+
+            {monthAdjustments.map((adjustment) => (
+              <li
+                key={adjustment.id}
+                className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm leading-snug text-emerald-100">
+                      {adjustment.description}
+                    </p>
+                    <p className="mt-1 text-xs text-emerald-400/80">
+                      {adjustmentTypeLabel(adjustment.type)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingAdjustment(adjustment)}
+                      aria-label={t("cardDetail.editAdjustment", {
+                        description: adjustment.description,
+                      })}
+                      className={`${actionButtonClass} hover:text-sky-400`}
+                    >
+                      <PencilIcon />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteBalanceAdjustment(adjustment.id)}
+                      aria-label={t("cardDetail.deleteAdjustment", {
+                        description: adjustment.description,
+                      })}
+                      className={`${actionButtonClass} hover:bg-red-500/10 hover:text-red-400`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-end justify-between gap-3 border-t border-emerald-500/10 pt-3">
+                  <span className="text-xs font-medium uppercase tracking-wide text-emerald-400/70">
+                    {t("cardDetail.creditThisMonth")}
+                  </span>
+                  <AmountDisplay
+                    ars={-adjustment.amount}
+                    usd={-adjustment.amountUsd}
+                    className="items-end text-sm text-emerald-300"
+                  />
+                </div>
+              </li>
+            ))}
           </ul>
 
-          {/* Desktop: full table */}
           <div className="hidden w-full min-w-0 overflow-x-auto rounded-lg bg-surface md:block">
             <table className="w-full min-w-130 text-sm">
               <thead>
                 <tr className="border-b border-white/5 text-left text-xs text-zinc-500">
-                <th className="px-3.5 py-2.5 font-medium">
-                  {t("common.description")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.installment")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.thisMonth")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("common.start")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.totalUsd")}
-                </th>
-                <th className="px-3.5 py-2.5 text-right font-medium">
-                  {t("cardDetail.totalArs")}
-                </th>
-                <th className="w-16 px-2 py-2.5">
-                  <span className="sr-only">{t("common.actions")}</span>
-                </th>
+                  <th className="px-3.5 py-2.5 font-medium">
+                    {t("common.description")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("cardDetail.installment")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("cardDetail.thisMonth")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("common.start")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("cardDetail.totalUsd")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("cardDetail.totalArs")}
+                  </th>
+                  <th className="w-16 px-2 py-2.5">
+                    <span className="sr-only">{t("common.actions")}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
+                {monthCarryover && (
+                  <tr className="border-b border-amber-500/10 bg-amber-500/5">
+                    <td className="px-3.5 py-2.5">
+                      <p className="font-medium text-amber-100">
+                        {t("payment.pendingBalance")}
+                      </p>
+                      <p className="text-xs text-amber-400/80">
+                        {t("payment.pendingBalanceFrom", {
+                          month: formatMonthLabel(monthCarryover.sourceMonth),
+                        })}
+                      </p>
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-amber-400/80">
+                      {t("payment.pendingBalanceShort")}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right">
+                      <AmountDisplay
+                        ars={monthCarryover.amount}
+                        usd={monthCarryover.amountUsd}
+                        className="items-end text-sm text-amber-200"
+                      />
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-2 py-2.5" />
+                  </tr>
+                )}
+
                 {monthRows.map(({ expense, amount, amountUsd }) => (
                   <tr
                     key={expense.id}
@@ -265,23 +417,74 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
                     </td>
                     <td className="px-2 py-2.5">
                       <div className="flex items-center justify-center gap-0.5">
-                        {expense.isMonthlyCharge && (
-                          <button
-                            type="button"
-                            onClick={() => setEditingExpense(expense)}
-                            aria-label={t("cardDetail.editExpense", {
-                              description: expense.description,
-                            })}
-                            className={`${actionButtonClass} hover:text-sky-400`}
-                          >
-                            <PencilIcon />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setEditingExpense(expense)}
+                          aria-label={t("cardDetail.editExpense", {
+                            description: expense.description,
+                          })}
+                          className={`${actionButtonClass} hover:text-sky-400`}
+                        >
+                          <PencilIcon />
+                        </button>
                         <button
                           type="button"
                           onClick={() => deleteExpense(expense.id)}
                           aria-label={t("cardDetail.deleteExpense", {
                             description: expense.description,
+                          })}
+                          className={`${actionButtonClass} hover:bg-red-500/10 hover:text-red-400`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {monthAdjustments.map((adjustment) => (
+                  <tr
+                    key={adjustment.id}
+                    className="border-b border-emerald-500/10 bg-emerald-500/5 last:border-b-0"
+                  >
+                    <td className="px-3.5 py-2.5">
+                      <p className="text-emerald-100">{adjustment.description}</p>
+                      <p className="text-xs text-emerald-400/80">
+                        {adjustmentTypeLabel(adjustment.type)}
+                      </p>
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-emerald-400/80">
+                      {t("cardDetail.creditShort")}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right">
+                      <AmountDisplay
+                        ars={-adjustment.amount}
+                        usd={-adjustment.amountUsd}
+                        className="items-end text-sm text-emerald-300"
+                      />
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-emerald-400/80">
+                      {formatMonthLabel(adjustment.applyMonth)}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-2 py-2.5">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setEditingAdjustment(adjustment)}
+                          aria-label={t("cardDetail.editAdjustment", {
+                            description: adjustment.description,
+                          })}
+                          className={`${actionButtonClass} hover:text-sky-400`}
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteBalanceAdjustment(adjustment.id)}
+                          aria-label={t("cardDetail.deleteAdjustment", {
+                            description: adjustment.description,
                           })}
                           className={`${actionButtonClass} hover:bg-red-500/10 hover:text-red-400`}
                         >
@@ -297,21 +500,46 @@ export function CardDetail({ card, onAddExpense }: CardDetailProps) {
         </>
       )}
 
-      <button
-        type="button"
-        data-tour="add-expense"
-        onClick={onAddExpense}
-        className="self-start rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        style={{ backgroundColor: card.color }}
-      >
-        {t("cardDetail.addExpense")}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          data-tour="add-expense"
+          onClick={onAddExpense}
+          className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: card.color }}
+        >
+          {t("cardDetail.addExpense")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsAddAdjustmentOpen(true)}
+          className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-500/15"
+        >
+          {t("cardDetail.addAdjustment")}
+        </button>
+      </div>
 
       {editingExpense && (
-        <EditMonthlyExpenseModal
+        <EditExpenseModal
           card={card}
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
+        />
+      )}
+
+      {editingAdjustment && (
+        <BalanceAdjustmentModal
+          card={card}
+          adjustment={editingAdjustment}
+          onClose={() => setEditingAdjustment(null)}
+        />
+      )}
+
+      {isAddAdjustmentOpen && (
+        <BalanceAdjustmentModal
+          card={card}
+          defaultApplyMonth={selectedMonth}
+          onClose={() => setIsAddAdjustmentOpen(false)}
         />
       )}
     </section>

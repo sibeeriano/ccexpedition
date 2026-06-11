@@ -9,6 +9,39 @@ export type Card = {
   color: string; // hex for UI
 };
 
+export type MonthlyPayment = {
+  id: string;
+  cardId: string;
+  month: string;
+  paidInFull: boolean;
+  amountPaid: number;
+  amountPaidUsd: number;
+};
+
+/** Saldo pendiente generado automáticamente al pagar parcialmente un mes. */
+export type PendingCarryover = {
+  id: string;
+  cardId: string;
+  applyMonth: string;
+  sourceMonth: string;
+  amount: number;
+  amountUsd: number;
+  paymentId: string;
+};
+
+export type BalanceAdjustmentType = "payment_advance" | "credit_balance";
+
+/** Adelanto de pago o saldo a favor que resta del total de un mes. */
+export type BalanceAdjustment = {
+  id: string;
+  cardId: string;
+  description: string;
+  amount: number; // ARS (siempre positivo; se resta al calcular)
+  amountUsd: number; // USD (siempre positivo; se resta al calcular)
+  type: BalanceAdjustmentType;
+  applyMonth: string; // "YYYY-MM"
+};
+
 export type Expense = {
   id: string;
   cardId: string;

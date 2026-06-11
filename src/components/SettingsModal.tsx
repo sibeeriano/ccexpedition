@@ -1,13 +1,19 @@
 import { useId, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { AppLanguage } from "../context/AppContext";
 import { useApp } from "../context/AppContext";
+import type { CurrencySymbol } from "../types";
+import { LanguageToggle } from "./LanguageToggle";
+
+const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
 import {
+  ALERT_COLOR_PRESETS,
   BACKGROUND_PRESETS,
   DEFAULT_BACKGROUND,
+  BRAND_TITLE,
+  DEFAULT_BUDGET_ALERT_COLOR,
   DEFAULT_TITLE_COLOR,
-  DEFAULT_TITLE_TEXT,
-  getDisplayTitle,
+  DEFAULT_WORKSPACE_TITLE,
+  getWorkspaceTitle,
   getPresetId,
   MAX_TITLE_TEXT_LENGTH,
   TITLE_PRESETS,
@@ -89,6 +95,45 @@ type ColorPickerFieldProps = {
   onChange: (color: string) => void;
 };
 
+function SettingsDivider() {
+  return <hr className="border-0 border-t border-white/10" />;
+}
+
+type SettingsCheckboxProps = {
+  id: string;
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+};
+
+function SettingsCheckbox({
+  id,
+  label,
+  hint,
+  checked,
+  onChange,
+}: SettingsCheckboxProps) {
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-start gap-2.5 rounded-md py-0.5"
+    >
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 size-4 shrink-0 rounded border-white/20 bg-base text-white focus:ring-white/20"
+      />
+      <span className="min-w-0">
+        <span className="block text-sm text-zinc-200">{label}</span>
+        {hint && <span className="mt-0.5 block text-xs text-zinc-500">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
 function ColorPickerField({
   label,
   color,
@@ -167,7 +212,10 @@ function SettingsContent() {
     setBackgroundColor,
     setTitleColor,
     setTitleText,
-    setLanguage,
+    setCurrency,
+    setBudgetAlertColor,
+    setShowPreviousMonths,
+    setShowPaidRow,
   } = useApp();
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
@@ -297,8 +345,17 @@ function SettingsContent() {
     );
   }
 
-  const { backgroundColor, titleColor, titleText, language } = state.settings;
-  const displayTitle = getDisplayTitle(titleText);
+  const {
+    backgroundColor,
+    titleColor,
+    titleText,
+    language,
+    currency,
+    budgetAlertColor,
+    showPreviousMonths,
+    showPaidRow,
+  } = state.settings;
+  const workspaceTitle = getWorkspaceTitle(titleText);
 
   function handleRepeatTutorial() {
     const userId = session?.user.id;
@@ -317,59 +374,102 @@ function SettingsContent() {
           <>
             <span
               className="size-4 shrink-0 rounded border border-white/10"
+              style={{ backgroundColor: titleColor }}
+            />
+            <span
+              className="size-4 shrink-0 rounded border border-white/10"
               style={{ backgroundColor }}
             />
             <span
               className="size-4 shrink-0 rounded border border-white/10"
-              style={{ backgroundColor: titleColor }}
+              style={{ backgroundColor: budgetAlertColor }}
             />
-            <span className="truncate text-xs text-zinc-500">{displayTitle}</span>
+            <span className="shrink-0 text-xs text-zinc-500">{currency}</span>
+            <span className="truncate text-xs text-zinc-500">
+              {workspaceTitle ?? BRAND_TITLE}
+            </span>
           </>
         }
       >
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <label
-              htmlFor="settings-language"
+              htmlFor="settings-currency"
               className="text-sm text-zinc-300"
             >
-              {t("settings.language")}
+              {t("settings.currency")}
             </label>
             <select
-              id="settings-language"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as AppLanguage)}
+              id="settings-currency"
+              data-tour="currency"
+              aria-label={t("settings.currency")}
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as CurrencySymbol)}
               className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
             >
-              <option value="en">{t("settings.languageEn")}</option>
-              <option value="es">{t("settings.languageEs")}</option>
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </div>
+
+          <ColorPickerField
+            label={t("settings.alertColor")}
+            color={budgetAlertColor}
+            presets={ALERT_COLOR_PRESETS}
+            defaultColor={DEFAULT_BUDGET_ALERT_COLOR}
+            inputId="settings-alert-color"
+            onChange={setBudgetAlertColor}
+          />
+
+          <SettingsDivider />
+
+          <div className="flex flex-col gap-3">
+            <SettingsCheckbox
+              id="settings-show-previous-months"
+              label={t("settings.showPreviousMonths")}
+              hint={t("settings.showPreviousMonthsHint")}
+              checked={showPreviousMonths}
+              onChange={setShowPreviousMonths}
+            />
+            <SettingsCheckbox
+              id="settings-show-paid-row"
+              label={t("settings.showPaidRow")}
+              hint={t("settings.showPaidRowHint")}
+              checked={showPaidRow}
+              onChange={setShowPaidRow}
+            />
+          </div>
+
+          <SettingsDivider />
 
           <div className="flex flex-col gap-2">
             <label
               htmlFor="settings-title-text"
               className="text-sm text-zinc-300"
             >
-              {t("settings.titleText")}
+              {t("settings.workspaceTitle")}
             </label>
+            <p className="text-xs text-zinc-500">{t("settings.workspaceTitleHint")}</p>
             <input
               id="settings-title-text"
               type="text"
               value={titleText}
               maxLength={MAX_TITLE_TEXT_LENGTH}
               onChange={(e) => setTitleText(e.target.value)}
-              placeholder={DEFAULT_TITLE_TEXT}
+              placeholder={t("settings.workspaceTitlePlaceholder")}
               className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
             />
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-zinc-500">
                 {titleText.length}/{MAX_TITLE_TEXT_LENGTH}
               </span>
-              {titleText !== DEFAULT_TITLE_TEXT && (
+              {titleText !== DEFAULT_WORKSPACE_TITLE && (
                 <button
                   type="button"
-                  onClick={() => setTitleText(DEFAULT_TITLE_TEXT)}
+                  onClick={() => setTitleText(DEFAULT_WORKSPACE_TITLE)}
                   className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                 >
                   {t("common.reset")}
@@ -378,14 +478,8 @@ function SettingsContent() {
             </div>
           </div>
 
-          <ColorPickerField
-            label={t("settings.backgroundColor")}
-            color={backgroundColor}
-            presets={BACKGROUND_PRESETS}
-            defaultColor={DEFAULT_BACKGROUND}
-            inputId="settings-background-color"
-            onChange={setBackgroundColor}
-          />
+          <SettingsDivider />
+
           <ColorPickerField
             label={t("settings.titleColor")}
             color={titleColor}
@@ -394,12 +488,29 @@ function SettingsContent() {
             inputId="settings-title-color"
             onChange={setTitleColor}
           />
-          <p
-            className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm font-semibold"
-            style={{ color: titleColor }}
-          >
-            {displayTitle}
-          </p>
+          <ColorPickerField
+            label={t("settings.backgroundColor")}
+            color={backgroundColor}
+            presets={BACKGROUND_PRESETS}
+            defaultColor={DEFAULT_BACKGROUND}
+            inputId="settings-background-color"
+            onChange={setBackgroundColor}
+          />
+          <div className="rounded-md border border-white/10 bg-base px-3 py-2 text-center">
+            <p className="brand-title text-sm font-semibold">{BRAND_TITLE}</p>
+            {workspaceTitle ? (
+              <p
+                className="mt-0.5 truncate text-xs font-medium sm:text-sm"
+                style={{ color: titleColor }}
+              >
+                {workspaceTitle}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs text-zinc-500">
+                {t("settings.workspaceTitleEmpty")}
+              </p>
+            )}
+          </div>
         </div>
       </SettingsDropdown>
 
@@ -555,6 +666,17 @@ function SettingsContent() {
         >
           {t("settings.repeatTutorial")}
         </button>
+      </SettingsDropdown>
+
+      <SettingsDropdown
+        title={t("settings.language")}
+        summary={
+          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            {language}
+          </span>
+        }
+      >
+        <LanguageToggle />
       </SettingsDropdown>
     </div>
   );

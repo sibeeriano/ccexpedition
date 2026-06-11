@@ -1,4 +1,9 @@
-import type { Expense, MonthlyEntry } from "../types";
+import type {
+  BalanceAdjustment,
+  Expense,
+  MonthlyEntry,
+  PendingCarryover,
+} from "../types";
 import { addMonths } from "./months";
 
 /** Rounds to 2 decimals to avoid floating point artifacts. */
@@ -77,24 +82,112 @@ export function getExpenseEndMonth(expense: Expense): string {
   );
 }
 
-/** Total ARS owed on a given card for a given month ("YYYY-MM"). */
+export function getAdjustmentsForCardMonth(
+  cardId: string,
+  month: string,
+  adjustments: BalanceAdjustment[],
+): BalanceAdjustment[] {
+  return adjustments.filter(
+    (adjustment) =>
+      adjustment.cardId === cardId && adjustment.applyMonth === month,
+  );
+}
+
+function sumAdjustments(
+  adjustments: BalanceAdjustment[],
+  field: "amount" | "amountUsd",
+): number {
+  const key = field === "amount" ? "amount" : "amountUsd";
+  return round2(adjustments.reduce((sum, adjustment) => sum + adjustment[key], 0));
+}
+
+export function getCarryoverForCardMonth(
+  cardId: string,
+  month: string,
+  carryovers: PendingCarryover[],
+): PendingCarryover | null {
+  return (
+    carryovers.find(
+      (carryover) =>
+        carryover.cardId === cardId && carryover.applyMonth === month,
+    ) ?? null
+  );
+}
+
+function sumCarryover(
+  carryover: PendingCarryover | null,
+  field: "amount" | "amountUsd",
+): number {
+  if (!carryover) return 0;
+  return carryover[field];
+}
+
+/** Total ARS owed on a given card for a given month ("YYYY-MM"), net of credits. */
 export function getMonthlyTotalByCard(
   cardId: string,
   month: string,
   expenses: Expense[],
+  adjustments: BalanceAdjustment[] = [],
+  carryovers: PendingCarryover[] = [],
 ): number {
   const cardExpenses = expenses.filter((e) => e.cardId === cardId);
   const entries = getMonthlyBreakdown(cardExpenses).get(month) ?? [];
-  return sumField(entries, "amount");
+  const expenseTotal = sumField(entries, "amount");
+  const creditTotal = sumAdjustments(
+    getAdjustmentsForCardMonth(cardId, month, adjustments),
+    "amount",
+  );
+  const carryoverTotal = sumCarryover(
+    getCarryoverForCardMonth(cardId, month, carryovers),
+    "amount",
+  );
+  return round2(expenseTotal - creditTotal + carryoverTotal);
 }
 
-/** Total USD owed on a given card for a given month ("YYYY-MM"). */
+/** Total USD owed on a given card for a given month ("YYYY-MM"), net of credits. */
 export function getMonthlyTotalUsdByCard(
   cardId: string,
   month: string,
   expenses: Expense[],
+  adjustments: BalanceAdjustment[] = [],
+  carryovers: PendingCarryover[] = [],
 ): number {
   const cardExpenses = expenses.filter((e) => e.cardId === cardId);
   const entries = getMonthlyBreakdown(cardExpenses).get(month) ?? [];
-  return sumField(entries, "amountUsd");
+  const expenseTotal = sumField(entries, "amountUsd");
+  const creditTotal = sumAdjustments(
+    getAdjustmentsForCardMonth(cardId, month, adjustments),
+    "amountUsd",
+  );
+  const carryoverTotal = sumCarryover(
+    getCarryoverForCardMonth(cardId, month, carryovers),
+    "amountUsd",
+  );
+  return round2(expenseTotal - creditTotal + carryoverTotal);
+}
+
+/** Amount due before payment (expenses - credits + carryover). */
+export function getMonthlyDueByCard(
+  cardId: string,
+  month: string,
+  expenses: Expense[],
+  adjustments: BalanceAdjustment[] = [],
+  carryovers: PendingCarryover[] = [],
+): { ars: number; usd: number } {
+  return {
+    ars: getMonthlyTotalByCard(
+      cardId,
+      month,
+      expenses,
+      adjustments,
+      carryovers,
+    ),
+    usd: getMonthlyTotalUsdByCard(
+      cardId,
+      month,
+      expenses,
+      adjustments,
+      carryovers,
+    ),
+  };
 }

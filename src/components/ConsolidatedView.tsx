@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import {
+  getAdjustmentsForCardMonth,
+  getCarryoverForCardMonth,
   getMonthlyBreakdown,
   getMonthlyTotalByCard,
   getMonthlyTotalUsdByCard,
 } from "../utils/expenses";
 import { AmountDisplay } from "./AmountDisplay";
-import { getMonthsRange, monthDiff } from "../utils/months";
+import { PaidMonthCell } from "./PaidMonthCell";
+import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
 import { buildExpensesCsv, downloadCsv } from "../utils/csv";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 
@@ -25,9 +28,13 @@ type ConsolidatedViewProps = {
 export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
   const { t } = useTranslation();
   const { state, setBudgetAlert } = useApp();
-  const { currency, budgetAlert } = state.settings;
+  const { currency, budgetAlert, showPreviousMonths, showPaidRow } =
+    state.settings;
   const currentMonth = getCurrentMonth();
+  const nextMonth = addMonths(currentMonth, 1);
   const [popover, setPopover] = useState<CellPopover | null>(null);
+
+  const isNextMonthColumn = (month: string) => month === nextMonth;
 
   useEffect(() => {
     if (!popover) return;
@@ -38,23 +45,35 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [popover]);
 
-  const monthsRange = getMonthsRange(state.expenses);
-
-  // Keep the current month centered in the horizontally scrolling table.
-  const tableWrapRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    tableWrapRef.current
-      ?.querySelector<HTMLElement>(`th[data-month="${currentMonth}"]`)
-      ?.scrollIntoView({ inline: "center", block: "nearest" });
-  }, [currentMonth]);
+  const monthsRange = filterMonthsForDisplay(
+    getMonthsRange(
+      state.expenses,
+      state.balanceAdjustments,
+      state.pendingCarryovers,
+    ),
+    showPreviousMonths,
+  );
+  const showNextMonthColumn = monthsRange.includes(nextMonth);
 
   const rows = state.cards.map((card) => ({
     card,
     totals: monthsRange.map((month) =>
-      getMonthlyTotalByCard(card.id, month, state.expenses),
+      getMonthlyTotalByCard(
+        card.id,
+        month,
+        state.expenses,
+        state.balanceAdjustments,
+        state.pendingCarryovers,
+      ),
     ),
     totalsUsd: monthsRange.map((month) =>
-      getMonthlyTotalUsdByCard(card.id, month, state.expenses),
+      getMonthlyTotalUsdByCard(
+        card.id,
+        month,
+        state.expenses,
+        state.balanceAdjustments,
+        state.pendingCarryovers,
+      ),
     ),
   }));
 
@@ -71,6 +90,80 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
   const isOverBudget = grandTotals.map(
     (total) => budgetAlert > 0 && total > budgetAlert,
   );
+
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+  const tableInnerRef = useRef<HTMLDivElement>(null);
+  const nextMonthColumnRef = useRef<HTMLDivElement>(null);
+  const initialScrollDone = useRef(false);
+
+  useEffect(() => {
+    const inner = tableInnerRef.current;
+    const marker = nextMonthColumnRef.current;
+    if (!inner || !marker || !showNextMonthColumn) return;
+
+    function updateMarker() {
+      const th = inner?.querySelector<HTMLElement>(
+        `th[data-month="${nextMonth}"]`,
+      );
+      if (!th || !marker || !inner) {
+        if (marker) marker.style.display = "none";
+        return;
+      }
+      marker.style.display = "block";
+      marker.style.left = `${th.offsetLeft}px`;
+      marker.style.width = `${th.offsetWidth}px`;
+      marker.style.height = `${inner.offsetHeight}px`;
+    }
+
+    updateMarker();
+    const observer = new ResizeObserver(updateMarker);
+    observer.observe(inner);
+    const table = inner.querySelector("table");
+    if (table) observer.observe(table);
+    window.addEventListener("resize", updateMarker);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateMarker);
+    };
+  }, [
+    nextMonth,
+    showNextMonthColumn,
+    monthsRange.length,
+    rows.length,
+    state.cards.length,
+  ]);
+
+  useEffect(() => {
+    if (
+      initialScrollDone.current ||
+      state.loading ||
+      !monthsRange.includes(currentMonth)
+    ) {
+      return;
+    }
+
+    function scrollCurrentMonthToSecondColumn() {
+      const wrap = tableWrapRef.current;
+      if (!wrap) return;
+      const monthHeader = wrap.querySelector<HTMLElement>(
+        `th[data-month="${currentMonth}"]`,
+      );
+      const cardHeader = wrap.querySelector<HTMLElement>("thead th:first-child");
+      if (!monthHeader || !cardHeader) return;
+      wrap.scrollLeft = Math.max(
+        0,
+        monthHeader.offsetLeft - cardHeader.offsetWidth,
+      );
+    }
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollCurrentMonthToSecondColumn();
+        initialScrollDone.current = true;
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentMonth, state.loading, monthsRange.join(",")]);
 
   function toggleCellPopover(
     e: React.MouseEvent<HTMLButtonElement>,
@@ -99,6 +192,22 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
           state.expenses.filter((e) => e.cardId === popover.cardId),
         ).get(popover.month) ?? [])
       : [];
+  const popoverAdjustments =
+    popover && popoverCard
+      ? getAdjustmentsForCardMonth(
+          popover.cardId,
+          popover.month,
+          state.balanceAdjustments,
+        )
+      : [];
+  const popoverCarryover =
+    popover && popoverCard
+      ? getCarryoverForCardMonth(
+          popover.cardId,
+          popover.month,
+          state.pendingCarryovers,
+        )
+      : null;
 
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
@@ -158,7 +267,15 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
         data-tour="consolidated-table"
         className="w-full min-w-0 overflow-x-auto rounded-lg bg-surface"
       >
-        <table className="w-full min-w-160 text-sm">
+        <div ref={tableInnerRef} className="relative w-full min-w-160">
+          {showNextMonthColumn && (
+            <div
+              ref={nextMonthColumnRef}
+              className="pointer-events-none absolute top-0 z-[1] box-border border border-white/40"
+              aria-hidden
+            />
+          )}
+          <table className="relative z-0 w-full min-w-160 text-sm">
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">
               <th className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
@@ -170,12 +287,12 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                   data-month={month}
                   className={`px-3.5 py-2.5 text-right font-medium whitespace-nowrap ${
                     isOverBudget[i]
-                      ? "bg-amber-500/5 text-amber-400"
-                      : month === currentMonth
-                        ? "text-zinc-200"
+                      ? "text-budget-alert"
+                      : isNextMonthColumn(month)
+                        ? "text-zinc-100"
                         : month < currentMonth
                           ? "text-zinc-600"
-                          : ""
+                          : "text-zinc-400"
                   }`}
                 >
                   {formatMonthLabel(month)}
@@ -204,7 +321,7 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                   <td
                     key={monthsRange[i]}
                     className={`px-1.5 py-1 text-right ${
-                      isOverBudget[i] ? "bg-amber-500/5" : ""
+                      isOverBudget[i] ? "ring-budget-alert" : ""
                     }`}
                   >
                     <button
@@ -232,35 +349,50 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                 ))}
               </tr>
             ))}
-            <tr className="bg-white/5">
-              <td className="sticky left-0 z-10 border-r border-white/5 bg-[#25252e] px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300">
+            <tr className="border-t border-white/[0.06] bg-white/[0.03]">
+              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
                 {t("consolidated.totalAllCards")}
               </td>
               {grandTotals.map((total, i) => (
                 <td
                   key={monthsRange[i]}
-                  className={`px-3.5 py-2.5 text-right ${
+                  className={`bg-white/[0.03] px-3 py-1.5 text-right ${
                     isOverBudget[i]
-                      ? "bg-amber-500/10 text-amber-400"
+                      ? "text-budget-alert"
                       : monthsRange[i] < currentMonth
-                        ? "text-zinc-500"
-                        : "text-white"
+                        ? "text-zinc-400"
+                        : "text-zinc-100"
                   }`}
                 >
                   <AmountDisplay
                     ars={total}
                     usd={grandTotalsUsd[i]}
-                    className="items-end font-semibold"
+                    className="items-end text-sm font-medium"
                   />
                 </td>
               ))}
             </tr>
+            {showPaidRow && (
+            <tr className="border-t border-white/10">
+              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                {t("payment.paidRow")}
+              </td>
+              {monthsRange.map((month) => (
+                <PaidMonthCell
+                  key={month}
+                  month={month}
+                  cards={state.cards}
+                />
+              ))}
+            </tr>
+          )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {budgetAlert > 0 && isOverBudget.some(Boolean) && (
-        <p className="text-xs text-amber-400/80">
+        <p className="text-xs text-budget-alert-muted">
           {t("consolidated.budgetExceeded", {
             amount: formatMoney(budgetAlert, currency),
           })}
@@ -295,7 +427,9 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
               ×
             </button>
           </div>
-            {popoverEntries.length === 0 ? (
+            {popoverEntries.length === 0 &&
+            popoverAdjustments.length === 0 &&
+            !popoverCarryover ? (
               <p className="py-2 text-sm text-zinc-500">
                 {t("consolidated.noExpensesThisMonth")}
               </p>
@@ -327,6 +461,43 @@ export function ConsolidatedView({ onImport }: ConsolidatedViewProps) {
                     </li>
                   );
                 })}
+                {popoverCarryover && (
+                  <li className="flex items-center justify-between gap-3 border-b border-amber-500/10 py-1.5 text-sm last:border-b-0">
+                    <span className="truncate text-amber-200">
+                      {t("payment.pendingBalance")}
+                      <span className="ml-1 text-xs text-amber-400/80">
+                        ({formatMonthLabel(popoverCarryover.sourceMonth)})
+                      </span>
+                    </span>
+                    <AmountDisplay
+                      ars={popoverCarryover.amount}
+                      usd={popoverCarryover.amountUsd}
+                      className="shrink-0 items-end text-sm text-amber-200"
+                    />
+                  </li>
+                )}
+                {popoverAdjustments.map((adjustment) => (
+                  <li
+                    key={adjustment.id}
+                    className="flex items-center justify-between gap-3 border-b border-emerald-500/10 py-1.5 text-sm last:border-b-0"
+                  >
+                    <span className="truncate text-emerald-200">
+                      {adjustment.description}
+                      <span className="ml-1 text-xs text-emerald-400/80">
+                        (
+                        {adjustment.type === "payment_advance"
+                          ? t("balanceAdjustment.paymentAdvance")
+                          : t("balanceAdjustment.creditBalance")}
+                        )
+                      </span>
+                    </span>
+                    <AmountDisplay
+                      ars={-adjustment.amount}
+                      usd={-adjustment.amountUsd}
+                      className="shrink-0 items-end text-sm text-emerald-300"
+                    />
+                  </li>
+                ))}
               </ul>
             )}
         </div>

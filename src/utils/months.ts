@@ -1,9 +1,15 @@
-import type { Expense } from "../types";
+import type { BalanceAdjustment, Expense, PendingCarryover } from "../types";
+import { getCurrentMonth } from "./format";
 
 // ---- Configurable months range ----
 export const RANGE_START_MONTH = "2026-06"; // "YYYY-MM"
 export const RANGE_MIN_MONTHS = 6; // always show at least Jun-2026 through Nov-2026
 // -----------------------------------
+
+/** True when `month` is strictly before today's calendar month ("YYYY-MM"). */
+export function isBeforeCurrentMonth(month: string): boolean {
+  return month < getCurrentMonth();
+}
 
 /** Adds `offset` months to a "YYYY-MM" string and returns another "YYYY-MM" string. */
 export function addMonths(month: string, offset: number): string {
@@ -26,10 +32,20 @@ export function monthDiff(from: string, to: string): number {
  * (past months render grayed out) and right until the last installment,
  * always covering at least RANGE_START_MONTH + RANGE_MIN_MONTHS.
  */
-export function getMonthsRange(expenses: Expense[]): string[] {
+export function getMonthsRange(
+  expenses: Expense[],
+  adjustments: BalanceAdjustment[] = [],
+  carryovers: PendingCarryover[] = [],
+): string[] {
   let start = RANGE_START_MONTH;
   for (const expense of expenses) {
     if (expense.startMonth < start) start = expense.startMonth;
+  }
+  for (const adjustment of adjustments) {
+    if (adjustment.applyMonth < start) start = adjustment.applyMonth;
+  }
+  for (const carryover of carryovers) {
+    if (carryover.applyMonth < start) start = carryover.applyMonth;
   }
 
   let count = monthDiff(start, RANGE_START_MONTH) + RANGE_MIN_MONTHS;
@@ -37,5 +53,23 @@ export function getMonthsRange(expenses: Expense[]): string[] {
     const span = monthDiff(start, expense.startMonth) + expense.installments;
     count = Math.max(count, span);
   }
+  for (const adjustment of adjustments) {
+    const span = monthDiff(start, adjustment.applyMonth) + 1;
+    count = Math.max(count, span);
+  }
+  for (const carryover of carryovers) {
+    const span = monthDiff(start, carryover.applyMonth) + 1;
+    count = Math.max(count, span);
+  }
   return Array.from({ length: count }, (_, i) => addMonths(start, i));
+}
+
+/** Hides months before today's calendar month when `showPreviousMonths` is false. */
+export function filterMonthsForDisplay(
+  months: string[],
+  showPreviousMonths: boolean,
+): string[] {
+  if (showPreviousMonths) return months;
+  const currentMonth = getCurrentMonth();
+  return months.filter((month) => month >= currentMonth);
 }

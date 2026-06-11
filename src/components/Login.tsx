@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useApp, type AppLanguage } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { DevSignature } from "./DevSignature";
-
-const LANGUAGES: AppLanguage[] = ["es", "en"];
+import { LanguageToggle } from "./LanguageToggle";
 
 type Mode = "sign-in" | "sign-up";
 
 export function Login() {
   const { t } = useTranslation();
-  const { state, setLanguage } = useApp();
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
@@ -43,40 +40,9 @@ export function Login() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
       <div className="relative w-full max-w-sm rounded-xl border border-white/10 bg-surface p-6">
-        <div
-          className="absolute right-4 top-4 flex rounded-md border border-white/10 bg-base p-0.5"
-          role="group"
-          aria-label={t("login.language")}
-        >
-          {LANGUAGES.map((lang) => {
-            const isActive = state.settings.language === lang;
-            return (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => setLanguage(lang)}
-                aria-pressed={isActive}
-                aria-label={
-                  lang === "es"
-                    ? t("settings.languageEs")
-                    : t("settings.languageEn")
-                }
-                className={`min-w-9 rounded px-2 py-1 text-xs font-semibold tracking-wide transition-colors ${
-                  isActive
-                    ? "bg-white/15 text-white"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                {lang.toUpperCase()}
-              </button>
-            );
-          })}
-        </div>
+        <LanguageToggle className="absolute right-4 top-4" />
 
-        <h1
-          className="text-center text-lg font-semibold"
-          style={{ color: "var(--color-title)" }}
-        >
+        <h1 className="brand-title text-center text-lg font-semibold">
           {t("login.brandName")}
         </h1>
         <p className="mt-2 text-center text-sm text-zinc-300">

@@ -1,46 +1,81 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Card } from "../types";
+import type { Card, Expense } from "../types";
 import { useApp } from "../context/AppContext";
-import { getMonthlyBreakdown } from "../utils/expenses";
+import { getExpenseMonthlyRate, getMonthlyBreakdown } from "../utils/expenses";
 import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { Modal, useModalClose } from "./Modal";
 
 const START_MONTH_LOOKBACK = 12;
-const DEFAULT_SUBSCRIPTION_MONTHS = 12;
 
 type PaymentType = "one-time" | "installments";
 
-type AddExpenseModalProps = {
+type EditExpenseModalProps = {
   card: Card;
+  expense: Expense;
   onClose: () => void;
 };
 
-export function AddExpenseModal({ card, onClose }: AddExpenseModalProps) {
+export function EditExpenseModal({
+  card,
+  expense,
+  onClose,
+}: EditExpenseModalProps) {
   const { t } = useTranslation();
   return (
-    <Modal title={t("addExpense.title", { card: card.name })} onClose={onClose}>
-      <ExpenseForm card={card} />
+    <Modal
+      title={t("editExpense.title", { description: expense.description })}
+      onClose={onClose}
+    >
+      <EditForm card={card} expense={expense} />
     </Modal>
   );
 }
 
-function ExpenseForm({ card }: { card: Card }) {
+function deriveInitialPaymentType(expense: Expense): PaymentType {
+  return expense.installments > 1 && !expense.isMonthlyCharge
+    ? "installments"
+    : "one-time";
+}
+
+function deriveInitialAmounts(expense: Expense) {
+  if (expense.isMonthlyCharge) {
+    const rate = getExpenseMonthlyRate(expense);
+    return {
+      amountInput: rate.ars > 0 ? String(rate.ars) : "",
+      usdAmountInput: rate.usd > 0 ? String(rate.usd) : "",
+    };
+  }
+  return {
+    amountInput: expense.totalAmount > 0 ? String(expense.totalAmount) : "",
+    usdAmountInput:
+      expense.totalAmountUsd > 0 ? String(expense.totalAmountUsd) : "",
+  };
+}
+
+function EditForm({ card, expense }: { card: Card; expense: Expense }) {
   const { t } = useTranslation();
-  const { state, addExpense } = useApp();
+  const { state, updateExpense } = useApp();
   const close = useModalClose();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
-  const [amountInput, setAmountInput] = useState("");
-  const [usdAmountInput, setUsdAmountInput] = useState("");
-  const [paymentType, setPaymentType] = useState<PaymentType>("one-time");
-  const [isMonthlyCharge, setIsMonthlyCharge] = useState(false);
-  const [subscriptionMonthsInput, setSubscriptionMonthsInput] = useState(
-    String(DEFAULT_SUBSCRIPTION_MONTHS),
+  const initialAmounts = deriveInitialAmounts(expense);
+  const [description, setDescription] = useState(expense.description);
+  const [amountInput, setAmountInput] = useState(initialAmounts.amountInput);
+  const [usdAmountInput, setUsdAmountInput] = useState(
+    initialAmounts.usdAmountInput,
   );
-  const [installmentsInput, setInstallmentsInput] = useState("3");
+  const [paymentType, setPaymentType] = useState<PaymentType>(() =>
+    deriveInitialPaymentType(expense),
+  );
+  const [isMonthlyCharge, setIsMonthlyCharge] = useState(expense.isMonthlyCharge);
+  const [subscriptionMonthsInput, setSubscriptionMonthsInput] = useState(
+    expense.isMonthlyCharge ? String(expense.installments) : "12",
+  );
+  const [installmentsInput, setInstallmentsInput] = useState(
+    expense.installments > 1 ? String(expense.installments) : "3",
+  );
   const currentMonth = getCurrentMonth();
   const visibleRange = getMonthsRange(
     state.expenses,
@@ -56,7 +91,7 @@ function ExpenseForm({ card }: { card: Card }) {
     { length: monthDiff(firstOption, lastOption) + 1 },
     (_, i) => addMonths(firstOption, i),
   );
-  const [startMonth, setStartMonth] = useState(currentMonth);
+  const [startMonth, setStartMonth] = useState(expense.startMonth);
 
   const isSubscription = paymentType === "one-time" && isMonthlyCharge;
   const amount = Number.parseFloat(amountInput) || 0;
@@ -83,8 +118,7 @@ function ExpenseForm({ card }: { card: Card }) {
     ? [
         ...getMonthlyBreakdown([
           {
-            id: "preview",
-            cardId: card.id,
+            ...expense,
             description,
             totalAmount,
             totalAmountUsd,
@@ -112,8 +146,7 @@ function ExpenseForm({ card }: { card: Card }) {
 
     setSaving(true);
     setError(null);
-    const errorMessage = await addExpense({
-      cardId: card.id,
+    const errorMessage = await updateExpense(expense.id, {
       description: trimmed,
       totalAmount,
       totalAmountUsd,
@@ -140,13 +173,13 @@ function ExpenseForm({ card }: { card: Card }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="expense-description"
+          htmlFor="edit-expense-description"
           className="text-xs font-medium text-zinc-400"
         >
           {t("common.description")}
         </label>
         <input
-          id="expense-description"
+          id="edit-expense-description"
           type="text"
           required
           autoFocus
@@ -159,13 +192,13 @@ function ExpenseForm({ card }: { card: Card }) {
 
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="expense-amount"
+          htmlFor="edit-expense-amount"
           className="text-xs font-medium text-zinc-400"
         >
           {arsLabel}
         </label>
         <input
-          id="expense-amount"
+          id="edit-expense-amount"
           type="number"
           min="0"
           step="0.01"
@@ -179,13 +212,13 @@ function ExpenseForm({ card }: { card: Card }) {
 
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="expense-amount-usd"
+          htmlFor="edit-expense-amount-usd"
           className="text-xs font-medium text-zinc-400"
         >
           {usdLabel}
         </label>
         <input
-          id="expense-amount-usd"
+          id="edit-expense-amount-usd"
           type="number"
           min="0"
           step="0.01"
@@ -218,10 +251,13 @@ function ExpenseForm({ card }: { card: Card }) {
             >
               <input
                 type="radio"
-                name="payment-type"
+                name="edit-payment-type"
                 value={value}
                 checked={paymentType === value}
-                onChange={() => setPaymentType(value)}
+                onChange={() => {
+                  setPaymentType(value);
+                  if (value === "installments") setIsMonthlyCharge(false);
+                }}
                 className="sr-only"
               />
               {label}
@@ -250,13 +286,13 @@ function ExpenseForm({ card }: { card: Card }) {
       {paymentType === "installments" && (
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="expense-installments"
+            htmlFor="edit-expense-installments"
             className="text-xs font-medium text-zinc-400"
           >
             {t("addExpense.installmentCount")}
           </label>
           <input
-            id="expense-installments"
+            id="edit-expense-installments"
             type="number"
             required
             min="2"
@@ -272,13 +308,13 @@ function ExpenseForm({ card }: { card: Card }) {
       {isSubscription && (
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="expense-subscription-months"
+            htmlFor="edit-expense-subscription-months"
             className="text-xs font-medium text-zinc-400"
           >
             {t("addExpense.subscriptionMonths")}
           </label>
           <input
-            id="expense-subscription-months"
+            id="edit-expense-subscription-months"
             type="number"
             required
             min="1"
@@ -293,13 +329,13 @@ function ExpenseForm({ card }: { card: Card }) {
 
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="expense-start-month"
+          htmlFor="edit-expense-start-month"
           className="text-xs font-medium text-zinc-400"
         >
           {t("addExpense.startMonth")}
         </label>
         <select
-          id="expense-start-month"
+          id="edit-expense-start-month"
           value={startMonth}
           onChange={(e) => setStartMonth(e.target.value)}
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
@@ -363,7 +399,7 @@ function ExpenseForm({ card }: { card: Card }) {
           className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: card.color }}
         >
-          {saving ? t("common.saving") : t("addExpense.submit")}
+          {saving ? t("common.saving") : t("editExpense.submit")}
         </button>
       </div>
     </form>

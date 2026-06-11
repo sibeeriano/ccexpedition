@@ -14,8 +14,8 @@ export function AmountDisplay({
   className = "",
   inline = false,
 }: AmountDisplayProps) {
-  const hasArs = ars > 0;
-  const hasUsd = usd > 0;
+  const hasArs = ars !== 0;
+  const hasUsd = usd !== 0;
 
   if (!hasArs && !hasUsd) {
     return <span className={className}>{formatMoney(0, "ARS")}</span>;
