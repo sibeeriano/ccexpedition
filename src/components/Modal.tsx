@@ -66,12 +66,12 @@ export function Modal({
           requestClose();
       }}
       aria-labelledby={titleId}
-      className={`m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-white/10 bg-surface p-0 text-zinc-200 shadow-xl backdrop:bg-black/60 ${
+      className={`m-auto flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-sm flex-col overflow-hidden rounded-xl border border-white/10 bg-surface p-0 text-zinc-200 shadow-xl backdrop:bg-black/60 ${
         closing ? "modal-closing" : ""
       }`}
     >
-      <div className="p-5">
-        <header className="mb-4 flex items-center justify-between">
+      <div className="flex min-h-0 flex-1 flex-col p-5">
+        <header className="mb-4 flex shrink-0 items-center justify-between">
           <h2 id={titleId} className="text-sm font-semibold text-white">
             {title}
           </h2>
@@ -84,9 +84,11 @@ export function Modal({
             ×
           </button>
         </header>
-        <ModalCloseContext.Provider value={requestClose}>
-          {children}
-        </ModalCloseContext.Provider>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <ModalCloseContext.Provider value={requestClose}>
+            {children}
+          </ModalCloseContext.Provider>
+        </div>
       </div>
     </dialog>
   );
