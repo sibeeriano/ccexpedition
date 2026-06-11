@@ -12,50 +12,29 @@ import type {
   BalanceAdjustmentType,
   Card,
   CardHolder,
-  CurrencySymbol,
   Expense,
   MonthlyPayment,
   PendingCarryover,
 } from "../types";
-import { getMonthlyDueByCard } from "../utils/expenses";
+import { getMonthlyDueByCard, isCardMonthPaid } from "../utils/expenses";
 import { addMonths, isBeforeCurrentMonth } from "../utils/months";
 import { supabase } from "../lib/supabase";
 import i18n, { type AppLanguage } from "../i18n";
 import {
   applyTheme,
-  DEFAULT_BACKGROUND,
-  DEFAULT_BUDGET_ALERT_COLOR,
-  DEFAULT_TITLE_COLOR,
-  DEFAULT_WORKSPACE_TITLE,
   isValidHexColor,
   normalizeWorkspaceTitle,
 } from "../utils/theme";
+import {
+  type AppSettings,
+  loadSettingsFromLocalStorage,
+  parseAppSettings,
+  saveSettingsToLocalStorage,
+  settingsSnapshot,
+} from "../utils/settings";
 import { useAuth } from "./AuthContext";
 
-export type { AppLanguage };
-
-const SETTINGS_KEY_PREFIX = "ccexpedition-settings";
-const LEGACY_SETTINGS_KEY = "ccexpedition-settings";
-const LEGACY_STATE_KEY = "ccexpedition-state";
-
-function settingsStorageKey(userId: string | null): string {
-  return userId
-    ? `${SETTINGS_KEY_PREFIX}-${userId}`
-    : `${SETTINGS_KEY_PREFIX}-guest`;
-}
-
-export type AppSettings = {
-  currency: CurrencySymbol;
-  /** 0 = alert disabled */
-  budgetAlert: number;
-  budgetAlertColor: string;
-  showPreviousMonths: boolean;
-  showPaidRow: boolean;
-  backgroundColor: string;
-  titleColor: string;
-  titleText: string;
-  language: AppLanguage;
-};
+export type { AppLanguage, AppSettings };
 
 export type AppState = {
   cards: Card[];
@@ -74,7 +53,7 @@ type AppContextValue = {
   addCard: (input: Omit<Card, "id">) => Promise<string | null>;
   updateCard: (
     id: string,
-    input: Partial<Pick<Card, "name" | "holder" | "color">>,
+    input: Partial<Pick<Card, "name" | "holder" | "color" | "backgroundColor">>,
   ) => Promise<string | null>;
   deleteCard: (id: string) => Promise<string | null>;
   addExpense: (input: Omit<Expense, "id">) => Promise<string | null>;
@@ -116,81 +95,25 @@ type AppContextValue = {
   }) => Promise<string | null>;
   clearMonthlyPayment: (cardId: string, month: string) => Promise<string | null>;
   isMonthPaid: (cardId: string, month: string) => boolean;
-  setCurrency: (currency: CurrencySymbol) => void;
   setBudgetAlert: (amount: number) => void;
-  setBudgetAlertColor: (color: string) => void;
-  setShowPreviousMonths: (show: boolean) => void;
-  setShowPaidRow: (show: boolean) => void;
-  setBackgroundColor: (color: string) => void;
-  setTitleColor: (color: string) => void;
-  setTitleText: (text: string) => void;
+  /** Flush any pending auto-saved settings (e.g. budget alert on blur). */
+  flushSettingsPersist: () => void;
   setLanguage: (language: AppLanguage) => void;
+  /** Apply workspace settings and persist (used by the settings modal Save button). */
+  applySettings: (settings: AppSettings) => Promise<string | null>;
 };
 
-const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
+type UserSettingsRow = {
+  settings: Partial<AppSettings>;
+};
 
-function loadSettings(userId: string | null): AppSettings {
-  const defaults: AppSettings = {
-    currency: "$",
-    budgetAlert: 0,
-    budgetAlertColor: DEFAULT_BUDGET_ALERT_COLOR,
-    showPreviousMonths: true,
-    showPaidRow: true,
-    backgroundColor: DEFAULT_BACKGROUND,
-    titleColor: DEFAULT_TITLE_COLOR,
-    titleText: DEFAULT_WORKSPACE_TITLE,
-    language: i18n.language === "es" ? "es" : "en",
-  };
-  try {
-    const key = settingsStorageKey(userId);
-    const hadSavedUserSettings = Boolean(localStorage.getItem(key));
-    let raw = localStorage.getItem(key);
-    const migratingLegacyForUser = Boolean(userId) && !hadSavedUserSettings;
-
-    if (!raw && userId) {
-      raw =
-        localStorage.getItem(LEGACY_SETTINGS_KEY) ??
-        JSON.stringify(
-          JSON.parse(localStorage.getItem(LEGACY_STATE_KEY) ?? "{}").settings ??
-            {},
-        );
-    }
-
-    if (!raw) return defaults;
-
-    const parsed = JSON.parse(raw) as Partial<AppSettings>;
-    return {
-      currency: CURRENCIES.includes(parsed.currency as CurrencySymbol)
-        ? (parsed.currency as CurrencySymbol)
-        : defaults.currency,
-      budgetAlert:
-        typeof parsed.budgetAlert === "number" && parsed.budgetAlert >= 0
-          ? parsed.budgetAlert
-          : defaults.budgetAlert,
-      budgetAlertColor: isValidHexColor(parsed.budgetAlertColor ?? "")
-        ? parsed.budgetAlertColor!
-        : defaults.budgetAlertColor,
-      showPreviousMonths: parsed.showPreviousMonths !== false,
-      showPaidRow: parsed.showPaidRow !== false,
-      backgroundColor: isValidHexColor(parsed.backgroundColor ?? "")
-        ? parsed.backgroundColor!
-        : defaults.backgroundColor,
-      titleColor: isValidHexColor(parsed.titleColor ?? "")
-        ? parsed.titleColor!
-        : defaults.titleColor,
-      titleText: migratingLegacyForUser
-        ? defaults.titleText
-        : typeof parsed.titleText === "string"
-          ? normalizeWorkspaceTitle(parsed.titleText)
-          : defaults.titleText,
-      language:
-        parsed.language === "en" || parsed.language === "es"
-          ? parsed.language
-          : defaults.language,
-    };
-  } catch {
-    return defaults;
-  }
+function applySettingsTheme(settings: AppSettings) {
+  applyTheme({
+    backgroundColor: settings.backgroundColor,
+    titleColor: settings.titleColor,
+    titleText: settings.titleText,
+    budgetAlertColor: settings.budgetAlertColor,
+  });
 }
 
 type CardRow = {
@@ -198,6 +121,7 @@ type CardRow = {
   name: string;
   holder: string;
   color: string;
+  background_color: string | null;
 };
 
 type ExpenseRow = {
@@ -241,11 +165,16 @@ type PendingCarryoverRow = {
 };
 
 function mapCard(row: CardRow): Card {
+  const backgroundColor =
+    row.background_color && isValidHexColor(row.background_color)
+      ? row.background_color
+      : null;
   return {
     id: row.id,
     name: row.name,
     holder: row.holder as CardHolder,
     color: row.color,
+    backgroundColor,
   };
 }
 
@@ -318,45 +247,134 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const skipNextSettingsSave = useRef(false);
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    const loaded = loadSettings(null);
-    applyTheme({
-      backgroundColor: loaded.backgroundColor,
-      titleColor: loaded.titleColor,
-      titleText: loaded.titleText,
-      budgetAlertColor: loaded.budgetAlertColor,
-    });
+  const initialSettings = (() => {
+    const loaded = loadSettingsFromLocalStorage(null);
+    applySettingsTheme(loaded);
     return loaded;
-  });
+  })();
+  const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const persistedSettingsRef = useRef(settingsSnapshot(initialSettings));
+  const settingsAutoPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  function markSettingsPersisted(value: AppSettings) {
+    persistedSettingsRef.current = settingsSnapshot(value);
+  }
+
+  async function persistSettingsToStorage(
+    value: AppSettings,
+    activeUserId: string | null,
+  ): Promise<string | null> {
+    saveSettingsToLocalStorage(activeUserId, value);
+    if (!activeUserId) {
+      markSettingsPersisted(value);
+      return null;
+    }
+
+    const { error } = await supabase.from("user_settings").upsert({
+      user_id: activeUserId,
+      settings: value,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      console.error("Failed to save user settings:", error);
+      return error.message;
+    }
+
+    markSettingsPersisted(value);
+    return null;
+  }
+
+  function scheduleAutoPersistSettings(value: AppSettings) {
+    saveSettingsToLocalStorage(userId, value);
+    if (!userId) {
+      markSettingsPersisted(value);
+      return;
+    }
+
+    if (settingsAutoPersistTimer.current) {
+      clearTimeout(settingsAutoPersistTimer.current);
+    }
+    settingsAutoPersistTimer.current = setTimeout(() => {
+      void persistSettingsToStorage(value, userId);
+    }, 500);
+  }
+
+  function flushSettingsPersist() {
+    if (settingsAutoPersistTimer.current) {
+      clearTimeout(settingsAutoPersistTimer.current);
+      settingsAutoPersistTimer.current = null;
+    }
+    void persistSettingsToStorage(settingsRef.current, userId);
+  }
+
+  async function applySettings(next: AppSettings): Promise<string | null> {
+    if (settingsAutoPersistTimer.current) {
+      clearTimeout(settingsAutoPersistTimer.current);
+      settingsAutoPersistTimer.current = null;
+    }
+    const normalized: AppSettings = {
+      ...next,
+      titleText: normalizeWorkspaceTitle(next.titleText),
+    };
+    setSettings(normalized);
+    applySettingsTheme(normalized);
+    if (i18n.language !== normalized.language) {
+      await i18n.changeLanguage(normalized.language);
+    }
+    document.documentElement.lang = normalized.language;
+    return persistSettingsToStorage(normalized, userId);
+  }
 
   useEffect(() => {
-    const loaded = loadSettings(userId);
-    skipNextSettingsSave.current = true;
-    setSettings(loaded);
-    applyTheme({
-      backgroundColor: loaded.backgroundColor,
-      titleColor: loaded.titleColor,
-      titleText: loaded.titleText,
-      budgetAlertColor: loaded.budgetAlertColor,
-    });
+    if (!userId) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      const { data, error } = await supabase
+        .from("user_settings")
+        .select("settings")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      let loaded: AppSettings;
+      if (error) {
+        console.error("Failed to load user settings:", error);
+        loaded = loadSettingsFromLocalStorage(userId);
+      } else if (data?.settings && typeof data.settings === "object") {
+        loaded = parseAppSettings((data as UserSettingsRow).settings);
+        saveSettingsToLocalStorage(userId, loaded);
+      } else {
+        loaded = loadSettingsFromLocalStorage(userId);
+        const { error: seedError } = await supabase.from("user_settings").upsert({
+          user_id: userId,
+          settings: loaded,
+          updated_at: new Date().toISOString(),
+        });
+        if (seedError) {
+          console.error("Failed to seed user settings:", seedError);
+        }
+      }
+
+      setSettings(loaded);
+      markSettingsPersisted(loaded);
+      applySettingsTheme(loaded);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   useEffect(() => {
-    if (skipNextSettingsSave.current) {
-      skipNextSettingsSave.current = false;
-      return;
-    }
-    localStorage.setItem(settingsStorageKey(userId), JSON.stringify(settings));
-  }, [settings, userId]);
-
-  useEffect(() => {
-    applyTheme({
-      backgroundColor: settings.backgroundColor,
-      titleColor: settings.titleColor,
-      titleText: settings.titleText,
-      budgetAlertColor: settings.budgetAlertColor,
-    });
+    applySettingsTheme(settings);
   }, [
     settings.backgroundColor,
     settings.titleColor,
@@ -388,7 +406,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     Promise.all([
       supabase
         .from("cards")
-        .select("id, name, holder, color")
+        .select("id, name, holder, color, background_color")
         .order("created_at"),
       supabase
         .from("expenses")
@@ -471,9 +489,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         name: input.name,
         holder: input.holder,
         color: input.color,
+        background_color: input.backgroundColor,
         user_id: userId,
       })
-      .select("id, name, holder, color")
+      .select("id, name, holder, color, background_color")
       .single();
 
     if (error || !data) {
@@ -487,7 +506,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function updateCard(
     id: string,
-    input: Partial<Pick<Card, "name" | "holder" | "color">>,
+    input: Partial<Pick<Card, "name" | "holder" | "color" | "backgroundColor">>,
   ) {
     const current = cards.find((card) => card.id === id);
     if (!current) return i18n.t("errors.cardNotFound");
@@ -496,15 +515,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const holder =
       input.holder !== undefined ? input.holder.trim() : current.holder;
     const color = input.color ?? current.color;
+    const backgroundColor =
+      input.backgroundColor !== undefined
+        ? input.backgroundColor
+        : current.backgroundColor;
 
     if (!name) return i18n.t("errors.cardNameRequired");
     if (!holder) return i18n.t("errors.holderRequired");
+    if (!isValidHexColor(color)) return i18n.t("errors.invalidCardColor");
+    if (backgroundColor !== null && !isValidHexColor(backgroundColor)) {
+      return i18n.t("errors.invalidCardColor");
+    }
 
     const { data, error } = await supabase
       .from("cards")
-      .update({ name, holder, color })
+      .update({
+        name,
+        holder,
+        color,
+        background_color: backgroundColor,
+      })
       .eq("id", id)
-      .select("id, name, holder, color")
+      .select("id, name, holder, color, background_color")
       .single();
 
     if (error || !data) {
@@ -786,10 +818,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   function isMonthPaid(cardId: string, month: string): boolean {
-    if (isBeforeCurrentMonth(month)) return true;
-    return monthlyPayments.some(
-      (payment) => payment.cardId === cardId && payment.month === month,
-    );
+    return isCardMonthPaid(cardId, month, monthlyPayments);
   }
 
   async function settleMonthlyPayment(input: {
@@ -959,46 +988,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return null;
   }
 
-  function setCurrency(currency: CurrencySymbol) {
-    setSettings((prev) => ({ ...prev, currency }));
-  }
-
   function setBudgetAlert(amount: number) {
-    setSettings((prev) => ({ ...prev, budgetAlert: Math.max(0, amount) }));
-  }
-
-  function setBudgetAlertColor(color: string) {
-    if (!isValidHexColor(color)) return;
-    setSettings((prev) => ({ ...prev, budgetAlertColor: color }));
-  }
-
-  function setShowPreviousMonths(show: boolean) {
-    setSettings((prev) => ({ ...prev, showPreviousMonths: show }));
-  }
-
-  function setShowPaidRow(show: boolean) {
-    setSettings((prev) => ({ ...prev, showPaidRow: show }));
-  }
-
-  function setBackgroundColor(color: string) {
-    if (!isValidHexColor(color)) return;
-    setSettings((prev) => ({ ...prev, backgroundColor: color }));
-  }
-
-  function setTitleColor(color: string) {
-    if (!isValidHexColor(color)) return;
-    setSettings((prev) => ({ ...prev, titleColor: color }));
-  }
-
-  function setTitleText(text: string) {
-    setSettings((prev) => ({
-      ...prev,
-      titleText: normalizeWorkspaceTitle(text),
-    }));
+    setSettings((prev) => {
+      const next = { ...prev, budgetAlert: Math.max(0, amount) };
+      scheduleAutoPersistSettings(next);
+      return next;
+    });
   }
 
   function setLanguage(language: AppLanguage) {
-    setSettings((prev) => ({ ...prev, language }));
+    setSettings((prev) => {
+      const next = { ...prev, language };
+      scheduleAutoPersistSettings(next);
+      return next;
+    });
   }
 
   const state: AppState = {
@@ -1029,15 +1032,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         settleMonthlyPayment,
         clearMonthlyPayment,
         isMonthPaid,
-        setCurrency,
         setBudgetAlert,
-        setBudgetAlertColor,
-        setShowPreviousMonths,
-        setShowPaidRow,
-        setBackgroundColor,
-        setTitleColor,
-        setTitleText,
+        flushSettingsPersist,
         setLanguage,
+        applySettings,
       }}
     >
       {children}

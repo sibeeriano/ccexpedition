@@ -6,7 +6,9 @@ export type Card = {
   id: string;
   name: string; // e.g. "Mastercard BBVA"
   holder: CardHolder;
-  color: string; // hex for UI
+  color: string; // hex accent for UI
+  /** Optional chip background; null = default surface */
+  backgroundColor: string | null;
 };
 
 export type MonthlyPayment = {

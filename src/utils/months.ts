@@ -1,6 +1,27 @@
 import type { BalanceAdjustment, Expense, PendingCarryover } from "../types";
 import { getCurrentMonth } from "./format";
 
+export const EXPENSE_START_MONTH_LOOKBACK = 12;
+
+/** Months offered when picking a start/apply month in expense modals. */
+export function getExpenseStartMonthOptions(
+  expenses: Expense[],
+  adjustments: BalanceAdjustment[] = [],
+  carryovers: PendingCarryover[] = [],
+): string[] {
+  const currentMonth = getCurrentMonth();
+  const visibleRange = getMonthsRange(expenses, adjustments, carryovers);
+  const firstOption = addMonths(currentMonth, -EXPENSE_START_MONTH_LOOKBACK);
+  const lastOption =
+    visibleRange[visibleRange.length - 1] > currentMonth
+      ? visibleRange[visibleRange.length - 1]
+      : currentMonth;
+  return Array.from(
+    { length: monthDiff(firstOption, lastOption) + 1 },
+    (_, i) => addMonths(firstOption, i),
+  );
+}
+
 // ---- Configurable months range ----
 export const RANGE_START_MONTH = "2026-06"; // "YYYY-MM"
 export const RANGE_MIN_MONTHS = 6; // always show at least Jun-2026 through Nov-2026

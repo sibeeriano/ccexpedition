@@ -1,5 +1,9 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
+import { getOutstandingDebt } from "../utils/expenses";
+import { getMonthsRange } from "../utils/months";
+import { getCardChipStyle, hasCardBackground } from "../utils/theme";
 import { AmountDisplay } from "./AmountDisplay";
 
 export const ALL_CARDS_VIEW = "all";
@@ -13,21 +17,59 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   const { t } = useTranslation();
   const { state } = useApp();
 
-  const debtByCard = new Map<string, { ars: number; usd: number }>();
-  for (const expense of state.expenses) {
-    const current = debtByCard.get(expense.cardId) ?? { ars: 0, usd: 0 };
-    debtByCard.set(expense.cardId, {
-      ars: current.ars + expense.totalAmount,
-      usd: current.usd + expense.totalAmountUsd,
-    });
-  }
+  const monthsRange = useMemo(
+    () =>
+      getMonthsRange(
+        state.expenses,
+        state.balanceAdjustments,
+        state.pendingCarryovers,
+      ),
+    [state.expenses, state.balanceAdjustments, state.pendingCarryovers],
+  );
 
-  const grandDebt = state.expenses.reduce(
-    (acc, expense) => ({
-      ars: acc.ars + expense.totalAmount,
-      usd: acc.usd + expense.totalAmountUsd,
-    }),
-    { ars: 0, usd: 0 },
+  const debtByCard = useMemo(() => {
+    const map = new Map<string, { ars: number; usd: number }>();
+    for (const card of state.cards) {
+      map.set(
+        card.id,
+        getOutstandingDebt(
+          [card.id],
+          monthsRange,
+          state.expenses,
+          state.balanceAdjustments,
+          state.pendingCarryovers,
+          state.monthlyPayments,
+        ),
+      );
+    }
+    return map;
+  }, [
+    state.cards,
+    monthsRange,
+    state.expenses,
+    state.balanceAdjustments,
+    state.pendingCarryovers,
+    state.monthlyPayments,
+  ]);
+
+  const grandDebt = useMemo(
+    () =>
+      getOutstandingDebt(
+        state.cards.map((card) => card.id),
+        monthsRange,
+        state.expenses,
+        state.balanceAdjustments,
+        state.pendingCarryovers,
+        state.monthlyPayments,
+      ),
+    [
+      state.cards,
+      monthsRange,
+      state.expenses,
+      state.balanceAdjustments,
+      state.pendingCarryovers,
+      state.monthlyPayments,
+    ],
   );
 
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
@@ -62,6 +104,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       {state.cards.map((card) => {
         const isSelected = card.id === selectedId;
         const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
+        const customBg = hasCardBackground(card);
 
         return (
           <button
@@ -70,14 +113,14 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
             onClick={() => onSelect(card.id)}
             className={`flex shrink-0 flex-col gap-1 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
               isSelected
-                ? "border-transparent bg-surface"
-                : "border-white/5 bg-transparent hover:bg-surface/60"
+                ? customBg
+                  ? "border-transparent"
+                  : "border-transparent bg-surface"
+                : customBg
+                  ? "border-white/5 hover:brightness-110"
+                  : "border-white/5 bg-transparent hover:bg-surface/60"
             }`}
-            style={
-              isSelected
-                ? { boxShadow: `inset 0 0 0 1px ${card.color}` }
-                : undefined
-            }
+            style={getCardChipStyle(card, { selected: isSelected })}
           >
             <span className="flex items-center gap-1.5">
               <span

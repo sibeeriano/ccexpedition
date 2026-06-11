@@ -2,9 +2,10 @@ import type {
   BalanceAdjustment,
   Expense,
   MonthlyEntry,
+  MonthlyPayment,
   PendingCarryover,
 } from "../types";
-import { addMonths } from "./months";
+import { addMonths, isBeforeCurrentMonth } from "./months";
 
 /** Rounds to 2 decimals to avoid floating point artifacts. */
 function round2(value: number): number {
@@ -164,6 +165,51 @@ export function getMonthlyTotalUsdByCard(
     "amountUsd",
   );
   return round2(expenseTotal - creditTotal + carryoverTotal);
+}
+
+/** True when a card-month is settled (past months count as paid). */
+export function isCardMonthPaid(
+  cardId: string,
+  month: string,
+  monthlyPayments: MonthlyPayment[],
+): boolean {
+  if (isBeforeCurrentMonth(month)) return true;
+  return monthlyPayments.some(
+    (payment) => payment.cardId === cardId && payment.month === month,
+  );
+}
+
+/** Sum of monthly dues for unpaid card-month pairs (what's left to pay). */
+export function getOutstandingDebt(
+  cardIds: string[],
+  months: string[],
+  expenses: Expense[],
+  adjustments: BalanceAdjustment[],
+  carryovers: PendingCarryover[],
+  monthlyPayments: MonthlyPayment[],
+): { ars: number; usd: number } {
+  let ars = 0;
+  let usd = 0;
+  for (const cardId of cardIds) {
+    for (const month of months) {
+      if (isCardMonthPaid(cardId, month, monthlyPayments)) continue;
+      ars += getMonthlyTotalByCard(
+        cardId,
+        month,
+        expenses,
+        adjustments,
+        carryovers,
+      );
+      usd += getMonthlyTotalUsdByCard(
+        cardId,
+        month,
+        expenses,
+        adjustments,
+        carryovers,
+      );
+    }
+  }
+  return { ars: round2(ars), usd: round2(usd) };
 }
 
 /** Amount due before payment (expenses - credits + carryover). */

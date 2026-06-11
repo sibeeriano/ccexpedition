@@ -3,11 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown } from "../utils/expenses";
-import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
+import { getExpenseStartMonthOptions } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { MonthSelectField } from "./MonthSelectField";
 import { Modal, useModalClose } from "./Modal";
-
-const START_MONTH_LOOKBACK = 12;
 const DEFAULT_SUBSCRIPTION_MONTHS = 12;
 
 type PaymentType = "one-time" | "installments";
@@ -42,19 +41,10 @@ function ExpenseForm({ card }: { card: Card }) {
   );
   const [installmentsInput, setInstallmentsInput] = useState("3");
   const currentMonth = getCurrentMonth();
-  const visibleRange = getMonthsRange(
+  const monthOptions = getExpenseStartMonthOptions(
     state.expenses,
     state.balanceAdjustments,
     state.pendingCarryovers,
-  );
-  const firstOption = addMonths(currentMonth, -START_MONTH_LOOKBACK);
-  const lastOption =
-    visibleRange[visibleRange.length - 1] > currentMonth
-      ? visibleRange[visibleRange.length - 1]
-      : currentMonth;
-  const monthOptions = Array.from(
-    { length: monthDiff(firstOption, lastOption) + 1 },
-    (_, i) => addMonths(firstOption, i),
   );
   const [startMonth, setStartMonth] = useState(currentMonth);
 
@@ -300,19 +290,13 @@ function ExpenseForm({ card }: { card: Card }) {
         >
           {t("addExpense.startMonth")}
         </label>
-        <select
+        <MonthSelectField
           id="expense-start-month"
           value={startMonth}
-          onChange={(e) => setStartMonth(e.target.value)}
-          className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
-        >
-          {monthOptions.map((month) => (
-            <option key={month} value={month}>
-              {formatMonthLabel(month)}
-              {month < currentMonth ? ` ${t("common.past")}` : ""}
-            </option>
-          ))}
-        </select>
+          options={monthOptions}
+          currentMonth={currentMonth}
+          onChange={setStartMonth}
+        />
       </div>
 
       {previewRows.length > 0 && (

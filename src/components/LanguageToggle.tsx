@@ -5,11 +5,19 @@ const LANGUAGES: AppLanguage[] = ["es", "en"];
 
 type LanguageToggleProps = {
   className?: string;
+  language?: AppLanguage;
+  onLanguageChange?: (language: AppLanguage) => void;
 };
 
-export function LanguageToggle({ className = "" }: LanguageToggleProps) {
+export function LanguageToggle({
+  className = "",
+  language,
+  onLanguageChange,
+}: LanguageToggleProps) {
   const { t } = useTranslation();
   const { state, setLanguage } = useApp();
+  const activeLanguage = language ?? state.settings.language;
+  const handleLanguageChange = onLanguageChange ?? setLanguage;
 
   return (
     <div
@@ -19,12 +27,12 @@ export function LanguageToggle({ className = "" }: LanguageToggleProps) {
       aria-label={t("login.language")}
     >
       {LANGUAGES.map((lang) => {
-        const isActive = state.settings.language === lang;
+        const isActive = activeLanguage === lang;
         return (
           <button
             key={lang}
             type="button"
-            onClick={() => setLanguage(lang)}
+            onClick={() => handleLanguageChange(lang)}
             aria-pressed={isActive}
             aria-label={
               lang === "es"

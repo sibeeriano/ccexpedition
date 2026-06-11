@@ -23,7 +23,7 @@ type CellPopover = {
 
 export function ConsolidatedView() {
   const { t } = useTranslation();
-  const { state, setBudgetAlert } = useApp();
+  const { state, setBudgetAlert, flushSettingsPersist } = useApp();
   const { currency, budgetAlert, showPreviousMonths, showPaidRow } =
     state.settings;
   const currentMonth = getCurrentMonth();
@@ -97,10 +97,13 @@ export function ConsolidatedView() {
     const marker = nextMonthColumnRef.current;
     if (!inner || !marker || !showNextMonthColumn) return;
 
+    const scrollWrap = tableWrapRef.current;
+
     function updateMarker() {
       const th = inner?.querySelector<HTMLElement>(
         `th[data-month="${nextMonth}"]`,
       );
+      const cardHeader = inner?.querySelector<HTMLElement>("thead th:first-child");
       if (!th || !marker || !inner) {
         if (marker) marker.style.display = "none";
         return;
@@ -109,6 +112,14 @@ export function ConsolidatedView() {
       marker.style.left = `${th.offsetLeft}px`;
       marker.style.width = `${th.offsetWidth}px`;
       marker.style.height = `${inner.offsetHeight}px`;
+
+      // Keep the frame behind the sticky card column when scrolled horizontally.
+      const stickyWidth = cardHeader?.offsetWidth ?? 0;
+      const overlap = stickyWidth - (th.offsetLeft - (scrollWrap?.scrollLeft ?? 0));
+      marker.style.clipPath =
+        overlap > 0
+          ? `inset(0 0 0 ${Math.min(overlap, th.offsetWidth)}px)`
+          : "none";
     }
 
     updateMarker();
@@ -116,9 +127,11 @@ export function ConsolidatedView() {
     observer.observe(inner);
     const table = inner.querySelector("table");
     if (table) observer.observe(table);
+    scrollWrap?.addEventListener("scroll", updateMarker, { passive: true });
     window.addEventListener("resize", updateMarker);
     return () => {
       observer.disconnect();
+      scrollWrap?.removeEventListener("scroll", updateMarker);
       window.removeEventListener("resize", updateMarker);
     };
   }, [
@@ -225,6 +238,7 @@ export function ConsolidatedView() {
               onChange={(e) =>
                 setBudgetAlert(Number.parseFloat(e.target.value) || 0)
               }
+              onBlur={flushSettingsPersist}
               className="w-24 bg-transparent font-mono text-sm text-white placeholder:text-zinc-600 focus:outline-none"
             />
           </span>
@@ -242,28 +256,26 @@ export function ConsolidatedView() {
           {showNextMonthColumn && (
             <div
               ref={nextMonthColumnRef}
-              className="pointer-events-none absolute top-0 z-[1] box-border border border-white/40"
+              className="pointer-events-none absolute top-0 z-0 box-border border border-white/40"
               aria-hidden
             />
           )}
-          <table className="relative z-0 w-full min-w-160 text-sm">
+          <table className="relative z-[1] w-full min-w-160 text-sm">
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">
-              <th className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
+              <th className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
                 {t("consolidated.card")}
               </th>
-              {monthsRange.map((month, i) => (
+              {monthsRange.map((month) => (
                 <th
                   key={month}
                   data-month={month}
                   className={`px-3.5 py-2.5 text-right font-medium whitespace-nowrap ${
-                    isOverBudget[i]
-                      ? "text-budget-alert"
-                      : isNextMonthColumn(month)
-                        ? "text-zinc-100"
-                        : month < currentMonth
-                          ? "text-zinc-600"
-                          : "text-zinc-400"
+                    isNextMonthColumn(month)
+                      ? "text-zinc-100"
+                      : month < currentMonth
+                        ? "text-zinc-600"
+                        : "text-zinc-400"
                   }`}
                 >
                   {formatMonthLabel(month)}
@@ -274,7 +286,7 @@ export function ConsolidatedView() {
           <tbody>
             {rows.map(({ card, totals, totalsUsd }) => (
               <tr key={card.id} className="border-b border-white/5">
-                <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5">
+                <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5">
                   <span className="flex items-center gap-1.5">
                     <span
                       className="size-2 shrink-0 rounded-full"
@@ -291,9 +303,7 @@ export function ConsolidatedView() {
                 {totals.map((total, i) => (
                   <td
                     key={monthsRange[i]}
-                    className={`px-1.5 py-1 text-right ${
-                      isOverBudget[i] ? "ring-budget-alert" : ""
-                    }`}
+                    className="px-1.5 py-1 text-right"
                   >
                     <button
                       type="button"
@@ -321,18 +331,20 @@ export function ConsolidatedView() {
               </tr>
             ))}
             <tr className="border-t border-white/[0.06] bg-white/[0.03]">
-              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
                 {t("consolidated.totalAllCards")}
               </td>
               {grandTotals.map((total, i) => (
                 <td
                   key={monthsRange[i]}
-                  className={`bg-white/[0.03] px-3 py-1.5 text-right ${
+                  className={`px-3 py-1.5 text-right ${
                     isOverBudget[i]
-                      ? "text-budget-alert"
-                      : monthsRange[i] < currentMonth
-                        ? "text-zinc-400"
-                        : "text-zinc-100"
+                      ? "bg-budget-alert-fill"
+                      : "bg-white/[0.03]"
+                  } ${
+                    monthsRange[i] < currentMonth
+                      ? "text-zinc-400"
+                      : "text-zinc-100"
                   }`}
                 >
                   <AmountDisplay
@@ -345,7 +357,7 @@ export function ConsolidatedView() {
             </tr>
             {showPaidRow && (
             <tr data-tour="paid-row" className="border-t border-white/10">
-              <td className="sticky left-0 z-10 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
                 {t("payment.paidRow")}
               </td>
               {monthsRange.map((month) => (

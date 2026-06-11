@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export const DEFAULT_BACKGROUND = "#0f0f13";
 export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_BUDGET_ALERT_COLOR = "#ef4444";
@@ -30,6 +32,52 @@ export const TITLE_PRESETS: ColorPreset[] = [
   { id: "mint", color: "#34d399" },
   { id: "rose", color: "#fb7185" },
 ];
+
+export const CARD_COLOR_PRESETS: ColorPreset[] = [
+  { id: "blue", color: "#3B82F6" },
+  { id: "red", color: "#EF4444" },
+  { id: "green", color: "#10B981" },
+  { id: "amber", color: "#F59E0B" },
+  { id: "purple", color: "#8B5CF6" },
+  { id: "pink", color: "#EC4899" },
+  { id: "cyan", color: "#06B6D4" },
+  { id: "orange", color: "#F97316" },
+];
+
+export const CARD_BACKGROUND_PRESETS: ColorPreset[] = [
+  { id: "blueTint", color: "#172554" },
+  { id: "redTint", color: "#450a0a" },
+  { id: "greenTint", color: "#052e16" },
+  { id: "amberTint", color: "#451a03" },
+  { id: "purpleTint", color: "#2e1065" },
+  { id: "pinkTint", color: "#500724" },
+  { id: "cyanTint", color: "#083344" },
+  { id: "slateTint", color: "#1e293b" },
+];
+
+export const DEFAULT_CARD_BACKGROUND = CARD_BACKGROUND_PRESETS[7].color;
+
+export function hasCardBackground(card: {
+  backgroundColor: string | null;
+}): boolean {
+  return Boolean(
+    card.backgroundColor && isValidHexColor(card.backgroundColor),
+  );
+}
+
+export function getCardChipStyle(
+  card: { color: string; backgroundColor: string | null },
+  options?: { selected?: boolean },
+): CSSProperties {
+  const style: CSSProperties = {};
+  if (hasCardBackground(card)) {
+    style.backgroundColor = card.backgroundColor!;
+  }
+  if (options?.selected) {
+    style.boxShadow = `inset 0 0 0 1px ${card.color}`;
+  }
+  return style;
+}
 
 export const ALERT_COLOR_PRESETS: ColorPreset[] = [
   { id: "red", color: DEFAULT_BUDGET_ALERT_COLOR },

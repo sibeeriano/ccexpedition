@@ -227,7 +227,7 @@
   },
   "cardList": {
     "allCards": "All Cards",
-    "consolidated": "Consolidated"
+    "consolidated": "Outstanding debt"
   },
   "cardDetail": {
     "noExpensesInMonth": "No expenses in {{month}}.",
@@ -292,7 +292,7 @@
     "exportCsv": "Export CSV",
     "card": "Card",
     "totalAllCards": "Monthly totals",
-    "budgetExceeded": "Highlighted months exceed your {{amount}} budget alert.",
+    "budgetExceeded": "Marked months exceed your {{amount}} budget alert.",
     "popoverLabel": "Expenses for {{card}} in {{month}}",
     "noExpensesThisMonth": "No expenses this month.",
     "cellDetails": "{{card}}, {{month}}. Show details"
@@ -300,9 +300,12 @@
   "addCard": {
     "title": "Add Card",
     "cardName": "Card Name",
-    "cardNamePlaceholder": "e.g. Mastercard BBVA",
-    "holderPlaceholder": "e.g. Lourdes",
-    "color": "Color",
+    "cardNamePlaceholder": "e.g. Mastercard",
+    "holderLabel": "Cardholder/Bank",
+    "holderPlaceholder": "e.g. name/bank",
+    "color": "Accent color",
+    "backgroundColor": "Background color",
+    "backgroundHint": "Optional. Tints the card chip in the top bar.",
     "colorOption": "Color {{hex}}",
     "submit": "Add Card"
   },
@@ -375,7 +378,12 @@
     "deleting": "Deleting…",
     "deleteCard": "Delete Card",
     "cardNameRequired": "Card name is required.",
-    "holderRequired": "Cardholder name is required."
+    "holderRequired": "Cardholder name is required.",
+    "cardColor": "Accent color",
+    "cardBackground": "Background color",
+    "cardBackgroundHint": "Optional. Tints the card chip in the top bar.",
+    "cardPreview": "Preview",
+    "saved": "Saved"
   },
   "theme": {
     "presets": {
@@ -393,7 +401,19 @@
       "rose": "Rose",
       "red": "Red",
       "amber": "Amber",
-      "orange": "Orange"
+      "orange": "Orange",
+      "blue": "Blue",
+      "green": "Green",
+      "pink": "Pink",
+      "cyan": "Cyan",
+      "blueTint": "Soft blue",
+      "redTint": "Soft red",
+      "greenTint": "Soft green",
+      "amberTint": "Soft amber",
+      "purpleTint": "Soft purple",
+      "pinkTint": "Soft pink",
+      "cyanTint": "Soft cyan",
+      "slateTint": "Soft slate"
     }
   },
   "footer": {
@@ -403,6 +423,7 @@
     "cardNotFound": "Card not found",
     "cardNameRequired": "Card name is required",
     "holderRequired": "Cardholder name is required",
+    "invalidCardColor": "Invalid card color",
     "failedAddCard": "Failed to add card",
     "failedUpdateCard": "Failed to update card",
     "failedAddExpense": "Failed to add expense",

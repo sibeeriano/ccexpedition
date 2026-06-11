@@ -22,6 +22,8 @@ export function useModalClose(): () => void {
 type ModalProps = {
   title: string;
   onClose: () => void;
+  /** Optional controls rendered between the title and the close button. */
+  headerActions?: ReactNode;
   /** Set to true to close the modal when clicking the backdrop. */
   closeOnBackdropClick?: boolean;
   children: ReactNode;
@@ -35,6 +37,7 @@ type ModalProps = {
 export function Modal({
   title,
   onClose,
+  headerActions,
   closeOnBackdropClick = false,
   children,
 }: ModalProps) {
@@ -71,15 +74,16 @@ export function Modal({
       }`}
     >
       <div className="flex min-h-0 flex-1 flex-col p-5">
-        <header className="mb-4 flex shrink-0 items-center justify-between">
+        <header className="mb-4 flex shrink-0 items-center gap-2">
           <h2 id={titleId} className="text-sm font-semibold text-white">
             {title}
           </h2>
+          {headerActions}
           <button
             type="button"
             onClick={requestClose}
             aria-label="Close"
-            className="rounded-md px-2 py-0.5 text-lg leading-none text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
+            className="ml-auto rounded-md px-2 py-0.5 text-lg leading-none text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200"
           >
             ×
           </button>

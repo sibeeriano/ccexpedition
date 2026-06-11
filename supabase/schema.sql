@@ -7,6 +7,7 @@ create table public.cards (
   name text not null,
   holder text not null,
   color text not null,
+  background_color text,
   created_at timestamptz not null default now()
 );
 
@@ -74,12 +75,19 @@ create index monthly_payments_user_id_idx on public.monthly_payments (user_id);
 create index pending_carryovers_card_id_idx on public.pending_carryovers (card_id);
 create index pending_carryovers_user_id_idx on public.pending_carryovers (user_id);
 
+create table public.user_settings (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 -- Row Level Security: each user only sees and manages their own data.
 alter table public.cards enable row level security;
 alter table public.expenses enable row level security;
 alter table public.balance_adjustments enable row level security;
 alter table public.monthly_payments enable row level security;
 alter table public.pending_carryovers enable row level security;
+alter table public.user_settings enable row level security;
 
 create policy "Users manage own cards"
   on public.cards for all
@@ -103,5 +111,10 @@ create policy "Users manage own monthly payments"
 
 create policy "Users manage own pending carryovers"
   on public.pending_carryovers for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users manage own settings"
+  on public.user_settings for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

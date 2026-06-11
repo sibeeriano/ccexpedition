@@ -23,9 +23,13 @@
   color: color-mix(in srgb, var(--color-budget-alert) 80%, transparent);
 }
 
-.ring-budget-alert {
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--color-budget-alert) 25%, transparent);
+/* 80% transparent fill using the user-chosen budget alert color. */
+.bg-budget-alert-fill {
+  background-color: color-mix(
+    in srgb,
+    var(--color-budget-alert) 20%,
+    transparent
+  );
 }
 
 /* Horizontal scroll only — height fits content, no inner vertical scrollbar. */

@@ -2,19 +2,29 @@ import { useId, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import type { CurrencySymbol } from "../types";
+import {
+  type AppSettings,
+  settingsSnapshot,
+} from "../utils/settings";
 import { LanguageToggle } from "./LanguageToggle";
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
+import type { Card } from "../types";
 import {
   ALERT_COLOR_PRESETS,
   BACKGROUND_PRESETS,
+  CARD_BACKGROUND_PRESETS,
+  CARD_COLOR_PRESETS,
   DEFAULT_BACKGROUND,
   BRAND_TITLE,
   DEFAULT_BUDGET_ALERT_COLOR,
+  DEFAULT_CARD_BACKGROUND,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
+  getCardChipStyle,
   getWorkspaceTitle,
   getPresetId,
+  hasCardBackground,
   MAX_TITLE_TEXT_LENGTH,
   TITLE_PRESETS,
   type ColorPreset,
@@ -30,9 +40,65 @@ type SettingsModalProps = {
 
 export function SettingsModal({ tourContext, onClose }: SettingsModalProps) {
   const { t } = useTranslation();
+  const { state, applySettings } = useApp();
+  const [draft, setDraft] = useState<AppSettings>(() => ({ ...state.settings }));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const settingsDirty =
+    settingsSnapshot(draft) !== settingsSnapshot(state.settings);
+
+  function patchDraft(patch: Partial<AppSettings>) {
+    setDraft((prev) => ({ ...prev, ...patch }));
+  }
+
+  async function handleSaveSettings() {
+    setSaving(true);
+    setSaveError(null);
+    const errorMessage = await applySettings(draft);
+    setSaving(false);
+    if (errorMessage) {
+      setSaveError(errorMessage);
+      return;
+    }
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
+  }
+
+  const saveLabel = saving
+    ? t("common.saving")
+    : saved
+      ? t("settings.saved")
+      : t("common.save");
+
   return (
-    <Modal title={t("settings.title")} onClose={onClose}>
-      <SettingsContent tourContext={tourContext} />
+    <Modal
+      title={t("settings.title")}
+      onClose={onClose}
+      headerActions={
+        <div className="flex items-center gap-2">
+          {saveError && (
+            <span role="alert" className="max-w-28 truncate text-xs text-red-400">
+              {saveError}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleSaveSettings()}
+            disabled={saving || (!settingsDirty && !saved)}
+            className="rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/15 disabled:cursor-default disabled:opacity-50"
+          >
+            {saveLabel}
+          </button>
+        </div>
+      }
+    >
+      <SettingsContent
+        tourContext={tourContext}
+        draft={draft}
+        patchDraft={patchDraft}
+      />
     </Modal>
   );
 }
@@ -216,26 +282,30 @@ function repeatTutorialLabel(
   }
 }
 
-function SettingsContent({ tourContext }: { tourContext: TourContext }) {
+type SettingsContentProps = {
+  tourContext: TourContext;
+  draft: AppSettings;
+  patchDraft: (patch: Partial<AppSettings>) => void;
+};
+
+function SettingsContent({
+  tourContext,
+  draft,
+  patchDraft,
+}: SettingsContentProps) {
   const { t } = useTranslation();
   const close = useModalClose();
   const { session } = useAuth();
-  const {
-    state,
-    deleteCard,
-    updateCard,
-    setBackgroundColor,
-    setTitleColor,
-    setTitleText,
-    setCurrency,
-    setBudgetAlertColor,
-    setShowPreviousMonths,
-    setShowPaidRow,
-  } = useApp();
+  const { state, deleteCard, updateCard } = useApp();
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editHolder, setEditHolder] = useState("");
+  const [editColor, setEditColor] = useState(CARD_COLOR_PRESETS[0].color);
+  const [editUseBackground, setEditUseBackground] = useState(false);
+  const [editBackgroundColor, setEditBackgroundColor] = useState(
+    DEFAULT_CARD_BACKGROUND,
+  );
   const [deleting, setDeleting] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -243,14 +313,13 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
   const confirmCard =
     state.cards.find((card) => card.id === confirmCardId) ?? null;
 
-  function startEditingCard(
-    cardId: string,
-    currentName: string,
-    currentHolder: string,
-  ) {
-    setEditingCardId(cardId);
-    setEditName(currentName);
-    setEditHolder(currentHolder);
+  function startEditingCard(card: Card) {
+    setEditingCardId(card.id);
+    setEditName(card.name);
+    setEditHolder(card.holder);
+    setEditColor(card.color);
+    setEditUseBackground(hasCardBackground(card));
+    setEditBackgroundColor(card.backgroundColor ?? DEFAULT_CARD_BACKGROUND);
     setError(null);
   }
 
@@ -258,16 +327,16 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
     setEditingCardId(null);
     setEditName("");
     setEditHolder("");
+    setEditColor(CARD_COLOR_PRESETS[0].color);
+    setEditUseBackground(false);
+    setEditBackgroundColor(DEFAULT_CARD_BACKGROUND);
     setError(null);
   }
 
-  async function handleSaveCard(
-    cardId: string,
-    currentName: string,
-    currentHolder: string,
-  ) {
+  async function handleSaveCard(card: Card) {
     const trimmedName = editName.trim();
     const trimmedHolder = editHolder.trim();
+    const backgroundColor = editUseBackground ? editBackgroundColor : null;
     if (!trimmedName) {
       setError(t("settings.cardNameRequired"));
       return;
@@ -277,8 +346,10 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
       return;
     }
     if (
-      trimmedName === currentName &&
-      trimmedHolder === currentHolder
+      trimmedName === card.name &&
+      trimmedHolder === card.holder &&
+      editColor === card.color &&
+      backgroundColor === card.backgroundColor
     ) {
       cancelEditingCard();
       return;
@@ -286,9 +357,11 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
 
     setSavingCard(true);
     setError(null);
-    const errorMessage = await updateCard(cardId, {
+    const errorMessage = await updateCard(card.id, {
       name: trimmedName,
       holder: trimmedHolder,
+      color: editColor,
+      backgroundColor,
     });
     setSavingCard(false);
 
@@ -369,7 +442,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
     budgetAlertColor,
     showPreviousMonths,
     showPaidRow,
-  } = state.settings;
+  } = draft;
   const workspaceTitle = getWorkspaceTitle(titleText);
 
   function handleRepeatTutorial() {
@@ -420,7 +493,9 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
               data-tour="currency"
               aria-label={t("settings.currency")}
               value={currency}
-              onChange={(e) => setCurrency(e.target.value as CurrencySymbol)}
+              onChange={(e) =>
+                patchDraft({ currency: e.target.value as CurrencySymbol })
+              }
               className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
             >
               {CURRENCIES.map((c) => (
@@ -437,7 +512,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
             presets={ALERT_COLOR_PRESETS}
             defaultColor={DEFAULT_BUDGET_ALERT_COLOR}
             inputId="settings-alert-color"
-            onChange={setBudgetAlertColor}
+            onChange={(color) => patchDraft({ budgetAlertColor: color })}
           />
 
           <SettingsDivider />
@@ -448,14 +523,14 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
               label={t("settings.showPreviousMonths")}
               hint={t("settings.showPreviousMonthsHint")}
               checked={showPreviousMonths}
-              onChange={setShowPreviousMonths}
+              onChange={(show) => patchDraft({ showPreviousMonths: show })}
             />
             <SettingsCheckbox
               id="settings-show-paid-row"
               label={t("settings.showPaidRow")}
               hint={t("settings.showPaidRowHint")}
               checked={showPaidRow}
-              onChange={setShowPaidRow}
+              onChange={(show) => patchDraft({ showPaidRow: show })}
             />
           </div>
 
@@ -474,7 +549,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
               type="text"
               value={titleText}
               maxLength={MAX_TITLE_TEXT_LENGTH}
-              onChange={(e) => setTitleText(e.target.value)}
+              onChange={(e) => patchDraft({ titleText: e.target.value })}
               placeholder={t("settings.workspaceTitlePlaceholder")}
               className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
             />
@@ -485,7 +560,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
               {titleText !== DEFAULT_WORKSPACE_TITLE && (
                 <button
                   type="button"
-                  onClick={() => setTitleText(DEFAULT_WORKSPACE_TITLE)}
+                  onClick={() => patchDraft({ titleText: DEFAULT_WORKSPACE_TITLE })}
                   className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                 >
                   {t("common.reset")}
@@ -502,7 +577,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
             presets={TITLE_PRESETS}
             defaultColor={DEFAULT_TITLE_COLOR}
             inputId="settings-title-color"
-            onChange={setTitleColor}
+            onChange={(color) => patchDraft({ titleColor: color })}
           />
           <ColorPickerField
             label={t("settings.backgroundColor")}
@@ -510,9 +585,12 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
             presets={BACKGROUND_PRESETS}
             defaultColor={DEFAULT_BACKGROUND}
             inputId="settings-background-color"
-            onChange={setBackgroundColor}
+            onChange={(color) => patchDraft({ backgroundColor: color })}
           />
-          <div className="rounded-md border border-white/10 bg-base px-3 py-2 text-center">
+          <div
+            className="rounded-md border border-white/10 px-3 py-2 text-center"
+            style={{ backgroundColor }}
+          >
             <p className="brand-title text-sm font-semibold">{BRAND_TITLE}</p>
             {workspaceTitle ? (
               <p
@@ -564,7 +642,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
                         <div className="flex items-center gap-2">
                           <span
                             className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: card.color }}
+                            style={{ backgroundColor: editColor }}
                           />
                           <span className="text-xs text-zinc-500">
                             {expenseCount}{" "}
@@ -602,6 +680,65 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
                             className="rounded-md border border-white/10 bg-base px-2.5 py-1.5 text-sm text-white focus:border-white/30 focus:outline-none"
                           />
                         </div>
+
+                        <ColorPickerField
+                          label={t("settings.cardColor")}
+                          color={editColor}
+                          presets={CARD_COLOR_PRESETS}
+                          defaultColor={CARD_COLOR_PRESETS[0].color}
+                          inputId={`edit-card-color-${card.id}`}
+                          onChange={setEditColor}
+                        />
+
+                        <SettingsCheckbox
+                          id={`edit-card-use-bg-${card.id}`}
+                          label={t("settings.cardBackground")}
+                          hint={t("settings.cardBackgroundHint")}
+                          checked={editUseBackground}
+                          onChange={setEditUseBackground}
+                        />
+                        {editUseBackground && (
+                          <ColorPickerField
+                            label={t("settings.cardBackground")}
+                            color={editBackgroundColor}
+                            presets={CARD_BACKGROUND_PRESETS}
+                            defaultColor={DEFAULT_CARD_BACKGROUND}
+                            inputId={`edit-card-bg-${card.id}`}
+                            onChange={setEditBackgroundColor}
+                          />
+                        )}
+
+                        <div className="flex flex-col gap-1.5">
+                          <p className="text-xs font-medium text-zinc-400">
+                            {t("settings.cardPreview")}
+                          </p>
+                          <div
+                            className="rounded-lg border border-white/10 px-3 py-2"
+                            style={getCardChipStyle(
+                              {
+                                color: editColor,
+                                backgroundColor: editUseBackground
+                                  ? editBackgroundColor
+                                  : null,
+                              },
+                              { selected: true },
+                            )}
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <span
+                                className="size-2 rounded-full"
+                                style={{ backgroundColor: editColor }}
+                              />
+                              <span className="text-sm font-medium text-white">
+                                {editName.trim() || card.name}
+                              </span>
+                            </span>
+                            <span className="mt-0.5 block text-xs text-zinc-400">
+                              {editHolder.trim() || card.holder}
+                            </span>
+                          </div>
+                        </div>
+
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
@@ -613,13 +750,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
                           </button>
                           <button
                             type="button"
-                            onClick={() =>
-                              handleSaveCard(
-                                card.id,
-                                card.name,
-                                card.holder,
-                              )
-                            }
+                            onClick={() => handleSaveCard(card)}
                             disabled={savingCard}
                             className="rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
                           >
@@ -631,9 +762,14 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
                       <div className="flex items-center justify-between gap-3">
                         <span className="flex min-w-0 items-center gap-2">
                           <span
-                            className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: card.color }}
-                          />
+                            className="flex size-6 shrink-0 items-center justify-center rounded-md border border-white/10"
+                            style={getCardChipStyle(card)}
+                          >
+                            <span
+                              className="size-2.5 rounded-full"
+                              style={{ backgroundColor: card.color }}
+                            />
+                          </span>
                           <span className="truncate text-sm font-medium text-zinc-200">
                             {card.name}
                           </span>
@@ -645,13 +781,7 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
                         <div className="flex shrink-0 items-center gap-1">
                           <button
                             type="button"
-                            onClick={() =>
-                              startEditingCard(
-                                card.id,
-                                card.name,
-                                card.holder,
-                              )
-                            }
+                            onClick={() => startEditingCard(card)}
                             className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                           >
                             {t("common.edit")}
@@ -692,7 +822,12 @@ function SettingsContent({ tourContext }: { tourContext: TourContext }) {
           </span>
         }
       >
-        <LanguageToggle />
+        <LanguageToggle
+          language={language}
+          onLanguageChange={(nextLanguage) =>
+            patchDraft({ language: nextLanguage })
+          }
+        />
       </SettingsDropdown>
     </div>
   );

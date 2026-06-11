@@ -227,7 +227,7 @@
   },
   "cardList": {
     "allCards": "Todas las tarjetas",
-    "consolidated": "Consolidado"
+    "consolidated": "Deuda pendiente"
   },
   "cardDetail": {
     "noExpensesInMonth": "Sin gastos en {{month}}.",
@@ -292,7 +292,7 @@
     "exportCsv": "Exportar CSV",
     "card": "Tarjeta",
     "totalAllCards": "Totales mensuales",
-    "budgetExceeded": "Los meses resaltados superan tu alerta de {{amount}}.",
+    "budgetExceeded": "Los meses marcados superan tu alerta de {{amount}}.",
     "popoverLabel": "Gastos de {{card}} en {{month}}",
     "noExpensesThisMonth": "Sin gastos este mes.",
     "cellDetails": "{{card}}, {{month}}. Ver detalle"
@@ -300,9 +300,12 @@
   "addCard": {
     "title": "Agregar tarjeta",
     "cardName": "Nombre de tarjeta",
-    "cardNamePlaceholder": "ej. Mastercard BBVA",
-    "holderPlaceholder": "ej. Lourdes",
-    "color": "Color",
+    "cardNamePlaceholder": "ej. Mastercard",
+    "holderLabel": "Titular/Banco",
+    "holderPlaceholder": "ej. nombre/banco",
+    "color": "Color de acento",
+    "backgroundColor": "Fondo de color",
+    "backgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",
     "colorOption": "Color {{hex}}",
     "submit": "Agregar tarjeta"
   },
@@ -375,7 +378,12 @@
     "deleting": "Eliminando…",
     "deleteCard": "Eliminar tarjeta",
     "cardNameRequired": "El nombre de la tarjeta es obligatorio.",
-    "holderRequired": "El nombre del titular es obligatorio."
+    "holderRequired": "El nombre del titular es obligatorio.",
+    "cardColor": "Color de acento",
+    "cardBackground": "Fondo de color",
+    "cardBackgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",
+    "cardPreview": "Vista previa",
+    "saved": "Guardado"
   },
   "theme": {
     "presets": {
@@ -393,7 +401,19 @@
       "rose": "Rosa",
       "red": "Rojo",
       "amber": "Ámbar",
-      "orange": "Naranja"
+      "orange": "Naranja",
+      "blue": "Azul",
+      "green": "Verde",
+      "pink": "Rosa",
+      "cyan": "Cian",
+      "blueTint": "Azul suave",
+      "redTint": "Rojo suave",
+      "greenTint": "Verde suave",
+      "amberTint": "Ámbar suave",
+      "purpleTint": "Violeta suave",
+      "pinkTint": "Rosa suave",
+      "cyanTint": "Cian suave",
+      "slateTint": "Pizarra suave"
     }
   },
   "footer": {
@@ -403,6 +423,7 @@
     "cardNotFound": "Tarjeta no encontrada",
     "cardNameRequired": "El nombre de la tarjeta es obligatorio",
     "holderRequired": "El nombre del titular es obligatorio",
+    "invalidCardColor": "Color de tarjeta inválido",
     "failedAddCard": "No se pudo agregar la tarjeta",
     "failedUpdateCard": "No se pudo actualizar la tarjeta",
     "failedAddExpense": "No se pudo agregar el gasto",
