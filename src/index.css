@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-base: #0f0f13;
-  --color-surface: #1a1a22;
+  --color-base: #020617;
+  --color-surface: #0a1628;
   --color-brand: #ffffff;
+  --color-brand-accent: #03b1b5;
+  --color-brand-cc: #ffa549;
   --color-workspace-title: #ffffff;
   --color-budget-alert: #ef4444;
   --font-sans: "Ubuntu", ui-sans-serif, system-ui, sans-serif;
@@ -13,6 +15,29 @@
 /* Brand name is always white — not tied to the customizable workspace title color. */
 .brand-title {
   color: var(--color-brand) !important;
+}
+
+.btn-primary {
+  border-radius: 9999px;
+  background-color: var(--color-brand-accent);
+  font-weight: 700;
+  color: #fff;
+  transition: filter 150ms ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.panel-surface {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface);
 }
 
 .text-budget-alert {

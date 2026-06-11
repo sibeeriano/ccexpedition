@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { BRAND_TITLE, getWorkspaceTitle } from "../utils/theme";
+import { getWorkspaceTitle } from "../utils/theme";
+import { BrandName } from "./BrandName";
 import { LanguageToggle } from "./LanguageToggle";
 
 function emailWithoutAt(email: string): string {
@@ -44,27 +45,22 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
     };
   }, [menuOpen]);
 
-  function handleAddCard() {
-    setMenuOpen(false);
-    onAddCard();
-  }
-
   const workspaceTitle = getWorkspaceTitle(state.settings.titleText);
   const userEmail = session?.user.email ?? "";
   const userLabel = userEmail ? emailWithoutAt(userEmail) : "";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-surface/95 backdrop-blur">
-      <div className="mx-auto grid min-h-14 w-full min-w-0 max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:gap-3">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-surface/95 backdrop-blur">
+      <div className="mx-auto grid min-h-14 w-full min-w-0 max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-1.5 px-3 py-1.5 sm:grid-cols-[1fr_auto_1fr] sm:gap-3 sm:px-4">
         {userLabel ? (
           <div className="flex min-w-0 items-center gap-2">
             <img
-              src="/logo1.png"
+              src="/logoBN.png"
               alt=""
-              className="h-10 w-auto shrink-0 object-contain"
+              className="size-8 shrink-0 object-contain sm:size-9"
             />
             <span
-              className="min-w-0 truncate text-xs text-zinc-500"
+              className="hidden min-w-0 truncate text-xs text-zinc-500 sm:inline"
               title={userEmail}
             >
               {userLabel}
@@ -75,15 +71,15 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
         )}
 
         <div
-          className="flex max-w-[min(72vw,24rem)] min-w-0 flex-col items-center gap-0.5 text-center sm:max-w-md"
-          title={workspaceTitle ? `${BRAND_TITLE} — ${workspaceTitle}` : BRAND_TITLE}
+          className="flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center sm:max-w-md"
+          title={workspaceTitle ? `ccExpedition — ${workspaceTitle}` : "ccExpedition"}
         >
-          <p className="brand-title truncate text-sm font-semibold tracking-tight sm:text-base">
-            {BRAND_TITLE}
+          <p className="whitespace-nowrap text-xs font-semibold tracking-tight sm:text-base">
+            <BrandName />
           </p>
           {workspaceTitle && (
             <p
-              className="max-w-full truncate text-xs font-medium sm:text-sm"
+              className="hidden max-w-full truncate text-xs font-medium sm:block sm:text-sm"
               style={{ color: "var(--color-workspace-title)" }}
             >
               {workspaceTitle}
@@ -91,24 +87,32 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
           )}
         </div>
 
-        <div className="flex min-w-0 items-center justify-end gap-1 sm:gap-1.5">
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
           <button
             type="button"
             data-tour="add-card"
             onClick={onAddCard}
-            className="hidden shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 active:bg-white/20 sm:inline-flex"
+            className="btn-primary inline-flex shrink-0 px-2.5 py-1.5 text-xs sm:hidden"
+          >
+            {t("nav.addCardShort")}
+          </button>
+          <button
+            type="button"
+            data-tour="add-card"
+            onClick={onAddCard}
+            className="btn-primary hidden shrink-0 px-4 py-2 text-sm sm:inline-flex"
           >
             {t("nav.addCard")}
           </button>
 
-          <LanguageToggle />
+          <LanguageToggle className="hidden sm:flex" />
 
           <button
             type="button"
             data-tour="settings"
             onClick={onOpenSettings}
             aria-label={t("nav.settings")}
-            className="flex size-9 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-100"
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-100 sm:size-9"
           >
             <CogIcon />
           </button>
@@ -117,12 +121,11 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             type="button"
             onClick={() => void signOut()}
             aria-label={t("nav.signOut")}
-            className="flex size-9 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+            className="hidden size-9 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-500/10 hover:text-red-400 sm:flex"
           >
             <PowerIcon />
           </button>
 
-          {/* Mobile: add card in menu */}
           <div ref={menuRef} className="relative sm:hidden">
             <button
               type="button"
@@ -130,7 +133,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
               aria-controls={menuId}
               aria-label={t("nav.menu")}
               onClick={() => setMenuOpen((open) => !open)}
-              className="relative z-[60] flex size-9 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+              className="relative z-[60] flex size-8 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
             >
               <MenuIcon open={menuOpen} />
             </button>
@@ -145,7 +148,7 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
                 />
                 <div
                   id={menuId}
-                  className="fixed right-4 top-14 z-50 w-56 rounded-lg border border-white/10 bg-surface py-2 shadow-xl"
+                  className="fixed right-3 top-14 z-50 w-56 rounded-lg border border-white/10 bg-surface py-2 shadow-xl"
                 >
                   {userLabel && (
                     <p
@@ -156,14 +159,17 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
                     </p>
                   )}
 
-                  <div className="px-2 py-2">
+                  <div className="px-2 py-1.5">
                     <button
                       type="button"
-                      data-tour="add-card"
-                      onClick={handleAddCard}
-                      className="w-full rounded-md bg-white/10 px-3 py-2 text-left text-sm font-medium text-white transition-colors hover:bg-white/15"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        void signOut();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
                     >
-                      {t("nav.addCard")}
+                      <PowerIcon />
+                      {t("nav.signOut")}
                     </button>
                   </div>
                 </div>

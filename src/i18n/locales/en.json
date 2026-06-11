@@ -34,8 +34,8 @@
     "currency": "Currency"
   },
   "app": {
-    "noCardsTitle": "No cards yet",
-    "noCardsHint": "Add your first credit card to start tracking purchases and installments month by month.",
+    "noCardsTitle": "Your expedition starts with a card",
+    "noCardsHint": "Add your first card and start tracking purchases and installments month by month.",
     "lastUpdated": "Last updated: {{date}}"
   },
   "onboarding": {
@@ -389,7 +389,8 @@
   },
   "theme": {
     "presets": {
-      "default": "Default",
+      "expedition": "Expedition",
+      "slateBlue": "Slate blue",
       "midnight": "Midnight",
       "purple": "Purple",
       "forest": "Forest",

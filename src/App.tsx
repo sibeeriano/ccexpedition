@@ -11,6 +11,7 @@ import { AddExpenseModal } from "./components/AddExpenseModal";
 import { SettingsModal } from "./components/SettingsModal";
 import { ImportModal } from "./components/ImportModal";
 import { DevSignature } from "./components/DevSignature";
+import { LanguageToggle } from "./components/LanguageToggle";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
 import { useApp } from "./context/AppContext";
@@ -127,18 +128,23 @@ function App() {
 
       <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl shrink-0 grow flex-col gap-5 px-4 py-5">
         {state.cards.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-white/10 px-4 py-16 text-center">
-            <p className="text-sm font-medium text-zinc-300">
+          <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
+            <img
+              src="/gatito1.png"
+              alt=""
+              className="mb-6 h-36 w-auto max-w-full object-contain sm:h-40"
+            />
+            <h2 className="text-lg font-bold text-white sm:text-xl">
               {t("app.noCardsTitle")}
-            </p>
-            <p className="mx-auto mt-1 max-w-xs text-xs text-zinc-500">
+            </h2>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-white/80">
               {t("app.noCardsHint")}
             </p>
             <button
               type="button"
               data-tour="empty-add-card"
               onClick={() => setIsAddCardOpen(true)}
-              className="mt-4 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+              className="btn-primary mt-8 px-6 py-2.5 text-sm sm:text-base"
             >
               {t("nav.addCard")}
             </button>
@@ -165,7 +171,8 @@ function App() {
         )}
       </main>
 
-      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-1 px-4 pb-5 text-center text-xs text-zinc-600">
+      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-2 px-4 pb-5 text-center text-xs text-zinc-600">
+        <LanguageToggle className="sm:hidden" />
         {state.lastUpdated && (
           <span>
             {t("app.lastUpdated", {

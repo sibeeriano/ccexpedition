@@ -1,5 +1,7 @@
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { BRAND_ACCENT, BRAND_CC_COLOR } from "../utils/theme";
+import { BrandName } from "./BrandName";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -8,26 +10,12 @@ type LandingPageProps = {
   onSignUp: () => void;
 };
 
-const ACCENT = "#03b1b5";
-const BRAND_CC = "#ffa549";
-
 const HOW_IT_WORKS_STEPS = [
   { image: "/gatito1.png", stepKey: "step1" },
   { image: "/gatito2.png", stepKey: "step2" },
   { image: "/gatito3.png", stepKey: "step3" },
   { image: "/gatito4.png", stepKey: "step4" },
 ] as const;
-
-function BrandName({ className = "" }: { className?: string }) {
-  return (
-    <span className={`font-normal text-white ${className}`}>
-      <span className="font-bold" style={{ color: BRAND_CC }}>
-        cc
-      </span>
-      Expedition
-    </span>
-  );
-}
 
 function WarningIcon() {
   return (
@@ -46,7 +34,7 @@ function StepArrow() {
   return (
     <div
       className="hidden shrink-0 items-center justify-center self-center px-1 text-2xl font-bold lg:flex"
-      style={{ color: ACCENT }}
+      style={{ color: BRAND_ACCENT }}
       aria-hidden="true"
     >
       ›
@@ -75,7 +63,7 @@ function HowItWorksStep({
     <article className="relative flex h-full w-full min-w-0 flex-col rounded-xl border border-white/10 bg-[#0a1628] px-4 pb-4 pt-10 text-center">
       <div
         className="absolute -top-5 left-1/2 flex size-10 -translate-x-1/2 items-center justify-center rounded-full text-lg font-bold text-white"
-        style={{ backgroundColor: ACCENT }}
+        style={{ backgroundColor: BRAND_ACCENT }}
       >
         {number}
       </div>
@@ -146,7 +134,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
           <div className="flex w-full flex-col items-center text-center lg:w-1/2">
             <p
               className="text-base font-medium sm:text-lg"
-              style={{ color: ACCENT }}
+              style={{ color: BRAND_ACCENT }}
             >
               {t("landing.tagline")}
             </p>
@@ -155,13 +143,13 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
               {t("landing.headlineLine1")}
               {headlineBreakBeforeAccent && <br />}
               {t("landing.headlineLine2Before")}
-              <span style={{ color: ACCENT }}>{t("landing.headlineLine2")}</span>
+              <span style={{ color: BRAND_ACCENT }}>{t("landing.headlineLine2")}</span>
               <br />
               {t("landing.headlineLine3")}
             </h1>
 
             <p className="mt-5 text-base leading-relaxed text-white/90 sm:text-lg">
-              <span className="font-bold" style={{ color: BRAND_CC }}>
+              <span className="font-bold" style={{ color: BRAND_CC_COLOR }}>
                 cc
               </span>
               <span className="font-bold">Expedition</span>
@@ -176,7 +164,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
               type="button"
               onClick={onSignIn}
               className="mx-auto mt-8 inline-flex w-full max-w-md cursor-pointer items-center justify-center gap-2 rounded-full px-12 py-4 text-lg font-bold text-white transition-colors hover:brightness-95 sm:w-auto sm:max-w-none sm:px-[3.75rem] sm:py-[1.125rem] sm:text-xl"
-              style={{ backgroundColor: ACCENT }}
+              style={{ backgroundColor: BRAND_ACCENT }}
             >
               {t("landing.betaCta")}
               <span
@@ -202,7 +190,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
             </h2>
             <p
               className="mt-2 text-xl font-medium sm:text-2xl"
-              style={{ color: ACCENT }}
+              style={{ color: BRAND_ACCENT }}
             >
               {t("landing.guilt.subtitle")}
             </p>
@@ -217,7 +205,7 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
             </p>
             <p
               className="mt-4 text-base font-medium sm:text-lg"
-              style={{ color: ACCENT }}
+              style={{ color: BRAND_ACCENT }}
             >
               {t("landing.guilt.quote")}
             </p>

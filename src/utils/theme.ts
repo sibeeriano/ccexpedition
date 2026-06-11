@@ -1,6 +1,11 @@
 import type { CSSProperties } from "react";
 
-export const DEFAULT_BACKGROUND = "#0f0f13";
+/** Landing + app default page background. */
+export const DEFAULT_BACKGROUND = "#020617";
+/** Panel / card surface on the expedition theme. */
+export const DEFAULT_SURFACE = "#0a1628";
+export const BRAND_ACCENT = "#03b1b5";
+export const BRAND_CC_COLOR = "#ffa549";
 export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_BUDGET_ALERT_COLOR = "#ef4444";
 /** Fixed app brand — shown in navbar and login, not user-editable. */
@@ -16,13 +21,19 @@ export const MAX_TITLE_TEXT_LENGTH = 80;
 export type ColorPreset = { id: string; color: string };
 
 export const BACKGROUND_PRESETS: ColorPreset[] = [
-  { id: "default", color: DEFAULT_BACKGROUND },
-  { id: "midnight", color: "#0d1117" },
+  { id: "expedition", color: DEFAULT_BACKGROUND },
+  { id: "midnight", color: "#0f0f13" },
+  { id: "slateBlue", color: "#0d1117" },
   { id: "purple", color: "#1a1025" },
   { id: "forest", color: "#0f1712" },
   { id: "warm", color: "#171310" },
   { id: "slate", color: "#141820" },
 ];
+
+export function getSurfaceColor(baseHex: string): string {
+  if (baseHex === DEFAULT_BACKGROUND) return DEFAULT_SURFACE;
+  return deriveSurfaceColor(baseHex);
+}
 
 export const TITLE_PRESETS: ColorPreset[] = [
   { id: "white", color: DEFAULT_TITLE_COLOR },
@@ -153,10 +164,12 @@ export function applyTheme({
   const alertColor = isValidHexColor(budgetAlertColor)
     ? budgetAlertColor
     : DEFAULT_BUDGET_ALERT_COLOR;
-  const surface = deriveSurfaceColor(base);
+  const surface = getSurfaceColor(base);
 
   document.documentElement.style.setProperty("--color-base", base);
   document.documentElement.style.setProperty("--color-surface", surface);
+  document.documentElement.style.setProperty("--color-brand-accent", BRAND_ACCENT);
+  document.documentElement.style.setProperty("--color-brand-cc", BRAND_CC_COLOR);
   document.documentElement.style.setProperty("--color-workspace-title", title);
   document.documentElement.style.setProperty("--color-budget-alert", alertColor);
   document.title = PAGE_TITLE;

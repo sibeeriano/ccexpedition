@@ -34,8 +34,8 @@
     "currency": "Moneda"
   },
   "app": {
-    "noCardsTitle": "Sin tarjetas aún",
-    "noCardsHint": "Agregá tu primera tarjeta de crédito para empezar a seguir compras y cuotas mes a mes.",
+    "noCardsTitle": "Tu expedición empieza con una tarjeta",
+    "noCardsHint": "Agregá tu primera tarjeta y empezá a seguir compras y cuotas mes a mes, sin culpa.",
     "lastUpdated": "Última actualización: {{date}}"
   },
   "onboarding": {
@@ -389,7 +389,8 @@
   },
   "theme": {
     "presets": {
-      "default": "Predeterminado",
+      "expedition": "Expedición",
+      "slateBlue": "Pizarra azul",
       "midnight": "Medianoche",
       "purple": "Violeta",
       "forest": "Bosque",

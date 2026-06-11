@@ -6,6 +6,7 @@ import {
   type AppSettings,
   settingsSnapshot,
 } from "../utils/settings";
+import { BrandName } from "./BrandName";
 import { LanguageToggle } from "./LanguageToggle";
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
@@ -16,7 +17,6 @@ import {
   CARD_BACKGROUND_PRESETS,
   CARD_COLOR_PRESETS,
   DEFAULT_BACKGROUND,
-  BRAND_TITLE,
   DEFAULT_BUDGET_ALERT_COLOR,
   DEFAULT_CARD_BACKGROUND,
   DEFAULT_TITLE_COLOR,
@@ -591,7 +591,9 @@ function SettingsContent({
             className="rounded-md border border-white/10 px-3 py-2 text-center"
             style={{ backgroundColor }}
           >
-            <p className="brand-title text-sm font-semibold">{BRAND_TITLE}</p>
+            <p className="text-sm font-semibold">
+              <BrandName />
+            </p>
             {workspaceTitle ? (
               <p
                 className="mt-0.5 truncate text-xs font-medium sm:text-sm"

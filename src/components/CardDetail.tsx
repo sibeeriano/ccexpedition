@@ -105,6 +105,28 @@ export function CardDetail({
     monthAdjustments.length > 0 ||
     monthCarryover !== null;
 
+  const expenseActionButtons = (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-tour="add-expense"
+        onClick={onAddExpense}
+        className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        style={{ backgroundColor: card.color }}
+      >
+        {t("cardDetail.addExpense")}
+      </button>
+      <button
+        type="button"
+        data-tour="add-adjustment"
+        onClick={() => setIsAddAdjustmentOpen(true)}
+        className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-500/15"
+      >
+        {t("cardDetail.addAdjustment")}
+      </button>
+    </div>
+  );
+
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -194,6 +216,8 @@ export function CardDetail({
           );
         })}
       </div>
+
+      {expenseActionButtons}
 
       {!hasMonthItems ? (
         <div className="rounded-lg border border-dashed border-white/10 px-4 py-10 text-center">
@@ -520,26 +544,6 @@ export function CardDetail({
           </div>
         </div>
       )}
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          data-tour="add-expense"
-          onClick={onAddExpense}
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          style={{ backgroundColor: card.color }}
-        >
-          {t("cardDetail.addExpense")}
-        </button>
-        <button
-          type="button"
-          data-tour="add-adjustment"
-          onClick={() => setIsAddAdjustmentOpen(true)}
-          className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-500/15"
-        >
-          {t("cardDetail.addAdjustment")}
-        </button>
-      </div>
 
       {editingExpense && (
         <EditExpenseModal
