@@ -99,7 +99,6 @@ body {
 
 /* Modal open/close animations (subtle fade + scale) */
 dialog[open] {
-  overflow: hidden;
   animation: modal-in 150ms ease-out;
 }
 dialog[open]::backdrop {
