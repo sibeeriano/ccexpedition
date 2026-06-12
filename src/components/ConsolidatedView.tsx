@@ -11,7 +11,7 @@ import {
 import { AmountDisplay } from "./AmountDisplay";
 import { PaidMonthCell } from "./PaidMonthCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
-import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { Modal } from "./Modal";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
 

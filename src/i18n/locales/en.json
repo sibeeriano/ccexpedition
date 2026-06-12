@@ -30,7 +30,9 @@
     "badge": "Demo",
     "banner": "Demo mode — changes are not saved.",
     "createAccount": "Create free account",
-    "exit": "Exit demo"
+    "exit": "Exit demo",
+    "backHome": "Back to home",
+    "workspaceTitle": "Customizable title"
   },
   "nav": {
     "addCard": "+ Add Card",

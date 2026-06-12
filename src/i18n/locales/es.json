@@ -30,7 +30,9 @@
     "badge": "Demo",
     "banner": "Modo demo — los cambios no se guardan.",
     "createAccount": "Crear cuenta gratis",
-    "exit": "Salir del demo"
+    "exit": "Salir del demo",
+    "backHome": "Volver al inicio",
+    "workspaceTitle": "Titulo personalisable"
   },
   "nav": {
     "addCard": "+ Agregar tarjeta",

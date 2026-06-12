@@ -34,7 +34,7 @@ import {
 } from "../utils/settings";
 import { useAuth } from "./AuthContext";
 import { useDemoMode } from "./DemoModeContext";
-import { createDemoSeed } from "../data/demoSeed";
+import { createDemoSeed, getDemoWorkspaceTitle } from "../data/demoSeed";
 
 export type { AppLanguage, AppSettings };
 
@@ -350,7 +350,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isDemo) return;
 
-    const seed = createDemoSeed();
+    const language: AppLanguage = i18n.language === "es" ? "es" : "en";
+    const seed = createDemoSeed(language);
     setCards(seed.cards);
     setExpenses(seed.expenses);
     setBalanceAdjustments(seed.balanceAdjustments);
@@ -359,9 +360,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings(seed.settings);
     markSettingsPersisted(seed.settings);
     applySettingsTheme(seed.settings);
+    void i18n.changeLanguage(language);
     setLoading(false);
     setLastUpdated(null);
   }, [isDemo]);
+
+  useEffect(() => {
+    if (!isDemo) return;
+
+    setSettings((prev) => ({
+      ...prev,
+      titleText: getDemoWorkspaceTitle(prev.language),
+    }));
+  }, [isDemo, settings.language]);
 
   useEffect(() => {
     if (isDemo || !userId) return;

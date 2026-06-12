@@ -5,9 +5,14 @@ import type {
   MonthlyPayment,
   PendingCarryover,
 } from "../types";
+import i18n, { type AppLanguage } from "../i18n";
 import { getCurrentMonth } from "../utils/format";
 import { addMonths } from "../utils/months";
 import { getDefaultSettings, type AppSettings } from "../utils/settings";
+
+export function getDemoWorkspaceTitle(language: AppLanguage): string {
+  return i18n.getFixedT(language)("demo.workspaceTitle");
+}
 
 export const DEMO_CARD_IDS = {
   visa: "demo-visa",
@@ -24,7 +29,7 @@ export type DemoSeed = {
   settings: AppSettings;
 };
 
-export function createDemoSeed(): DemoSeed {
+export function createDemoSeed(language: AppLanguage): DemoSeed {
   const current = getCurrentMonth();
   const twoMonthsAgo = addMonths(current, -2);
   const lastMonth = addMonths(current, -1);
@@ -139,8 +144,9 @@ export function createDemoSeed(): DemoSeed {
     pendingCarryovers: [],
     settings: {
       ...getDefaultSettings(),
+      language,
       budgetAlert: 80_000,
-      titleText: "Expedición demo",
+      titleText: getDemoWorkspaceTitle(language),
       showPaidRow: true,
       showPreviousMonths: true,
     },
