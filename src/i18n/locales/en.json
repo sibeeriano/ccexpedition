@@ -47,6 +47,22 @@
     "noCardsHint": "Add your first card and start tracking purchases and installments month by month.",
     "lastUpdated": "Last updated: {{date}}"
   },
+  "thankYou": {
+    "badgeBefore": "Welcome to ",
+    "badgeAfter": "!",
+    "titleBefore": "Thank you for supporting ",
+    "titleHighlight": "my project",
+    "body": "Signing up for this beta means a lot to me. Thanks for trusting me and being part of this adventure from day one. 🚀",
+    "premiumBefore": "As a thank-you, your account will get a ",
+    "premiumHighlight": "lifetime Premium",
+    "premiumAfter": " subscription when the beta ends.",
+    "betaBefore": "The trial beta ends on ",
+    "betaDate": "July 9, 2026",
+    "betaAfter": ".",
+    "footerBefore": "Enjoy exploring ",
+    "footerAfter": "!",
+    "cta": "Let's go!"
+  },
   "onboarding": {
     "next": "Next",
     "prev": "Previous",
@@ -173,7 +189,7 @@
     "descriptionLine2": "shows how your upcoming",
     "descriptionLine3": "statements would look.",
     "betaCta": "Join the Beta",
-    "privacyNote": "Sign up free with your email. We don't have access to the data you enter in your sheets. Your privacy comes first.",
+    "heroFootnote": "Sign up free with your email. The trial beta closes on July 9, 2026—early sign-ups get benefits. We don't access the data you enter in your sheets—your privacy comes first.",
     "signUp": "Sign Up",
     "signIn": "Sign In",
     "guilt": {

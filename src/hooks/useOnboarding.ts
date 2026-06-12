@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  hasCompletedWelcomeTour,
   isTourActive,
   startWelcomeTour,
 } from "../utils/onboarding";
+import { shouldShowWelcomeTour } from "../utils/thankYou";
 
 type UseWelcomeTourOptions = {
   userId: string | null | undefined;
   ready: boolean;
   hasCards: boolean;
+  /** When true, the welcome tour is deferred (e.g. thank-you modal is open). */
+  blocked?: boolean;
 };
 
 /** Stage 1: welcome + add first card (empty state only). */
@@ -17,11 +19,13 @@ export function useWelcomeTour({
   userId,
   ready,
   hasCards,
+  blocked = false,
 }: UseWelcomeTourOptions): void {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!userId || !ready || hasCards || hasCompletedWelcomeTour(userId)) return;
+    if (!userId || !ready || blocked || hasCards || !shouldShowWelcomeTour(userId))
+      return;
 
     const timer = window.setTimeout(() => {
       if (isTourActive()) return;
@@ -29,5 +33,5 @@ export function useWelcomeTour({
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [userId, ready, hasCards, t]);
+  }, [userId, ready, blocked, hasCards, t]);
 }

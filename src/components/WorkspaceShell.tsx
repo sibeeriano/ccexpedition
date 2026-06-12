@@ -14,6 +14,7 @@ import { ImportModal } from "./ImportModal";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 import { DemoBanner } from "./DemoBanner";
+import { ThankYouModal } from "./ThankYouModal";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
@@ -22,6 +23,12 @@ import {
   markWelcomeTourComplete,
   type TourContext,
 } from "../utils/onboarding";
+import {
+  dismissThankYouPopup,
+  finalizeFirstExperience,
+  shouldShowThankYou,
+  syncFirstExperienceAfterReset,
+} from "../utils/thankYou";
 
 type WorkspaceShellProps = {
   demoMode?: boolean;
@@ -54,7 +61,9 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const hasCards = state.cards.length > 0;
   const isConsolidatedView = hasCards && !selectedCard;
   const [justAddedFirstCard, setJustAddedFirstCard] = useState(false);
+  const [thankYouOpen, setThankYouOpen] = useState(false);
   const prevCardCount = useRef(state.cards.length);
+  const userId = demoMode ? undefined : session?.user.id;
 
   useEffect(() => {
     const prev = prevCardCount.current;
@@ -62,14 +71,22 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
     if (prev === 0 && next > 0) {
       setSelectedView(ALL_CARDS_VIEW);
       setJustAddedFirstCard(true);
-      const userId = session?.user.id;
-      if (userId && !demoMode) {
+      if (userId) {
         markWelcomeTourComplete(userId);
+        finalizeFirstExperience(userId);
         destroyActiveTour(false);
       }
     }
     prevCardCount.current = next;
-  }, [state.cards.length, session?.user.id, demoMode]);
+  }, [state.cards.length, userId]);
+
+  useEffect(() => {
+    if (!userId || !appReady || demoMode) return;
+    syncFirstExperienceAfterReset(userId);
+    if (shouldShowThankYou(userId)) {
+      setThankYouOpen(true);
+    }
+  }, [userId, appReady, demoMode]);
 
   useEffect(() => {
     if (!justAddedFirstCard || !isConsolidatedView) return;
@@ -78,9 +95,10 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   }, [justAddedFirstCard, isConsolidatedView]);
 
   useWelcomeTour({
-    userId: demoMode ? undefined : session?.user.id,
+    userId,
     ready: appReady && !demoMode,
     hasCards,
+    blocked: thankYouOpen,
   });
 
   useConsolidatedTour({
@@ -181,6 +199,15 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
         <AddExpenseModal
           card={selectedCard}
           onClose={() => setIsAddExpenseOpen(false)}
+        />
+      )}
+      {thankYouOpen && userId && (
+        <ThankYouModal
+          onClose={() => {
+            dismissThankYouPopup(userId);
+            setThankYouOpen(false);
+            if (hasCards) finalizeFirstExperience(userId);
+          }}
         />
       )}
     </div>

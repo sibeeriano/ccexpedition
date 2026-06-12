@@ -8,6 +8,10 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { setRememberMe, supabase } from "../lib/supabase";
+import {
+  markThankYouPendingFirstSignIn,
+  markThankYouPendingSignUp,
+} from "../utils/thankYou";
 
 type AuthContextValue = {
   session: Session | null;
@@ -44,10 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string, remember = true) {
     setRememberMe(remember);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    if (!error && data.user) {
+      markThankYouPendingFirstSignIn(data.user.id);
+    }
     return error?.message ?? null;
   }
 
@@ -60,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
+    if (!error) markThankYouPendingSignUp();
     return error?.message ?? null;
   }
 

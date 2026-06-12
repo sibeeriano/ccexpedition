@@ -108,7 +108,7 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
           <button
             type="button"
             onClick={onTryDemo}
-            className="hidden rounded-full border border-brand-accent/50 px-3 py-1.5 text-xs font-medium text-brand-accent transition-colors hover:bg-brand-accent/10 sm:inline-flex sm:px-5 sm:py-2 sm:text-sm"
+            className="hidden rounded-full border border-brand-accent px-3 py-1.5 text-xs font-medium text-brand-accent transition-colors hover:bg-brand-accent/10 sm:inline-flex sm:px-5 sm:py-2 sm:text-sm"
           >
             {t("demo.tryDemo")}
           </button>
@@ -186,14 +186,14 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
               <button
                 type="button"
                 onClick={onTryDemo}
-                className="inline-flex w-full items-center justify-center rounded-full border border-white/30 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10 sm:w-auto sm:py-[1.125rem] sm:text-lg"
+                className="inline-flex w-full items-center justify-center rounded-full border border-brand-accent px-8 py-4 text-base font-semibold text-brand-accent transition-colors hover:bg-brand-accent/10 sm:w-auto sm:py-[1.125rem] sm:text-lg"
               >
                 {t("demo.tryDemo")}
               </button>
             </div>
 
-            <p className="mx-auto mt-4 max-w-md text-center text-xs leading-relaxed text-zinc-400 sm:text-sm">
-              {t("landing.privacyNote")}
+            <p className="mx-auto mt-4 max-w-lg text-center text-xs leading-relaxed text-zinc-400 sm:text-sm">
+              {t("landing.heroFootnote")}
             </p>
           </div>
         </section>

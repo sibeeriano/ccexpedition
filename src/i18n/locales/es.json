@@ -47,6 +47,22 @@
     "noCardsHint": "Agregá tu primera tarjeta y empezá a seguir compras y cuotas mes a mes, sin culpa.",
     "lastUpdated": "Última actualización: {{date}}"
   },
+  "thankYou": {
+    "badgeBefore": "¡Bienvenido a ",
+    "badgeAfter": "!",
+    "titleBefore": "Gracias por el apoyo en ",
+    "titleHighlight": "mi proyecto",
+    "body": "Tu registro en esta beta significa mucho para mí. Gracias por confiar y ser parte de esta aventura desde el principio. 🚀",
+    "premiumBefore": "Como agradecimiento, tu cuenta tendrá la suscripción ",
+    "premiumHighlight": "Premium de por vida",
+    "premiumAfter": " cuando finalice la beta.",
+    "betaBefore": "La beta de prueba finaliza el ",
+    "betaDate": "9 de julio de 2026",
+    "betaAfter": ".",
+    "footerBefore": "¡Disfruta explorando ",
+    "footerAfter": "!",
+    "cta": "¡Empezar!"
+  },
   "onboarding": {
     "next": "Siguiente",
     "prev": "Anterior",
@@ -173,7 +189,7 @@
     "descriptionLine2": "muestra como quedarían tus proximos",
     "descriptionLine3": "resúmenes.",
     "betaCta": "Participa de la Beta",
-    "privacyNote": "Registrate gratis con tu mail. No tenemos acceso a los datos que ingreses en las planillas. Tu privacidad primero.",
+    "heroFootnote": "Registrate gratis con tu mail. La beta de prueba cierra el 9 de julio de 2026; quien se registre antes accede a beneficios. No tenemos acceso a los datos que ingreses en las planillas — tu privacidad primero.",
     "signUp": "Registrarse",
     "signIn": "Iniciar Sesión",
     "guilt": {

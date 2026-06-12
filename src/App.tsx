@@ -9,6 +9,9 @@ import { useAppPath, type UseAppPathResult } from "./hooks/useAppPath";
 import { useAuth } from "./context/AuthContext";
 import { useApp } from "./context/AppContext";
 import { useEffect, useState } from "react";
+import { ensureFirstExperienceReset } from "./utils/thankYou";
+
+ensureFirstExperienceReset();
 
 const AUTH_INTENT_KEY = "ccexpedition-auth-intent";
 

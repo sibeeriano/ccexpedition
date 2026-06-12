@@ -424,7 +424,7 @@ export function ConsolidatedView() {
             card: popoverCard.name,
             month: formatMonthLabel(popover.month),
           })}
-          className="fixed z-30 w-72 -translate-x-1/2 rounded-lg border border-white/10 bg-surface p-3 shadow-xl"
+          className="fixed z-30 w-72 -translate-x-1/2 rounded-lg border border-white/35 bg-surface p-3 shadow-xl"
           style={{ left: popover.x, top: popover.y }}
         >
           <div className="mb-2 flex items-center justify-between gap-2">
