@@ -14,9 +14,18 @@ function emailWithoutAt(email: string): string {
 type NavbarProps = {
   onAddCard: () => void;
   onOpenSettings: () => void;
+  demoMode?: boolean;
+  onExitDemo?: () => void;
+  onSignUp?: () => void;
 };
 
-export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
+export function Navbar({
+  onAddCard,
+  onOpenSettings,
+  demoMode = false,
+  onExitDemo,
+  onSignUp,
+}: NavbarProps) {
   const { t } = useTranslation();
   const { state } = useApp();
   const { session, signOut } = useAuth();
@@ -52,19 +61,25 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-surface/95 backdrop-blur">
       <div className="mx-auto grid min-h-14 w-full min-w-0 max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-1.5 px-3 py-1.5 sm:grid-cols-[1fr_auto_1fr] sm:gap-3 sm:px-4">
-        {userLabel ? (
+        {userLabel || demoMode ? (
           <div className="flex min-w-0 items-center gap-2">
             <img
               src="/logoBN.png"
               alt=""
               className="size-8 shrink-0 object-contain sm:size-9"
             />
-            <span
-              className="hidden min-w-0 truncate text-xs text-zinc-500 sm:inline"
-              title={userEmail}
-            >
-              {userLabel}
-            </span>
+            {demoMode ? (
+              <span className="hidden rounded-full bg-brand-accent/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-brand-accent sm:inline">
+                {t("demo.badge")}
+              </span>
+            ) : (
+              <span
+                className="hidden min-w-0 truncate text-xs text-zinc-500 sm:inline"
+                title={userEmail}
+              >
+                {userLabel}
+              </span>
+            )}
           </div>
         ) : (
           <div className="min-w-0" aria-hidden />
@@ -117,14 +132,24 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
             <CogIcon />
           </button>
 
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            aria-label={t("nav.signOut")}
-            className="hidden size-9 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-500/10 hover:text-red-400 sm:flex"
-          >
-            <PowerIcon />
-          </button>
+          {demoMode ? (
+            <button
+              type="button"
+              onClick={onExitDemo}
+              className="hidden rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/5 sm:inline-flex"
+            >
+              {t("demo.exit")}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              aria-label={t("nav.signOut")}
+              className="hidden size-9 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-500/10 hover:text-red-400 sm:flex"
+            >
+              <PowerIcon />
+            </button>
+          )}
 
           <div ref={menuRef} className="relative sm:hidden">
             <button
@@ -150,26 +175,42 @@ export function Navbar({ onAddCard, onOpenSettings }: NavbarProps) {
                   id={menuId}
                   className="fixed right-3 top-14 z-50 w-56 rounded-lg border border-white/10 bg-surface py-2 shadow-xl"
                 >
-                  {userLabel && (
+                  {(userLabel || demoMode) && (
                     <p
                       className="truncate border-b border-white/5 px-3.5 py-2 text-xs text-zinc-500"
-                      title={userEmail}
+                      title={demoMode ? t("demo.badge") : userEmail}
                     >
-                      {userLabel}
+                      {demoMode ? t("demo.badge") : userLabel}
                     </p>
                   )}
 
-                  <div className="px-2 py-1.5">
+                  <div className="space-y-1 px-2 py-1.5">
+                    {demoMode && onSignUp && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onSignUp();
+                        }}
+                        className="btn-primary w-full px-3 py-2 text-left text-sm"
+                      >
+                        {t("demo.createAccount")}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
                         setMenuOpen(false);
+                        if (demoMode) {
+                          onExitDemo?.();
+                          return;
+                        }
                         void signOut();
                       }}
                       className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
                     >
                       <PowerIcon />
-                      {t("nav.signOut")}
+                      {demoMode ? t("demo.exit") : t("nav.signOut")}
                     </button>
                   </div>
                 </div>

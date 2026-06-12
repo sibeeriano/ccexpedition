@@ -25,6 +25,13 @@
     "selectCard": "Select a card…",
     "past": "(past)"
   },
+  "demo": {
+    "tryDemo": "Try demo",
+    "badge": "Demo",
+    "banner": "Demo mode — changes are not saved.",
+    "createAccount": "Create free account",
+    "exit": "Exit demo"
+  },
   "nav": {
     "addCard": "+ Add Card",
     "addCardShort": "+ Card",
@@ -294,7 +301,7 @@
     "exportComingSoonHint": "CSV export is still on the way.",
     "card": "Card",
     "totalAllCards": "Monthly totals",
-    "budgetExceeded": "Marked months exceed your {{amount}} budget alert.",
+    "budgetExceeded": "Months {{months}} exceed your {{amount}} budget alert. You might want to wait.",
     "popoverLabel": "Expenses for {{card}} in {{month}}",
     "noExpensesThisMonth": "No expenses this month.",
     "cellDetails": "{{card}}, {{month}}. Show details"

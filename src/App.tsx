@@ -1,91 +1,38 @@
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useConsolidatedTour } from "./hooks/useConsolidatedTour";
-import { useWelcomeTour } from "./hooks/useOnboarding";
-import { Navbar } from "./components/Navbar";
-import { CardList, ALL_CARDS_VIEW } from "./components/CardList";
-import { CardDetail } from "./components/CardDetail";
-import { ConsolidatedView } from "./components/ConsolidatedView";
-import { AddCardModal } from "./components/AddCardModal";
-import { AddExpenseModal } from "./components/AddExpenseModal";
-import { SettingsModal } from "./components/SettingsModal";
-import { ImportModal } from "./components/ImportModal";
-import { DevSignature } from "./components/DevSignature";
-import { LanguageToggle } from "./components/LanguageToggle";
+import { DemoModeProvider } from "./context/DemoModeContext";
+import { AppProvider } from "./context/AppContext";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
-import { useApp } from "./context/AppContext";
+import { WorkspaceShell } from "./components/WorkspaceShell";
+import { DevSignature } from "./components/DevSignature";
+import { useAppPath, type UseAppPathResult } from "./hooks/useAppPath";
 import { useAuth } from "./context/AuthContext";
-import { formatTimestamp } from "./utils/format";
-import {
-  destroyActiveTour,
-  markWelcomeTourComplete,
-  type TourContext,
-} from "./utils/onboarding";
+import { useApp } from "./context/AppContext";
+import { useEffect, useState } from "react";
 
-function App() {
+const AUTH_INTENT_KEY = "ccexpedition-auth-intent";
+
+function AppRoutes({ appPath }: { appPath: UseAppPathResult }) {
   const { t } = useTranslation();
   const { session, loading: authLoading } = useAuth();
   const { state } = useApp();
-  const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
-  const [isAddCardOpen, setIsAddCardOpen] = useState(false);
-  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isImportOpen, setIsImportOpen] = useState(false);
+  const { isDemo, navigate } = appPath;
   const [showLogin, setShowLogin] = useState(false);
   const [loginMode, setLoginMode] = useState<"sign-in" | "sign-up">("sign-in");
 
-  const selectedCard =
-    selectedView === ALL_CARDS_VIEW
-      ? null
-      : (state.cards.find((card) => card.id === selectedView) ?? null);
-
-  const tourContext: TourContext =
-    state.cards.length === 0
-      ? "empty"
-      : selectedCard
-        ? "card-detail"
-        : "consolidated";
-
-  const appReady = !authLoading && !state.loading && Boolean(session);
-  const hasCards = state.cards.length > 0;
-  const isConsolidatedView = hasCards && !selectedCard;
-  const [justAddedFirstCard, setJustAddedFirstCard] = useState(false);
-  const prevCardCount = useRef(state.cards.length);
-
   useEffect(() => {
-    const prev = prevCardCount.current;
-    const next = state.cards.length;
-    if (prev === 0 && next > 0) {
-      setSelectedView(ALL_CARDS_VIEW);
-      setJustAddedFirstCard(true);
-      const userId = session?.user.id;
-      if (userId) {
-        markWelcomeTourComplete(userId);
-        destroyActiveTour(false);
-      }
+    if (isDemo) return;
+    const intent = sessionStorage.getItem(AUTH_INTENT_KEY);
+    if (intent === "sign-up" || intent === "sign-in") {
+      sessionStorage.removeItem(AUTH_INTENT_KEY);
+      setLoginMode(intent);
+      setShowLogin(true);
     }
-    prevCardCount.current = next;
-  }, [state.cards.length, session?.user.id]);
+  }, [isDemo]);
 
-  useEffect(() => {
-    if (!justAddedFirstCard || !isConsolidatedView) return;
-    const timer = window.setTimeout(() => setJustAddedFirstCard(false), 3000);
-    return () => window.clearTimeout(timer);
-  }, [justAddedFirstCard, isConsolidatedView]);
-
-  useWelcomeTour({
-    userId: session?.user.id,
-    ready: appReady,
-    hasCards,
-  });
-
-  useConsolidatedTour({
-    userId: session?.user.id,
-    ready: appReady,
-    enabled: isConsolidatedView,
-    delayMs: justAddedFirstCard ? 900 : 700,
-  });
+  if (isDemo) {
+    return <WorkspaceShell demoMode />;
+  }
 
   if (authLoading || state.loading) {
     return (
@@ -108,6 +55,7 @@ function App() {
             setLoginMode("sign-up");
             setShowLogin(true);
           }}
+          onTryDemo={() => navigate("/demo")}
         />
       );
     }
@@ -119,87 +67,28 @@ function App() {
     );
   }
 
+  return <WorkspaceShell />;
+}
+
+function App() {
+  const appPath = useAppPath();
+  const { isDemo, navigate } = appPath;
+
+  const demoContextValue = {
+    isDemo,
+    exitDemo: () => navigate("/"),
+    goToSignUp: () => {
+      sessionStorage.setItem(AUTH_INTENT_KEY, "sign-up");
+      navigate("/");
+    },
+  };
+
   return (
-    <div className="flex min-h-dvh flex-col">
-      <Navbar
-        onAddCard={() => setIsAddCardOpen(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
-
-      <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl shrink-0 grow flex-col gap-5 px-4 py-5">
-        {state.cards.length === 0 ? (
-          <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
-            <img
-              src="/gatito1.png"
-              alt=""
-              className="mb-6 h-36 w-auto max-w-full object-contain sm:h-40"
-            />
-            <h2 className="text-lg font-bold text-white sm:text-xl">
-              {t("app.noCardsTitle")}
-            </h2>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-white/80">
-              {t("app.noCardsHint")}
-            </p>
-            <button
-              type="button"
-              data-tour="empty-add-card"
-              onClick={() => setIsAddCardOpen(true)}
-              className="btn-primary mt-8 px-6 py-2.5 text-sm sm:text-base"
-            >
-              {t("nav.addCard")}
-            </button>
-          </div>
-        ) : (
-          <>
-            <CardList
-              selectedId={selectedCard?.id ?? ALL_CARDS_VIEW}
-              onSelect={setSelectedView}
-            />
-            <div className="min-w-0 shrink-0">
-              {selectedCard ? (
-                <CardDetail
-                  card={selectedCard}
-                  onAddExpense={() => setIsAddExpenseOpen(true)}
-                  onImport={() => setIsImportOpen(true)}
-                  tourPaused={isAddExpenseOpen}
-                />
-              ) : (
-                <ConsolidatedView />
-              )}
-            </div>
-          </>
-        )}
-      </main>
-
-      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-2 px-4 pb-5 text-center text-xs text-zinc-600">
-        <LanguageToggle className="sm:hidden" />
-        {state.lastUpdated && (
-          <span>
-            {t("app.lastUpdated", {
-              date: formatTimestamp(state.lastUpdated),
-            })}
-          </span>
-        )}
-        <DevSignature />
-      </footer>
-
-      {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
-      {isSettingsOpen && (
-        <SettingsModal
-          tourContext={tourContext}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      )}
-      {isImportOpen && (
-        <ImportModal onClose={() => setIsImportOpen(false)} />
-      )}
-      {isAddExpenseOpen && selectedCard && (
-        <AddExpenseModal
-          card={selectedCard}
-          onClose={() => setIsAddExpenseOpen(false)}
-        />
-      )}
-    </div>
+    <DemoModeProvider value={demoContextValue}>
+      <AppProvider>
+        <AppRoutes appPath={appPath} />
+      </AppProvider>
+    </DemoModeProvider>
   );
 }
 

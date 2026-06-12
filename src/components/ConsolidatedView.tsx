@@ -13,6 +13,7 @@ import { PaidMonthCell } from "./PaidMonthCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { Modal } from "./Modal";
+import { BudgetExceededNotice } from "./BudgetExceededNotice";
 
 type CellPopover = {
   cardId: string;
@@ -87,6 +88,7 @@ export function ConsolidatedView() {
   const isOverBudget = grandTotals.map(
     (total) => budgetAlert > 0 && total > budgetAlert,
   );
+  const overBudgetMonths = monthsRange.filter((_, index) => isOverBudget[index]);
 
   const tableWrapRef = useRef<HTMLDivElement>(null);
   const tableInnerRef = useRef<HTMLDivElement>(null);
@@ -376,13 +378,13 @@ export function ConsolidatedView() {
         </div>
       </div>
 
-      <div className="flex min-h-6 items-center justify-between gap-3">
-        {budgetAlert > 0 && isOverBudget.some(Boolean) ? (
-          <p className="text-xs text-budget-alert-muted">
-            {t("consolidated.budgetExceeded", {
-              amount: formatMoney(budgetAlert, currency),
-            })}
-          </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        {budgetAlert > 0 && overBudgetMonths.length > 0 ? (
+          <BudgetExceededNotice
+            months={overBudgetMonths}
+            budgetAlert={budgetAlert}
+            currency={currency}
+          />
         ) : (
           <span aria-hidden />
         )}

@@ -33,6 +33,8 @@ import {
   settingsSnapshot,
 } from "../utils/settings";
 import { useAuth } from "./AuthContext";
+import { useDemoMode } from "./DemoModeContext";
+import { createDemoSeed } from "../data/demoSeed";
 
 export type { AppLanguage, AppSettings };
 
@@ -230,10 +232,15 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function newDemoId(): string {
+  return crypto.randomUUID();
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
+  const { isDemo } = useDemoMode();
   const userId = session?.user.id ?? null;
 
   const [cards, setCards] = useState<Card[]>([]);
@@ -268,6 +275,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     value: AppSettings,
     activeUserId: string | null,
   ): Promise<string | null> {
+    if (isDemo) {
+      markSettingsPersisted(value);
+      return null;
+    }
+
     saveSettingsToLocalStorage(activeUserId, value);
     if (!activeUserId) {
       markSettingsPersisted(value);
@@ -290,6 +302,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   function scheduleAutoPersistSettings(value: AppSettings) {
+    if (isDemo) {
+      markSettingsPersisted(value);
+      return;
+    }
+
     saveSettingsToLocalStorage(userId, value);
     if (!userId) {
       markSettingsPersisted(value);
@@ -331,7 +348,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    if (!userId) return;
+    if (!isDemo) return;
+
+    const seed = createDemoSeed();
+    setCards(seed.cards);
+    setExpenses(seed.expenses);
+    setBalanceAdjustments(seed.balanceAdjustments);
+    setMonthlyPayments(seed.monthlyPayments);
+    setPendingCarryovers(seed.pendingCarryovers);
+    setSettings(seed.settings);
+    markSettingsPersisted(seed.settings);
+    applySettingsTheme(seed.settings);
+    setLoading(false);
+    setLastUpdated(null);
+  }, [isDemo]);
+
+  useEffect(() => {
+    if (isDemo || !userId) return;
 
     let cancelled = false;
 
@@ -371,7 +404,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, isDemo]);
 
   useEffect(() => {
     applySettingsTheme(settings);
@@ -391,6 +424,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // (Re)load all data whenever the signed-in user changes.
   useEffect(() => {
+    if (isDemo) return;
+
     if (!userId) {
       setCards([]);
       setExpenses([]);
@@ -476,13 +511,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, isDemo]);
 
   function stamp() {
     setLastUpdated(new Date().toISOString());
   }
 
   async function addCard(input: Omit<Card, "id">) {
+    if (isDemo) {
+      const name = input.name.trim();
+      const holder = input.holder.trim();
+      if (!name) return i18n.t("errors.cardNameRequired");
+      if (!holder) return i18n.t("errors.holderRequired");
+      if (!isValidHexColor(input.color)) return i18n.t("errors.invalidCardColor");
+      if (
+        input.backgroundColor !== null &&
+        !isValidHexColor(input.backgroundColor)
+      ) {
+        return i18n.t("errors.invalidCardColor");
+      }
+      setCards((prev) => [
+        ...prev,
+        {
+          ...input,
+          name,
+          holder,
+          id: newDemoId(),
+        },
+      ]);
+      stamp();
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("cards")
       .insert({
@@ -527,6 +587,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return i18n.t("errors.invalidCardColor");
     }
 
+    if (isDemo) {
+      setCards((prev) =>
+        prev.map((card) =>
+          card.id === id ? { ...card, name, holder, color, backgroundColor } : card,
+        ),
+      );
+      stamp();
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("cards")
       .update({
@@ -552,10 +622,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   async function deleteCard(id: string) {
-    const { error } = await supabase.from("cards").delete().eq("id", id);
-    if (error) {
-      console.error("Failed to delete card:", error);
-      return error.message;
+    if (!isDemo) {
+      const { error } = await supabase.from("cards").delete().eq("id", id);
+      if (error) {
+        console.error("Failed to delete card:", error);
+        return error.message;
+      }
     }
     // The DB cascades the card's expenses; mirror that locally.
     setCards((prev) => prev.filter((card) => card.id !== id));
@@ -574,6 +646,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   async function addExpense(input: Omit<Expense, "id">) {
+    if (isDemo) {
+      setExpenses((prev) => [...prev, { ...input, id: newDemoId() }]);
+      stamp();
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("expenses")
       .insert({
@@ -602,6 +680,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function addExpenses(inputs: Omit<Expense, "id">[]) {
     if (inputs.length === 0) return null;
+
+    if (isDemo) {
+      setExpenses((prev) => [
+        ...prev,
+        ...inputs.map((input) => ({ ...input, id: newDemoId() })),
+      ]);
+      stamp();
+      return null;
+    }
 
     const { data, error } = await supabase
       .from("expenses")
@@ -669,6 +756,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return i18n.t("errors.invalidInstallments");
     }
 
+    if (isDemo) {
+      setExpenses((prev) =>
+        prev.map((expense) =>
+          expense.id === id
+            ? {
+                ...expense,
+                description,
+                totalAmount,
+                totalAmountUsd,
+                installments,
+                startMonth,
+                isMonthlyCharge,
+              }
+            : expense,
+        ),
+      );
+      stamp();
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("expenses")
       .update({
@@ -700,10 +807,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   async function deleteExpense(id: string) {
-    const { error } = await supabase.from("expenses").delete().eq("id", id);
-    if (error) {
-      console.error("Failed to delete expense:", error);
-      return error.message;
+    if (!isDemo) {
+      const { error } = await supabase.from("expenses").delete().eq("id", id);
+      if (error) {
+        console.error("Failed to delete expense:", error);
+        return error.message;
+      }
     }
     setExpenses((prev) => prev.filter((expense) => expense.id !== id));
     stamp();
@@ -715,6 +824,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!description) return i18n.t("errors.descriptionRequired");
     if (input.amount <= 0 && input.amountUsd <= 0) {
       return i18n.t("errors.amountRequired");
+    }
+
+    if (isDemo) {
+      setBalanceAdjustments((prev) => [
+        ...prev,
+        { ...input, description, id: newDemoId() },
+      ]);
+      stamp();
+      return null;
     }
 
     const { data, error } = await supabase
@@ -770,6 +888,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!description) return i18n.t("errors.descriptionRequired");
     if (amount <= 0 && amountUsd <= 0) return i18n.t("errors.amountRequired");
 
+    if (isDemo) {
+      setBalanceAdjustments((prev) =>
+        prev.map((adjustment) =>
+          adjustment.id === id
+            ? { ...adjustment, description, amount, amountUsd, type, applyMonth }
+            : adjustment,
+        ),
+      );
+      stamp();
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("balance_adjustments")
       .update({
@@ -802,13 +932,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   async function deleteBalanceAdjustment(id: string) {
-    const { error } = await supabase
-      .from("balance_adjustments")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      console.error("Failed to delete balance adjustment:", error);
-      return error.message;
+    if (!isDemo) {
+      const { error } = await supabase
+        .from("balance_adjustments")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        console.error("Failed to delete balance adjustment:", error);
+        return error.message;
+      }
     }
     setBalanceAdjustments((prev) =>
       prev.filter((adjustment) => adjustment.id !== id),
@@ -838,10 +970,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       pendingCarryovers,
     );
 
-    if (due.ars <= 0 && due.usd <= 0) {
-      return i18n.t("errors.nothingToPay");
-    }
-
     const amountPaid = input.paidInFull
       ? due.ars
       : round2(input.amountPaid ?? 0);
@@ -850,9 +978,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       : round2(input.amountPaidUsd ?? 0);
 
     if (!input.paidInFull) {
-      if (amountPaid <= 0 && amountPaidUsd <= 0) {
-        return i18n.t("errors.amountRequired");
-      }
       if (amountPaid > due.ars + 0.009 || amountPaidUsd > due.usd + 0.009) {
         return i18n.t("errors.paidExceedsDue");
       }
@@ -861,6 +986,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const remainderArs = round2(Math.max(0, due.ars - amountPaid));
     const remainderUsd = round2(Math.max(0, due.usd - amountPaidUsd));
     const nextMonth = addMonths(input.month, 1);
+
+    if (isDemo) {
+      const payment: MonthlyPayment = {
+        id: newDemoId(),
+        cardId: input.cardId,
+        month: input.month,
+        paidInFull: input.paidInFull,
+        amountPaid,
+        amountPaidUsd,
+      };
+      let newCarryover: PendingCarryover | null = null;
+      if (remainderArs > 0 || remainderUsd > 0) {
+        newCarryover = {
+          id: newDemoId(),
+          cardId: input.cardId,
+          applyMonth: nextMonth,
+          sourceMonth: input.month,
+          amount: remainderArs,
+          amountUsd: remainderUsd,
+          paymentId: payment.id,
+        };
+      }
+      setMonthlyPayments((prev) => [
+        ...prev.filter(
+          (item) =>
+            !(item.cardId === input.cardId && item.month === input.month),
+        ),
+        payment,
+      ]);
+      setPendingCarryovers((prev) => [
+        ...prev.filter(
+          (item) =>
+            !(item.cardId === input.cardId && item.applyMonth === nextMonth),
+        ),
+        ...(newCarryover ? [newCarryover] : []),
+      ]);
+      stamp();
+      return null;
+    }
 
     const existing = monthlyPayments.find(
       (payment) =>
@@ -961,14 +1125,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!existing) return null;
 
     const nextMonth = addMonths(month, 1);
-    const { error } = await supabase
-      .from("monthly_payments")
-      .delete()
-      .eq("id", existing.id);
 
-    if (error) {
-      console.error("Failed to clear monthly payment:", error);
-      return error.message;
+    if (!isDemo) {
+      const { error } = await supabase
+        .from("monthly_payments")
+        .delete()
+        .eq("id", existing.id);
+
+      if (error) {
+        console.error("Failed to clear monthly payment:", error);
+        return error.message;
+      }
     }
 
     setMonthlyPayments((prev) =>

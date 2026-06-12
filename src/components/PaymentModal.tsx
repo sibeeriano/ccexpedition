@@ -214,7 +214,7 @@ function PaymentForm({ card, month }: { card: Card; month: string }) {
             </button>
             <button
               type="submit"
-              disabled={saving || (amountPaid <= 0 && amountPaidUsd <= 0)}
+              disabled={saving}
               className="rounded-md px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               style={{ backgroundColor: card.color }}
             >

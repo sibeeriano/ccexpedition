@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
+import { getMonthlyDueByCard } from "../utils/expenses";
 import { PaymentModal } from "./PaymentModal";
 import { formatMonthLabel } from "../utils/format";
 import { isBeforeCurrentMonth } from "../utils/months";
@@ -13,21 +14,39 @@ type MonthPaidCheckboxProps = {
 
 export function MonthPaidCheckbox({ card, month }: MonthPaidCheckboxProps) {
   const { t } = useTranslation();
-  const { isMonthPaid, clearMonthlyPayment } = useApp();
+  const { state, isMonthPaid, clearMonthlyPayment, settleMonthlyPayment } =
+    useApp();
   const [modalOpen, setModalOpen] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [busy, setBusy] = useState(false);
   const implicitPaid = isBeforeCurrentMonth(month);
   const checked = isMonthPaid(card.id, month);
 
   async function handleChange(nextChecked: boolean) {
     if (implicitPaid) return;
     if (nextChecked) {
+      const due = getMonthlyDueByCard(
+        card.id,
+        month,
+        state.expenses,
+        state.balanceAdjustments,
+        state.pendingCarryovers,
+      );
+      if (due.ars <= 0 && due.usd <= 0) {
+        setBusy(true);
+        await settleMonthlyPayment({
+          cardId: card.id,
+          month,
+          paidInFull: true,
+        });
+        setBusy(false);
+        return;
+      }
       setModalOpen(true);
       return;
     }
-    setClearing(true);
+    setBusy(true);
     await clearMonthlyPayment(card.id, month);
-    setClearing(false);
+    setBusy(false);
   }
 
   return (
@@ -36,7 +55,7 @@ export function MonthPaidCheckbox({ card, month }: MonthPaidCheckboxProps) {
         <input
           type="checkbox"
           checked={checked}
-          disabled={clearing || implicitPaid}
+          disabled={busy || implicitPaid}
           onChange={(e) => void handleChange(e.target.checked)}
           aria-label={t("payment.markPaid", {
             card: card.name,

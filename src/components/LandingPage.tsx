@@ -8,6 +8,7 @@ import { LanguageToggle } from "./LanguageToggle";
 type LandingPageProps = {
   onSignIn: () => void;
   onSignUp: () => void;
+  onTryDemo: () => void;
 };
 
 const HOW_IT_WORKS_STEPS = [
@@ -86,7 +87,7 @@ function HowItWorksStep({
   );
 }
 
-export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
+export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps) {
   const { t, i18n } = useTranslation();
   const headlineBreakBeforeAccent = i18n.language !== "en";
 
@@ -104,6 +105,13 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <LanguageToggle className="mr-1 hidden sm:flex" />
+          <button
+            type="button"
+            onClick={onTryDemo}
+            className="hidden rounded-full border border-brand-accent/50 px-3 py-1.5 text-xs font-medium text-brand-accent transition-colors hover:bg-brand-accent/10 sm:inline-flex sm:px-5 sm:py-2 sm:text-sm"
+          >
+            {t("demo.tryDemo")}
+          </button>
           <button
             type="button"
             onClick={onSignUp}
@@ -160,20 +168,29 @@ export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
               {t("landing.descriptionLine3")}
             </p>
 
-            <button
-              type="button"
-              onClick={onSignIn}
-              className="mx-auto mt-8 inline-flex w-full max-w-md cursor-pointer items-center justify-center gap-2 rounded-full px-12 py-4 text-lg font-bold text-white transition-colors hover:brightness-95 sm:w-auto sm:max-w-none sm:px-[3.75rem] sm:py-[1.125rem] sm:text-xl"
-              style={{ backgroundColor: BRAND_ACCENT }}
-            >
-              {t("landing.betaCta")}
-              <span
-                aria-hidden="true"
-                className="text-xl leading-none sm:text-2xl"
+            <div className="mx-auto mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={onSignIn}
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-12 py-4 text-lg font-bold text-white transition-colors hover:brightness-95 sm:w-auto sm:px-[3.75rem] sm:py-[1.125rem] sm:text-xl"
+                style={{ backgroundColor: BRAND_ACCENT }}
               >
-                ›
-              </span>
-            </button>
+                {t("landing.betaCta")}
+                <span
+                  aria-hidden="true"
+                  className="text-xl leading-none sm:text-2xl"
+                >
+                  ›
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={onTryDemo}
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/30 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10 sm:w-auto sm:py-[1.125rem] sm:text-lg"
+              >
+                {t("demo.tryDemo")}
+              </button>
+            </div>
 
             <p className="mx-auto mt-4 max-w-md text-center text-xs leading-relaxed text-zinc-400 sm:text-sm">
               {t("landing.privacyNote")}

@@ -40,6 +40,26 @@
   background-color: var(--color-surface);
 }
 
+.budget-speech-bubble::before {
+  content: "";
+  position: absolute;
+  left: -0.45rem;
+  bottom: 1.25rem;
+  border-width: 0.45rem 0.55rem 0.45rem 0;
+  border-style: solid;
+  border-color: transparent rgb(255 255 255 / 0.1) transparent transparent;
+}
+
+.budget-speech-bubble::after {
+  content: "";
+  position: absolute;
+  left: -0.35rem;
+  bottom: 1.3rem;
+  border-width: 0.38rem 0.48rem 0.38rem 0;
+  border-style: solid;
+  border-color: transparent var(--color-surface) transparent transparent;
+}
+
 .text-budget-alert {
   color: var(--color-budget-alert);
 }
