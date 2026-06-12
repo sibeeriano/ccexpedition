@@ -59,6 +59,7 @@ function PremiumOffer() {
 export function ThankYouModal({ onClose }: ThankYouModalProps) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closedRef = useRef(false);
   const [closing, setClosing] = useState(false);
   const titleId = useId();
 
@@ -66,15 +67,22 @@ export function ThankYouModal({ onClose }: ThankYouModalProps) {
     dialogRef.current?.showModal();
   }, []);
 
+  const finishClose = useCallback(() => {
+    if (closedRef.current) return;
+    closedRef.current = true;
+    onClose();
+  }, [onClose]);
+
   const requestClose = useCallback(() => {
+    if (closedRef.current) return;
     setClosing(true);
+    finishClose();
     window.setTimeout(() => dialogRef.current?.close(), CLOSE_ANIMATION_MS);
-  }, []);
+  }, [finishClose]);
 
   return (
     <dialog
       ref={dialogRef}
-      onClose={onClose}
       onCancel={(e) => {
         e.preventDefault();
         requestClose();
@@ -130,7 +138,14 @@ export function ThankYouModal({ onClose }: ThankYouModalProps) {
           <PremiumOffer />
         </div>
 
-        <div className="px-5 pb-5 pt-4 text-center sm:px-6 sm:pt-5">
+        <form
+          method="dialog"
+          className="px-5 pb-5 pt-4 text-center sm:px-6 sm:pt-5"
+          onSubmit={() => {
+            setClosing(true);
+            finishClose();
+          }}
+        >
           <p className="text-sm text-zinc-300">
             {t("thankYou.footerBefore")}
             <span className="font-semibold">
@@ -140,13 +155,12 @@ export function ThankYouModal({ onClose }: ThankYouModalProps) {
             {t("thankYou.footerAfter")}
           </p>
           <button
-            type="button"
-            onClick={requestClose}
-            className="btn-primary mx-auto mt-4 cursor-pointer px-10 py-2.5 text-sm"
+            type="submit"
+            className="btn-primary relative z-10 mx-auto mt-4 block cursor-pointer px-10 py-2.5 text-sm"
           >
             {t("thankYou.cta")}
           </button>
-        </div>
+        </form>
       </div>
     </dialog>
   );

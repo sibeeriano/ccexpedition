@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConsolidatedTour } from "../hooks/useConsolidatedTour";
-import { useWelcomeTour } from "../hooks/useOnboarding";
 import { useDemoMode } from "../context/DemoModeContext";
 import { Navbar } from "./Navbar";
 import { CardList, ALL_CARDS_VIEW } from "./CardList";
@@ -21,14 +20,17 @@ import { formatTimestamp } from "../utils/format";
 import {
   destroyActiveTour,
   markWelcomeTourComplete,
+  startWelcomeTour,
   type TourContext,
 } from "../utils/onboarding";
 import {
-  dismissThankYouPopup,
   finalizeFirstExperience,
-  shouldShowThankYou,
+  getFirstExperiencePhase,
+  onThankYouPopupClosed,
   syncFirstExperienceAfterReset,
 } from "../utils/thankYou";
+
+const TOUR_START_DELAY_MS = 150;
 
 type WorkspaceShellProps = {
   demoMode?: boolean;
@@ -63,7 +65,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const [justAddedFirstCard, setJustAddedFirstCard] = useState(false);
   const [thankYouOpen, setThankYouOpen] = useState(false);
   const prevCardCount = useRef(state.cards.length);
+  const tourStartedRef = useRef(false);
   const userId = demoMode ? undefined : session?.user.id;
+
+  const experiencePhase =
+    userId && appReady && !demoMode
+      ? getFirstExperiencePhase(userId)
+      : "none";
 
   useEffect(() => {
     const prev = prevCardCount.current;
@@ -75,6 +83,7 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
         markWelcomeTourComplete(userId);
         finalizeFirstExperience(userId);
         destroyActiveTour(false);
+        tourStartedRef.current = false;
       }
     }
     prevCardCount.current = next;
@@ -82,24 +91,41 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
 
   useEffect(() => {
     if (!userId || !appReady || demoMode) return;
+
     syncFirstExperienceAfterReset(userId);
-    if (shouldShowThankYou(userId)) {
-      setThankYouOpen(true);
-    }
+    destroyActiveTour(false);
+    tourStartedRef.current = false;
+
+    const phase = getFirstExperiencePhase(userId);
+    setThankYouOpen(phase === "popup");
   }, [userId, appReady, demoMode]);
+
+  useEffect(() => {
+    if (
+      experiencePhase !== "tour" ||
+      thankYouOpen ||
+      hasCards ||
+      !userId ||
+      tourStartedRef.current
+    ) {
+      return;
+    }
+
+    tourStartedRef.current = true;
+    destroyActiveTour(false);
+
+    const timer = window.setTimeout(() => {
+      startWelcomeTour(t, userId);
+    }, TOUR_START_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [experiencePhase, thankYouOpen, hasCards, userId, t]);
 
   useEffect(() => {
     if (!justAddedFirstCard || !isConsolidatedView) return;
     const timer = window.setTimeout(() => setJustAddedFirstCard(false), 3000);
     return () => window.clearTimeout(timer);
   }, [justAddedFirstCard, isConsolidatedView]);
-
-  useWelcomeTour({
-    userId,
-    ready: appReady && !demoMode,
-    hasCards,
-    blocked: thankYouOpen,
-  });
 
   useConsolidatedTour({
     userId: demoMode ? undefined : session?.user.id,
@@ -204,9 +230,18 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       {thankYouOpen && userId && (
         <ThankYouModal
           onClose={() => {
-            dismissThankYouPopup(userId);
+            onThankYouPopupClosed(userId);
             setThankYouOpen(false);
-            if (hasCards) finalizeFirstExperience(userId);
+            tourStartedRef.current = true;
+            if (hasCards) {
+              finalizeFirstExperience(userId);
+            } else {
+              destroyActiveTour(false);
+              window.setTimeout(
+                () => startWelcomeTour(t, userId),
+                TOUR_START_DELAY_MS,
+              );
+            }
           }}
         />
       )}

@@ -248,7 +248,18 @@
     "toggleToSignUp": "Don't have an account? Sign up",
     "toggleToSignIn": "Already have an account? Sign in",
     "backToHome": "Back to home",
-    "accountCreated": "Account created. Check your email if confirmation is required, then sign in."
+    "accountCreated": "Account created. Check your email if confirmation is required, then sign in.",
+    "forgotPassword": "Forgot your password?",
+    "forgotPasswordSubtitle": "We'll send you a link to reset it",
+    "sendResetLink": "Send reset link",
+    "resetEmailSent": "If that email is registered, you'll receive a link to reset your password.",
+    "backToSignIn": "Back to sign in",
+    "resetPasswordTitle": "New password",
+    "resetPasswordSubtitle": "Choose a new password for your account",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "saveNewPassword": "Save password",
+    "passwordMismatch": "Passwords don't match."
   },
   "cardList": {
     "allCards": "All Cards",

@@ -4,16 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 
-type Mode = "sign-in" | "sign-up";
+type Mode = "sign-in" | "sign-up" | "forgot-password";
 
 type LoginProps = {
   onBackToHome: () => void;
-  initialMode?: Mode;
+  initialMode?: "sign-in" | "sign-up";
 };
 
 export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
   const { t } = useTranslation();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
 
   useEffect(() => {
@@ -32,7 +32,20 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
     setNotice(null);
     setSubmitting(true);
 
-    const errorMessage =
+    let errorMessage: string | null = null;
+
+    if (mode === "forgot-password") {
+      errorMessage = await resetPassword(email);
+      setSubmitting(false);
+      if (errorMessage) {
+        setError(errorMessage);
+      } else {
+        setNotice(t("login.resetEmailSent"));
+      }
+      return;
+    }
+
+    errorMessage =
       mode === "sign-in"
         ? await signIn(email, password, remember)
         : await signUp(email, password);
@@ -45,6 +58,20 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
       setMode("sign-in");
     }
   }
+
+  const subtitle =
+    mode === "sign-in"
+      ? t("login.signInSubtitle")
+      : mode === "sign-up"
+        ? t("login.signUpSubtitle")
+        : t("login.forgotPasswordSubtitle");
+
+  const submitLabel =
+    mode === "sign-in"
+      ? t("login.signIn")
+      : mode === "sign-up"
+        ? t("login.signUp")
+        : t("login.sendResetLink");
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
@@ -68,11 +95,7 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
         <p className="mt-2 text-center text-sm text-zinc-300">
           {t("login.slogan")}
         </p>
-        <p className="mt-1 text-center text-xs text-zinc-500">
-          {mode === "sign-in"
-            ? t("login.signInSubtitle")
-            : t("login.signUpSubtitle")}
-        </p>
+        <p className="mt-1 text-center text-xs text-zinc-500">{subtitle}</p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -95,27 +118,44 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="login-password"
-              className="text-xs font-medium text-zinc-400"
-            >
-              {t("login.password")}
-            </label>
-            <input
-              id="login-password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete={
-                mode === "sign-in" ? "current-password" : "new-password"
-              }
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
-            />
-          </div>
+          {mode !== "forgot-password" && (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <label
+                  htmlFor="login-password"
+                  className="text-xs font-medium text-zinc-400"
+                >
+                  {t("login.password")}
+                </label>
+                {mode === "sign-in" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot-password");
+                      setError(null);
+                      setNotice(null);
+                    }}
+                    className="cursor-pointer text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                  >
+                    {t("login.forgotPassword")}
+                  </button>
+                )}
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                required
+                minLength={6}
+                autoComplete={
+                  mode === "sign-in" ? "current-password" : "new-password"
+                }
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
+              />
+            </div>
+          )}
 
           {mode === "sign-in" && (
             <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-400">
@@ -141,27 +181,37 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
             disabled={submitting}
             className="rounded-md bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:opacity-50"
           >
-            {submitting
-              ? t("login.pleaseWait")
-              : mode === "sign-in"
-                ? t("login.signIn")
-                : t("login.signUp")}
+            {submitting ? t("login.pleaseWait") : submitLabel}
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "sign-in" ? "sign-up" : "sign-in");
-            setError(null);
-            setNotice(null);
-          }}
-          className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
-        >
-          {mode === "sign-in"
-            ? t("login.toggleToSignUp")
-            : t("login.toggleToSignIn")}
-        </button>
+        {mode === "forgot-password" ? (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("sign-in");
+              setError(null);
+              setNotice(null);
+            }}
+            className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+          >
+            {t("login.backToSignIn")}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === "sign-in" ? "sign-up" : "sign-in");
+              setError(null);
+              setNotice(null);
+            }}
+            className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+          >
+            {mode === "sign-in"
+              ? t("login.toggleToSignUp")
+              : t("login.toggleToSignIn")}
+          </button>
+        )}
       </div>
 
       <DevSignature />

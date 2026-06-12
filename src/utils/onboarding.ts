@@ -1,7 +1,7 @@
 import { driver, type Driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import type { TFunction } from "i18next";
-import { finalizeFirstExperience } from "./thankYou";
+import { finalizeFirstExperience, canStartWelcomeTour } from "./thankYou";
 
 export type TourContext = "empty" | "consolidated" | "card-detail";
 
@@ -292,6 +292,7 @@ export function startWelcomeTour(
   options?: { force?: boolean },
 ): void {
   if (!options?.force && hasCompletedWelcomeTour(userId)) return;
+  if (!options?.force && !canStartWelcomeTour(userId)) return;
 
   runTour(
     t,

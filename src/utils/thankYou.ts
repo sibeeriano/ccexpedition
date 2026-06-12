@@ -1,34 +1,45 @@
-const SIGNUP_PENDING_KEY = "ccexpedition-thank-you-pending-signup";
-const FIRST_SIGNIN_PENDING_PREFIX = "ccexpedition-thank-you-pending-signin-";
-const HAS_SIGNED_IN_PREFIX = "ccexpedition-has-signed-in-";
-const VIEW_COUNT_PREFIX = "ccexpedition-thank-you-views-";
-const POPUP_DISMISSED_PREFIX = "ccexpedition-thank-you-dismissed-";
-const ACTIVE_SESSION_PREFIX = "ccexpedition-first-experience-active-";
-const POST_RESET_SYNC_PREFIX = "ccexpedition-first-experience-post-reset-";
+/**
+ * Primera experiencia: popup de agradecimiento → tutorial de bienvenida.
+ * Máximo 2 veces por usuario (registro + primer inicio de sesión explícito).
+ *
+ * Fases en sessionStorage (por pestaña):
+ *   (vacío)        → mostrar popup si hay trigger pendiente
+ *   awaiting-tour  → popup ya visto; arrancar tutorial
+ */
+
+const SIGNUP_TRIGGER_KEY = "ccexpedition-fe-signup-trigger";
+const FIRST_SIGNIN_TRIGGER_PREFIX = "ccexpedition-fe-first-signin-";
+const PHASE_PREFIX = "ccexpedition-fe-phase-";
+const VIEW_COUNT_PREFIX = "ccexpedition-fe-views-";
+const POST_RESET_SYNC_PREFIX = "ccexpedition-fe-post-reset-";
 
 const RESET_VERSION_KEY = "ccexpedition-first-experience-reset-version";
-/** Subir este número para reiniciar popup + tutorial en todos los usuarios. */
-const RESET_VERSION = 1;
+/** Subir para reiniciar popup + tutorial en todos los usuarios. */
+const RESET_VERSION = 2;
 
 const MAX_VIEWS = 2;
 
+export type FirstExperiencePhase = "none" | "popup" | "tour";
+
 const LOCAL_STORAGE_PREFIXES = [
-  FIRST_SIGNIN_PENDING_PREFIX,
-  HAS_SIGNED_IN_PREFIX,
+  FIRST_SIGNIN_TRIGGER_PREFIX,
   VIEW_COUNT_PREFIX,
-  POPUP_DISMISSED_PREFIX,
   POST_RESET_SYNC_PREFIX,
-  "ccexpedition-thank-you-seen-",
-  "ccexpedition-pending-thank-you",
+  PHASE_PREFIX,
+  "ccexpedition-thank-you-",
+  "ccexpedition-first-experience-",
+  "ccexpedition-fe-",
   "ccexpedition-tour-welcome-",
   "ccexpedition-onboarding-",
 ];
 
 const SESSION_STORAGE_PREFIXES = [
-  SIGNUP_PENDING_KEY,
-  FIRST_SIGNIN_PENDING_PREFIX,
-  POPUP_DISMISSED_PREFIX,
-  ACTIVE_SESSION_PREFIX,
+  SIGNUP_TRIGGER_KEY,
+  FIRST_SIGNIN_TRIGGER_PREFIX,
+  PHASE_PREFIX,
+  "ccexpedition-thank-you-",
+  "ccexpedition-first-experience-",
+  "ccexpedition-fe-",
   "ccexpedition-pending-thank-you",
 ];
 
@@ -57,17 +68,13 @@ function clearStorageByPrefixes(
 
 function resetAllFirstExperienceState(): void {
   clearStorageByPrefixes(localStorage, LOCAL_STORAGE_PREFIXES, [
-    SIGNUP_PENDING_KEY,
+    SIGNUP_TRIGGER_KEY,
   ]);
   clearStorageByPrefixes(sessionStorage, SESSION_STORAGE_PREFIXES, [
-    SIGNUP_PENDING_KEY,
+    SIGNUP_TRIGGER_KEY,
   ]);
 }
 
-/**
- * Ejecutar al iniciar la app. Si RESET_VERSION cambió, borra el estado
- * guardado de popup/tutorial para todos los usuarios en este navegador.
- */
 export function ensureFirstExperienceReset(): void {
   const stored = localStorage.getItem(RESET_VERSION_KEY);
   if (stored === String(RESET_VERSION)) return;
@@ -82,50 +89,59 @@ function getViewCount(userId: string): number {
   return Number.isFinite(count) ? count : 0;
 }
 
-function isSignupPending(): boolean {
-  return (
-    sessionStorage.getItem(SIGNUP_PENDING_KEY) === "1" ||
-    localStorage.getItem(SIGNUP_PENDING_KEY) === "1"
-  );
-}
-
-function isFirstSignInPending(userId: string): boolean {
-  const key = `${FIRST_SIGNIN_PENDING_PREFIX}${userId}`;
-  return (
-    sessionStorage.getItem(key) === "1" || localStorage.getItem(key) === "1"
-  );
-}
-
-function hasPendingTrigger(userId: string): boolean {
-  return isSignupPending() || isFirstSignInPending(userId);
-}
-
-function isActiveSession(userId: string): boolean {
-  return sessionStorage.getItem(`${ACTIVE_SESSION_PREFIX}${userId}`) === "1";
-}
-
-function setPending(key: string): void {
-  sessionStorage.setItem(key, "1");
-  localStorage.setItem(key, "1");
-}
-
-function clearPending(key: string): void {
-  sessionStorage.removeItem(key);
-  localStorage.removeItem(key);
-}
-
-function clearSessionFlags(userId: string): void {
-  sessionStorage.removeItem(`${POPUP_DISMISSED_PREFIX}${userId}`);
-  sessionStorage.removeItem(`${ACTIVE_SESSION_PREFIX}${userId}`);
-}
-
 function hasViewsRemaining(userId: string): boolean {
   return getViewCount(userId) < MAX_VIEWS;
 }
 
+function getPhase(userId: string): string | null {
+  return sessionStorage.getItem(`${PHASE_PREFIX}${userId}`);
+}
+
+function setPhase(userId: string, phase: "awaiting-tour" | null): void {
+  const key = `${PHASE_PREFIX}${userId}`;
+  if (phase) sessionStorage.setItem(key, phase);
+  else sessionStorage.removeItem(key);
+}
+
+function hasSignupTrigger(): boolean {
+  return sessionStorage.getItem(SIGNUP_TRIGGER_KEY) === "1";
+}
+
+function hasFirstSignInTrigger(userId: string): boolean {
+  return (
+    sessionStorage.getItem(`${FIRST_SIGNIN_TRIGGER_PREFIX}${userId}`) === "1"
+  );
+}
+
+function hasAnyTrigger(userId: string): boolean {
+  return hasSignupTrigger() || hasFirstSignInTrigger(userId);
+}
+
+function setSignupTrigger(): void {
+  sessionStorage.setItem(SIGNUP_TRIGGER_KEY, "1");
+}
+
+function setFirstSignInTrigger(userId: string): void {
+  sessionStorage.setItem(`${FIRST_SIGNIN_TRIGGER_PREFIX}${userId}`, "1");
+}
+
+function clearTriggers(userId: string): void {
+  sessionStorage.removeItem(SIGNUP_TRIGGER_KEY);
+  sessionStorage.removeItem(`${FIRST_SIGNIN_TRIGGER_PREFIX}${userId}`);
+}
+
+/** Fase actual: qué mostrar ahora (popup, tour o nada). */
+export function getFirstExperiencePhase(userId: string): FirstExperiencePhase {
+  if (!hasViewsRemaining(userId)) return "none";
+
+  if (getPhase(userId) === "awaiting-tour") return "tour";
+  if (hasAnyTrigger(userId)) return "popup";
+
+  return "none";
+}
+
 /**
- * Tras un reset global, ofrece una oportunidad a usuarios ya logueados
- * sin pedirles que cierren sesión.
+ * Tras deploy: una oportunidad para usuarios ya logueados sin cerrar sesión.
  */
 export function syncFirstExperienceAfterReset(userId: string): void {
   if (localStorage.getItem(`${POST_RESET_SYNC_PREFIX}${userId}`) === "1") return;
@@ -133,55 +149,47 @@ export function syncFirstExperienceAfterReset(userId: string): void {
 
   if (!hasViewsRemaining(userId)) return;
 
-  clearSessionFlags(userId);
-  setPending(`${FIRST_SIGNIN_PENDING_PREFIX}${userId}`);
+  setFirstSignInTrigger(userId);
 }
 
-/** Tras un registro exitoso — primera oportunidad de popup + tutorial. */
+/** Tras registro exitoso — oportunidad 1. */
 export function markThankYouPendingSignUp(): void {
-  setPending(SIGNUP_PENDING_KEY);
+  setSignupTrigger();
 }
 
 /**
- * Tras el primer inicio de sesión explícito — segunda oportunidad.
- * Ignorado si el usuario ya había iniciado sesión antes en este dispositivo.
+ * Tras el primer inicio de sesión explícito — oportunidad 2.
+ * No se dispara al restaurar sesión al recargar la página.
  */
 export function markThankYouPendingFirstSignIn(userId: string): void {
-  if (localStorage.getItem(`${HAS_SIGNED_IN_PREFIX}${userId}`) === "1") return;
-  localStorage.setItem(`${HAS_SIGNED_IN_PREFIX}${userId}`, "1");
-  clearSessionFlags(userId);
-  setPending(`${FIRST_SIGNIN_PENDING_PREFIX}${userId}`);
-}
+  if (!hasViewsRemaining(userId)) return;
+  if (hasSignupTrigger()) return;
 
-export function shouldShowThankYou(userId: string): boolean {
-  if (!hasViewsRemaining(userId)) return false;
-  if (sessionStorage.getItem(`${POPUP_DISMISSED_PREFIX}${userId}`) === "1") {
-    return false;
+  if (getViewCount(userId) === 0) {
+    setFirstSignInTrigger(userId);
+    return;
   }
-  return hasPendingTrigger(userId);
+
+  if (getViewCount(userId) === 1) {
+    setFirstSignInTrigger(userId);
+  }
 }
 
-/** Tutorial de bienvenida: mismas 2 oportunidades que el popup. */
-export function shouldShowWelcomeTour(userId: string): boolean {
-  if (!hasViewsRemaining(userId)) return false;
-  return hasPendingTrigger(userId) || isActiveSession(userId);
+/** El popup se cerró; la siguiente fase es el tutorial. */
+export function onThankYouPopupClosed(userId: string): void {
+  setPhase(userId, "awaiting-tour");
 }
 
-/** Cierra el popup sin consumir la oportunidad (el tutorial la consume al terminar). */
-export function dismissThankYouPopup(userId: string): void {
-  sessionStorage.setItem(`${POPUP_DISMISSED_PREFIX}${userId}`, "1");
-  sessionStorage.setItem(`${ACTIVE_SESSION_PREFIX}${userId}`, "1");
+/** Solo arrancar el tutorial de bienvenida en esta fase. */
+export function canStartWelcomeTour(userId: string): boolean {
+  return getPhase(userId) === "awaiting-tour" && hasViewsRemaining(userId);
 }
 
-/**
- * Marca una oportunidad como usada (popup y/o tutorial).
- * Llamar al terminar el tutorial o si no aplica (ej. ya tiene tarjetas).
- */
+/** Consumir una oportunidad (tutorial terminado o usuario con tarjetas). */
 export function finalizeFirstExperience(userId: string): void {
   const nextCount = Math.min(getViewCount(userId) + 1, MAX_VIEWS);
   localStorage.setItem(`${VIEW_COUNT_PREFIX}${userId}`, String(nextCount));
 
-  clearPending(SIGNUP_PENDING_KEY);
-  clearPending(`${FIRST_SIGNIN_PENDING_PREFIX}${userId}`);
-  clearSessionFlags(userId);
+  clearTriggers(userId);
+  setPhase(userId, null);
 }

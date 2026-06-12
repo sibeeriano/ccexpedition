@@ -3,6 +3,7 @@ import { DemoModeProvider } from "./context/DemoModeContext";
 import { AppProvider } from "./context/AppContext";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
+import { ResetPassword } from "./components/ResetPassword";
 import { WorkspaceShell } from "./components/WorkspaceShell";
 import { DevSignature } from "./components/DevSignature";
 import { useAppPath, type UseAppPathResult } from "./hooks/useAppPath";
@@ -17,7 +18,7 @@ const AUTH_INTENT_KEY = "ccexpedition-auth-intent";
 
 function AppRoutes({ appPath }: { appPath: UseAppPathResult }) {
   const { t } = useTranslation();
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, passwordRecovery } = useAuth();
   const { state } = useApp();
   const { isDemo, navigate } = appPath;
   const [showLogin, setShowLogin] = useState(false);
@@ -44,6 +45,10 @@ function AppRoutes({ appPath }: { appPath: UseAppPathResult }) {
         <DevSignature />
       </div>
     );
+  }
+
+  if (passwordRecovery) {
+    return <ResetPassword />;
   }
 
   if (!session) {
