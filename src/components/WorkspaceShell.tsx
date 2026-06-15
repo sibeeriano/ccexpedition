@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConsolidatedTour } from "../hooks/useConsolidatedTour";
+import { useNewsNavigation } from "../hooks/useNewsNavigation";
 import { useDemoMode } from "../context/DemoModeContext";
 import { Navbar } from "./Navbar";
 import { CardList, ALL_CARDS_VIEW } from "./CardList";
@@ -14,6 +15,7 @@ import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 import { DemoBanner } from "./DemoBanner";
 import { ThankYouBanner } from "./ThankYouBanner";
+import { NewsView } from "./NewsView";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
@@ -36,6 +38,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const { session } = useAuth();
   const { state } = useApp();
   const { exitDemo, goToSignUp } = useDemoMode();
+  const {
+    isNewsView,
+    newsSlug,
+    openNewsList,
+    openNewsPost,
+    backToWorkspace,
+  } = useNewsNavigation(demoMode);
   const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -133,7 +142,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       />
 
       <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl shrink-0 grow flex-col gap-5 px-4 py-5">
-        {state.cards.length === 0 ? (
+        {isNewsView ? (
+          <NewsView
+            slug={newsSlug}
+            onBack={backToWorkspace}
+            onOpenPost={openNewsPost}
+          />
+        ) : state.cards.length === 0 ? (
           <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
             <img
               src="/gatito1.png"
@@ -157,6 +172,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
           </div>
         ) : (
           <>
+            <button
+              type="button"
+              onClick={openNewsList}
+              className="self-start text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
+            >
+              {t("news.cta")}
+            </button>
             <CardList
               selectedId={selectedCard?.id ?? ALL_CARDS_VIEW}
               onSelect={setSelectedView}

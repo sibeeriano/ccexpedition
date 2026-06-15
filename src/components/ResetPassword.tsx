@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { validateNewPassword } from "../utils/authErrors";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
+import { PasswordField } from "./PasswordField";
 
 export function ResetPassword() {
   const { t } = useTranslation();
@@ -18,6 +20,12 @@ export function ResetPassword() {
 
     if (password !== confirm) {
       setError(t("login.passwordMismatch"));
+      return;
+    }
+
+    const validationError = validateNewPassword(password);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -50,46 +58,22 @@ export function ResetPassword() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="reset-password"
-              className="text-xs font-medium text-zinc-400"
-            >
-              {t("login.newPassword")}
-            </label>
-            <input
-              id="reset-password"
-              type="password"
-              required
-              minLength={6}
-              autoFocus
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
-            />
-          </div>
+          <PasswordField
+            id="reset-password"
+            label={t("login.newPassword")}
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            autoFocus
+          />
 
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="reset-password-confirm"
-              className="text-xs font-medium text-zinc-400"
-            >
-              {t("login.confirmPassword")}
-            </label>
-            <input
-              id="reset-password-confirm"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="••••••••"
-              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
-            />
-          </div>
+          <PasswordField
+            id="reset-password-confirm"
+            label={t("login.confirmPassword")}
+            value={confirm}
+            onChange={setConfirm}
+            autoComplete="new-password"
+          />
 
           {error && (
             <p role="alert" className="text-xs text-red-400">

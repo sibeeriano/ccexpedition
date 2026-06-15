@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { validateNewPassword } from "../utils/authErrors";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
+import { PasswordField } from "./PasswordField";
 
 type Mode = "sign-in" | "sign-up" | "forgot-password";
 
@@ -21,10 +23,20 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
   }, [initialMode]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    setNotice(null);
+    if (next !== "sign-up") {
+      setConfirmPassword("");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,17 +57,42 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
       return;
     }
 
-    errorMessage =
-      mode === "sign-in"
-        ? await signIn(email, password, remember)
-        : await signUp(email, password);
+    if (mode === "sign-up") {
+      const validationError = validateNewPassword(password);
+      if (validationError) {
+        setSubmitting(false);
+        setError(validationError);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setSubmitting(false);
+        setError(t("login.passwordMismatch"));
+        return;
+      }
 
-    setSubmitting(false);
-    if (errorMessage) {
-      setError(errorMessage);
-    } else if (mode === "sign-up") {
-      setNotice(t("login.accountCreated"));
+      const signUpResult = await signUp(email, password);
+      setSubmitting(false);
+
+      if (signUpResult.error) {
+        setError(signUpResult.error);
+        return;
+      }
+
+      setPassword("");
+      setConfirmPassword("");
       setMode("sign-in");
+      setNotice(
+        signUpResult.needsEmailConfirmation
+          ? t("login.confirmEmailSent", { email })
+          : t("login.accountCreated"),
+      );
+      return;
+    }
+
+    const signInError = await signIn(email, password, remember);
+    setSubmitting(false);
+    if (signInError) {
+      setError(signInError);
     }
   }
 
@@ -121,40 +158,38 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
           {mode !== "forgot-password" && (
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
-                <label
-                  htmlFor="login-password"
-                  className="text-xs font-medium text-zinc-400"
-                >
+                <span className="text-xs font-medium text-zinc-400">
                   {t("login.password")}
-                </label>
+                </span>
                 {mode === "sign-in" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setMode("forgot-password");
-                      setError(null);
-                      setNotice(null);
-                    }}
+                    onClick={() => switchMode("forgot-password")}
                     className="cursor-pointer text-xs text-zinc-500 transition-colors hover:text-zinc-300"
                   >
                     {t("login.forgotPassword")}
                   </button>
                 )}
               </div>
-              <input
+              <PasswordField
                 id="login-password"
-                type="password"
-                required
-                minLength={6}
+                value={password}
+                onChange={setPassword}
                 autoComplete={
                   mode === "sign-in" ? "current-password" : "new-password"
                 }
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
               />
             </div>
+          )}
+
+          {mode === "sign-up" && (
+            <PasswordField
+              id="login-password-confirm"
+              label={t("login.confirmPassword")}
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+            />
           )}
 
           {mode === "sign-in" && (
@@ -188,11 +223,7 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
         {mode === "forgot-password" ? (
           <button
             type="button"
-            onClick={() => {
-              setMode("sign-in");
-              setError(null);
-              setNotice(null);
-            }}
+            onClick={() => switchMode("sign-in")}
             className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
           >
             {t("login.backToSignIn")}
@@ -200,11 +231,9 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
         ) : (
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === "sign-in" ? "sign-up" : "sign-in");
-              setError(null);
-              setNotice(null);
-            }}
+            onClick={() =>
+              switchMode(mode === "sign-in" ? "sign-up" : "sign-in")
+            }
             className="mt-4 w-full text-center text-xs text-zinc-500 transition-colors hover:text-zinc-300"
           >
             {mode === "sign-in"

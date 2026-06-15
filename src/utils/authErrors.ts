@@ -58,3 +58,14 @@ export function mapSignUpError(
   }
   return mapAuthError(error);
 }
+
+/** Client-side checks before sign-up or password reset. */
+export function validateNewPassword(password: string): string | null {
+  if (password.length < 6) {
+    return i18n.t("login.passwordTooShort");
+  }
+  if (!/[A-Z]/.test(password)) {
+    return i18n.t("login.passwordNeedsUppercase");
+  }
+  return null;
+}

@@ -252,8 +252,12 @@
     "invalidCredentials": "Incorrect email or password.",
     "emailNotConfirmed": "Please confirm your email before signing in.",
     "passwordTooShort": "Password must be at least 6 characters.",
+    "passwordNeedsUppercase": "Password must include at least one uppercase letter.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "authErrorGeneric": "Something went wrong. Please try again.",
-    "accountCreated": "Account created. Check your email if confirmation is required, then sign in.",
+    "accountCreated": "Account created. You can sign in now.",
+    "confirmEmailSent": "We sent a confirmation email to {{email}}. Check your inbox (and spam), then sign in.",
     "forgotPassword": "Forgot your password?",
     "forgotPasswordSubtitle": "We'll send you a link to reset it",
     "sendResetLink": "Send reset link",
@@ -269,6 +273,15 @@
   "cardList": {
     "allCards": "All Cards",
     "consolidated": "Outstanding debt"
+  },
+  "news": {
+    "cta": "News!",
+    "title": "News",
+    "subtitle": "Latest updates and announcements from ccExpedition.",
+    "readMore": "Read more",
+    "backToApp": "Back to app",
+    "backToList": "Back to list",
+    "notFound": "We couldn't find that post."
   },
   "cardDetail": {
     "noExpensesInMonth": "No expenses in {{month}}.",

@@ -19,7 +19,10 @@ type AuthContextValue = {
     password: string,
     remember?: boolean,
   ) => Promise<string | null>;
-  signUp: (email: string, password: string) => Promise<string | null>;
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   resetPassword: (email: string) => Promise<string | null>;
   updatePassword: (password: string) => Promise<string | null>;
   /** True when the user opened a password-recovery link from email. */
@@ -70,8 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     const mappedError = mapSignUpError(error, data.user);
-    if (mappedError) return mappedError;
-    return null;
+    if (mappedError) {
+      return { error: mappedError, needsEmailConfirmation: false };
+    }
+    return {
+      error: null,
+      needsEmailConfirmation: Boolean(data.user) && !data.session,
+    };
   }
 
   async function resetPassword(email: string) {

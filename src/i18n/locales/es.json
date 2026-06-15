@@ -252,8 +252,12 @@
     "invalidCredentials": "Email o contraseña incorrectos.",
     "emailNotConfirmed": "Tenés que confirmar tu email antes de iniciar sesión.",
     "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+    "passwordNeedsUppercase": "La contraseña debe incluir al menos una mayúscula.",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
     "authErrorGeneric": "No se pudo completar la acción. Intentá de nuevo.",
-    "accountCreated": "Cuenta creada. Revisá tu email si hace falta confirmar, y luego iniciá sesión.",
+    "accountCreated": "Cuenta creada. Ya podés iniciar sesión.",
+    "confirmEmailSent": "Te enviamos un email a {{email}} para confirmar tu cuenta. Revisá tu bandeja de entrada (y spam) y después iniciá sesión.",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "forgotPasswordSubtitle": "Te enviamos un enlace para restablecerla",
     "sendResetLink": "Enviar enlace",
@@ -269,6 +273,15 @@
   "cardList": {
     "allCards": "Todas las tarjetas",
     "consolidated": "Deuda pendiente"
+  },
+  "news": {
+    "cta": "¡Novedades!",
+    "title": "Novedades",
+    "subtitle": "Últimas mejoras y noticias de ccExpedition.",
+    "readMore": "Leer más",
+    "backToApp": "Volver a la app",
+    "backToList": "Volver al listado",
+    "notFound": "No encontramos esa novedad."
   },
   "cardDetail": {
     "noExpensesInMonth": "Sin gastos en {{month}}.",
