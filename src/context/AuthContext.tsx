@@ -8,10 +8,7 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { setRememberMe, supabase } from "../lib/supabase";
-import {
-  markThankYouPendingFirstSignIn,
-  markThankYouPendingSignUp,
-} from "../utils/thankYou";
+import { mapAuthError, mapSignUpError } from "../utils/authErrors";
 
 type AuthContextValue = {
   session: Session | null;
@@ -56,40 +53,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string, remember = true) {
     setRememberMe(remember);
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (!error && data.user) {
-      markThankYouPendingFirstSignIn(data.user.id);
-    }
-    return error?.message ?? null;
+    return mapAuthError(error);
   }
 
   async function signUp(email: string, password: string) {
     setRememberMe(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
-    if (!error) markThankYouPendingSignUp();
-    return error?.message ?? null;
+    const mappedError = mapSignUpError(error, data.user);
+    if (mappedError) return mappedError;
+    return null;
   }
 
   async function resetPassword(email: string) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/`,
     });
-    return error?.message ?? null;
+    return mapAuthError(error);
   }
 
   async function updatePassword(password: string) {
     const { error } = await supabase.auth.updateUser({ password });
     if (!error) setPasswordRecovery(false);
-    return error?.message ?? null;
+    return mapAuthError(error);
   }
 
   async function signOut() {

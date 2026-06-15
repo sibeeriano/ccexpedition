@@ -13,22 +13,17 @@ import { ImportModal } from "./ImportModal";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 import { DemoBanner } from "./DemoBanner";
-import { ThankYouModal } from "./ThankYouModal";
+import { ThankYouBanner } from "./ThankYouBanner";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
 import {
   destroyActiveTour,
+  hasCompletedWelcomeTour,
   markWelcomeTourComplete,
   startWelcomeTour,
   type TourContext,
 } from "../utils/onboarding";
-import {
-  finalizeFirstExperience,
-  getFirstExperiencePhase,
-  onThankYouPopupClosed,
-  syncFirstExperienceAfterReset,
-} from "../utils/thankYou";
 
 const TOUR_START_DELAY_MS = 150;
 
@@ -63,15 +58,9 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const hasCards = state.cards.length > 0;
   const isConsolidatedView = hasCards && !selectedCard;
   const [justAddedFirstCard, setJustAddedFirstCard] = useState(false);
-  const [thankYouOpen, setThankYouOpen] = useState(false);
   const prevCardCount = useRef(state.cards.length);
   const tourStartedRef = useRef(false);
   const userId = demoMode ? undefined : session?.user.id;
-
-  const experiencePhase =
-    userId && appReady && !demoMode
-      ? getFirstExperiencePhase(userId)
-      : "none";
 
   useEffect(() => {
     const prev = prevCardCount.current;
@@ -81,7 +70,6 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       setJustAddedFirstCard(true);
       if (userId) {
         markWelcomeTourComplete(userId);
-        finalizeFirstExperience(userId);
         destroyActiveTour(false);
         tourStartedRef.current = false;
       }
@@ -90,23 +78,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   }, [state.cards.length, userId]);
 
   useEffect(() => {
-    if (!userId || !appReady || demoMode) return;
-
-    syncFirstExperienceAfterReset(userId);
-    destroyActiveTour(false);
-    tourStartedRef.current = false;
-
-    const phase = getFirstExperiencePhase(userId);
-    setThankYouOpen(phase === "popup");
-  }, [userId, appReady, demoMode]);
-
-  useEffect(() => {
     if (
-      experiencePhase !== "tour" ||
-      thankYouOpen ||
-      hasCards ||
       !userId ||
-      tourStartedRef.current
+      !appReady ||
+      demoMode ||
+      hasCards ||
+      tourStartedRef.current ||
+      hasCompletedWelcomeTour(userId)
     ) {
       return;
     }
@@ -119,7 +97,7 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
     }, TOUR_START_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [experiencePhase, thankYouOpen, hasCards, userId, t]);
+  }, [userId, appReady, demoMode, hasCards, t]);
 
   useEffect(() => {
     if (!justAddedFirstCard || !isConsolidatedView) return;
@@ -199,7 +177,8 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
         )}
       </main>
 
-      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-2 px-4 pb-5 text-center text-xs text-zinc-600">
+      <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3 px-4 pb-5 text-center text-xs text-zinc-600">
+        <ThankYouBanner />
         <LanguageToggle className="sm:hidden" />
         {state.lastUpdated && (
           <span>
@@ -225,24 +204,6 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
         <AddExpenseModal
           card={selectedCard}
           onClose={() => setIsAddExpenseOpen(false)}
-        />
-      )}
-      {thankYouOpen && userId && (
-        <ThankYouModal
-          onClose={() => {
-            onThankYouPopupClosed(userId);
-            setThankYouOpen(false);
-            tourStartedRef.current = true;
-            if (hasCards) {
-              finalizeFirstExperience(userId);
-            } else {
-              destroyActiveTour(false);
-              window.setTimeout(
-                () => startWelcomeTour(t, userId),
-                TOUR_START_DELAY_MS,
-              );
-            }
-          }}
         />
       )}
     </div>
