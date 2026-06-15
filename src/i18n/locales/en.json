@@ -299,10 +299,15 @@
     "subtitle": "Monthly spending grouped by category across all your cards.",
     "backToApp": "Back to app",
     "selectMonth": "Month",
+    "monthTotal": "Month total",
+    "installmentsTotal": "Installments",
+    "oneTimeTotal": "One-time",
     "detailTitle": "Category breakdown",
     "uncategorized": "Other expenses",
     "noExpenses": "No expenses recorded for this month.",
-    "share": "{{percent}}%"
+    "share": "{{percent}}%",
+    "chartHint": "Hover a slice to see details",
+    "chartAria": "Spending by category chart"
   },
   "cardDetail": {
     "noExpensesInMonth": "No expenses in {{month}}.",

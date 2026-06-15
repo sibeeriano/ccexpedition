@@ -121,3 +121,35 @@ export function monthHasExpenseData(
 ): boolean {
   return (getMonthlyBreakdown(expenses).get(month)?.length ?? 0) > 0;
 }
+
+export type MonthAmountTotals = {
+  ars: number;
+  usd: number;
+};
+
+/** Suma del mes separada por cuotas (installments > 1) y pago único. */
+export function getMonthTotalsByPaymentType(
+  month: string,
+  expenses: Expense[],
+): { total: MonthAmountTotals; installments: MonthAmountTotals; oneTime: MonthAmountTotals } {
+  const expenseById = new Map(expenses.map((expense) => [expense.id, expense]));
+  const entries = getMonthlyBreakdown(expenses).get(month) ?? [];
+
+  const total = { ars: 0, usd: 0 };
+  const installments = { ars: 0, usd: 0 };
+  const oneTime = { ars: 0, usd: 0 };
+
+  for (const entry of entries) {
+    const expense = expenseById.get(entry.expenseId);
+    if (!expense) continue;
+
+    total.ars = round2(total.ars + entry.amount);
+    total.usd = round2(total.usd + entry.amountUsd);
+
+    const bucket = expense.installments > 1 ? installments : oneTime;
+    bucket.ars = round2(bucket.ars + entry.amount);
+    bucket.usd = round2(bucket.usd + entry.amountUsd);
+  }
+
+  return { total, installments, oneTime };
+}

@@ -10,6 +10,7 @@ import {
 } from "./CategoryPieChart";
 import {
   getCategoryBreakdownForMonth,
+  getMonthTotalsByPaymentType,
   monthHasExpenseData,
   UNCATEGORIZED_KEY,
   type CategoryMonthSummary,
@@ -168,21 +169,21 @@ export function DashboardView({ onBack }: DashboardViewProps) {
     ],
   );
 
-  const monthTotals = useMemo(() => {
-    let ars = 0;
-    let usd = 0;
-    for (const item of summaries) {
-      ars += item.ars;
-      usd += item.usd;
-    }
-    return { ars: Math.round(ars * 100) / 100, usd: Math.round(usd * 100) / 100 };
-  }, [summaries]);
+  const monthTotals = useMemo(
+    () => getMonthTotalsByPaymentType(selectedMonth, state.expenses),
+    [selectedMonth, state.expenses],
+  );
 
+  const pieCurrency = primaryMonthTotal(
+    monthTotals.total.ars,
+    monthTotals.total.usd,
+  ).currency;
   const pieSlices: PieSlice[] = summaries.map((item, index) => ({
     key: item.categoryKey,
     label: item.categoryName,
     value: item.chartValue,
     percent: item.share,
+    formattedValue: formatMoney(item.chartValue, pieCurrency),
     color:
       item.categoryKey === UNCATEGORIZED_KEY
         ? "#64748b"
@@ -228,8 +229,34 @@ export function DashboardView({ onBack }: DashboardViewProps) {
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
             {formatMonthLong(selectedMonth)}
           </p>
-          <div className="mt-1 text-xl font-bold text-white sm:text-2xl">
-            <AmountDisplay ars={monthTotals.ars} usd={monthTotals.usd} />
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t("dashboard.monthTotal")}
+              </p>
+              <div className="mt-1 text-xl font-bold text-white sm:text-2xl">
+                <AmountDisplay
+                  ars={monthTotals.total.ars}
+                  usd={monthTotals.total.usd}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t("dashboard.installmentsTotal")}
+              </p>
+              <div className="mt-1 text-xl font-bold text-white sm:text-2xl">
+                <AmountDisplay ars={monthTotals.installments.ars} />
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t("dashboard.oneTimeTotal")}
+              </p>
+              <div className="mt-1 text-xl font-bold text-white sm:text-2xl">
+                <AmountDisplay ars={monthTotals.oneTime.ars} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -238,44 +265,8 @@ export function DashboardView({ onBack }: DashboardViewProps) {
             {t("dashboard.noExpenses")}
           </p>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center">
-            <div className="flex justify-center lg:justify-start">
-              <CategoryPieChart slices={pieSlices} />
-            </div>
-
-            <ul className="flex flex-col gap-2">
-              {pieSlices.map((slice) => (
-                <li
-                  key={slice.key}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] px-3 py-2.5"
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: slice.color }}
-                      aria-hidden
-                    />
-                    <span className="truncate text-sm font-medium text-white">
-                      {slice.label}
-                    </span>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold text-white">
-                      {formatMoney(
-                        slice.value,
-                        primaryMonthTotal(monthTotals.ars, monthTotals.usd)
-                          .currency,
-                      )}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {t("dashboard.share", {
-                        percent: Math.round(slice.percent * 100),
-                      })}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <div className="flex justify-center py-2">
+            <CategoryPieChart slices={pieSlices} />
           </div>
         )}
       </div>

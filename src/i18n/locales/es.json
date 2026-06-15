@@ -299,10 +299,15 @@
     "subtitle": "Gastos del mes agrupados por categoría, en todas tus tarjetas.",
     "backToApp": "Volver a la app",
     "selectMonth": "Mes",
+    "monthTotal": "Total del mes",
+    "installmentsTotal": "En cuotas",
+    "oneTimeTotal": "Pago único",
     "detailTitle": "Detalle por categoría",
     "uncategorized": "Otros gastos",
     "noExpenses": "No hay gastos registrados en este mes.",
-    "share": "{{percent}}%"
+    "share": "{{percent}}%",
+    "chartHint": "Pasá el mouse sobre una porción para ver el detalle",
+    "chartAria": "Gráfico de gastos por categoría"
   },
   "cardDetail": {
     "noExpensesInMonth": "Sin gastos en {{month}}.",
