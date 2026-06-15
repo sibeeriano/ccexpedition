@@ -49,6 +49,11 @@ export type BalanceAdjustment = {
   applyMonth: string; // "YYYY-MM"
 };
 
+export type ExpenseCategory = {
+  id: string;
+  name: string;
+};
+
 export type Expense = {
   id: string;
   cardId: string;
@@ -58,6 +63,7 @@ export type Expense = {
   installments: number; // 1 = one-time payment
   startMonth: string; // format: "YYYY-MM" e.g. "2026-06"
   isMonthlyCharge: boolean; // subscription created via monthly-charge checkbox
+  categoryId: string | null;
 };
 
 // Derived: spread each expense across N months starting from startMonth

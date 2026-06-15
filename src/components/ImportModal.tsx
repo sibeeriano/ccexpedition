@@ -139,6 +139,7 @@ function ImportContent() {
         installments: r.installments,
         startMonth: r.startMonth,
         isMonthlyCharge: false,
+        categoryId: null,
       }));
 
     const errorMessage = await addExpenses(expenses);

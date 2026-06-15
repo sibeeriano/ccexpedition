@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { Card, Expense } from "../types";
 import { useApp } from "../context/AppContext";
 import { getExpenseMonthlyRate, getMonthlyBreakdown } from "../utils/expenses";
+import { getCategoryDisplayName } from "../utils/expenseCategories";
 import { getExpenseStartMonthOptions } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { CategorySelectField } from "./CategorySelectField";
 import { MonthSelectField } from "./MonthSelectField";
 import { Modal, useModalClose } from "./Modal";
 
@@ -61,6 +63,9 @@ function EditForm({ card, expense }: { card: Card; expense: Expense }) {
   const [error, setError] = useState<string | null>(null);
   const initialAmounts = deriveInitialAmounts(expense);
   const [description, setDescription] = useState(expense.description);
+  const [categoryInput, setCategoryInput] = useState(() =>
+    getCategoryDisplayName(expense.categoryId, state.expenseCategories),
+  );
   const [amountInput, setAmountInput] = useState(initialAmounts.amountInput);
   const [usdAmountInput, setUsdAmountInput] = useState(
     initialAmounts.usdAmountInput,
@@ -143,6 +148,7 @@ function EditForm({ card, expense }: { card: Card; expense: Expense }) {
       installments,
       startMonth,
       isMonthlyCharge: isSubscription,
+      categoryName: categoryInput,
     });
     if (errorMessage) {
       setError(errorMessage);
@@ -179,6 +185,13 @@ function EditForm({ card, expense }: { card: Card; expense: Expense }) {
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
       </div>
+
+      <CategorySelectField
+        id="edit-expense-category"
+        value={categoryInput}
+        categories={state.expenseCategories}
+        onChange={setCategoryInput}
+      />
 
       <div className="flex flex-col gap-1.5">
         <label

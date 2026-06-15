@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown } from "../utils/expenses";
 import { getExpenseStartMonthOptions } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { CategorySelectField } from "./CategorySelectField";
 import { MonthSelectField } from "./MonthSelectField";
 import { Modal, useModalClose } from "./Modal";
 const DEFAULT_SUBSCRIPTION_MONTHS = 12;
@@ -32,6 +33,7 @@ function ExpenseForm({ card }: { card: Card }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [categoryInput, setCategoryInput] = useState("");
   const [amountInput, setAmountInput] = useState("");
   const [usdAmountInput, setUsdAmountInput] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("one-time");
@@ -81,6 +83,7 @@ function ExpenseForm({ card }: { card: Card }) {
             installments,
             startMonth,
             isMonthlyCharge: isSubscription,
+            categoryId: null,
           },
         ]).entries(),
       ].map(([month, entries]) => ({
@@ -110,6 +113,7 @@ function ExpenseForm({ card }: { card: Card }) {
       installments,
       startMonth,
       isMonthlyCharge: isSubscription,
+      categoryName: categoryInput,
     });
     if (errorMessage) {
       setError(errorMessage);
@@ -146,6 +150,13 @@ function ExpenseForm({ card }: { card: Card }) {
           className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
         />
       </div>
+
+      <CategorySelectField
+        id="expense-category"
+        value={categoryInput}
+        categories={state.expenseCategories}
+        onChange={setCategoryInput}
+      />
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">

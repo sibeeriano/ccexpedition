@@ -14,8 +14,30 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "categorias-gasto",
+    date: "2026-06-13",
+    title: {
+      es: "Categorías personalizables en cada gasto",
+      en: "Custom categories on every expense",
+    },
+    excerpt: {
+      es: "Etiquetá gastos nuevos o existentes con categorías que creás vos.",
+      en: "Tag new or existing expenses with categories you create.",
+    },
+    body: [
+      {
+        es: "Al agregar o editar un gasto podés elegir una categoría — o crear una nueva en el momento. Supermercado, Viajes, Mascotas… lo que te sirva para ordenar.",
+        en: "When adding or editing an expense you can pick a category — or create a new one on the spot. Groceries, Travel, Pets… whatever helps you stay organized.",
+      },
+      {
+        es: "La categoría es opcional y queda guardada en cada gasto. Por ahora es para clasificar; más adelante la vamos a usar para reportes y filtros.",
+        en: "The category is optional and saved on each expense. For now it's for classification; soon we'll use it for reports and filters.",
+      },
+    ],
+  },
+  {
     id: "ingreso-mensual",
-    date: "2026-06-09",
+    date: "2026-06-11",
     title: {
       es: "Ingreso mensual en la vista consolidada",
       en: "Monthly income in the consolidated view",

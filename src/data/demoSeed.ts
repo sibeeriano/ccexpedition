@@ -2,6 +2,7 @@ import type {
   BalanceAdjustment,
   Card,
   Expense,
+  ExpenseCategory,
   MonthlyPayment,
   PendingCarryover,
 } from "../types";
@@ -23,6 +24,7 @@ export const DEMO_CARD_IDS = {
 export type DemoSeed = {
   cards: Card[];
   expenses: Expense[];
+  expenseCategories: ExpenseCategory[];
   balanceAdjustments: BalanceAdjustment[];
   monthlyPayments: MonthlyPayment[];
   pendingCarryovers: PendingCarryover[];
@@ -58,6 +60,10 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         backgroundColor: null,
       },
     ],
+    expenseCategories: [
+      { id: "demo-cat-super", name: "Supermercado" },
+      { id: "demo-cat-subs", name: "Suscripciones" },
+    ],
     expenses: [
       {
         id: "demo-e1",
@@ -68,6 +74,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 3,
         startMonth: lastMonth,
         isMonthlyCharge: false,
+        categoryId: "demo-cat-super",
       },
       {
         id: "demo-e2",
@@ -78,6 +85,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 1,
         startMonth: current,
         isMonthlyCharge: true,
+        categoryId: "demo-cat-subs",
       },
       {
         id: "demo-e3",
@@ -88,6 +96,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 6,
         startMonth: twoMonthsAgo,
         isMonthlyCharge: false,
+        categoryId: null,
       },
       {
         id: "demo-e4",
@@ -98,6 +107,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 1,
         startMonth: current,
         isMonthlyCharge: false,
+        categoryId: null,
       },
       {
         id: "demo-e5",
@@ -108,6 +118,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 1,
         startMonth: lastMonth,
         isMonthlyCharge: true,
+        categoryId: "demo-cat-subs",
       },
       {
         id: "demo-e6",
@@ -118,6 +129,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         installments: 12,
         startMonth: lastMonth,
         isMonthlyCharge: false,
+        categoryId: null,
       },
     ],
     balanceAdjustments: [

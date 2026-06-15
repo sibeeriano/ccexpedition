@@ -35,8 +35,8 @@
     "workspaceTitle": "Titulo personalisable"
   },
   "nav": {
-    "addCard": "+ Agregar tarjeta",
-    "addCardShort": "+ Tarjeta",
+    "addCard": "+ Agregar Tarjeta/Gasto",
+    "addCardShort": "+ Tarjeta/Gasto",
     "settings": "Ajustes",
     "menu": "Menú",
     "signOut": "Cerrar sesión",
@@ -369,6 +369,11 @@
     "colorOption": "Color {{hex}}",
     "submit": "Agregar tarjeta"
   },
+  "expenseCategory": {
+    "label": "Categoría",
+    "placeholder": "ej. Supermercado, Viajes…",
+    "hint": "Opcional. Escribí una nueva o elegí una que ya usaste."
+  },
   "addExpense": {
     "title": "Agregar gasto — {{card}}",
     "descriptionPlaceholder": "ej. Supermercado, celular…",
@@ -488,6 +493,7 @@
     "failedAddCard": "No se pudo agregar la tarjeta",
     "failedUpdateCard": "No se pudo actualizar la tarjeta",
     "failedAddExpense": "No se pudo agregar el gasto",
+    "failedSaveCategory": "No se pudo guardar la categoría",
     "failedUpdateExpense": "No se pudo actualizar el gasto",
     "failedImportExpenses": "No se pudieron importar los gastos",
     "expenseNotFound": "Gasto no encontrado",

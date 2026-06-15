@@ -369,6 +369,11 @@
     "colorOption": "Color {{hex}}",
     "submit": "Add Card"
   },
+  "expenseCategory": {
+    "label": "Category",
+    "placeholder": "e.g. Groceries, Travel…",
+    "hint": "Optional. Type a new one or pick one you used before."
+  },
   "addExpense": {
     "title": "Add Expense — {{card}}",
     "descriptionPlaceholder": "e.g. Groceries, new phone…",
@@ -488,6 +493,7 @@
     "failedAddCard": "Failed to add card",
     "failedUpdateCard": "Failed to update card",
     "failedAddExpense": "Failed to add expense",
+    "failedSaveCategory": "Failed to save category",
     "failedUpdateExpense": "Failed to update expense",
     "failedImportExpenses": "Failed to import expenses",
     "expenseNotFound": "Expense not found",

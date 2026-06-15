@@ -13,9 +13,19 @@ import type {
   Card,
   CardHolder,
   Expense,
+  ExpenseCategory,
   MonthlyPayment,
   PendingCarryover,
 } from "../types";
+import {
+  findCategoryByName,
+  normalizeCategoryName,
+} from "../utils/expenseCategories";
+import {
+  EXPENSE_SELECT_LEGACY,
+  EXPENSE_SELECT_WITH_CATEGORY,
+  isExpenseCategorySchemaError,
+} from "../utils/expenseSchema";
 import { getMonthlyDueByCard, isCardMonthPaid } from "../utils/expenses";
 import { addMonths, isBeforeCurrentMonth } from "../utils/months";
 import { supabase } from "../lib/supabase";
@@ -41,6 +51,7 @@ export type { AppLanguage, AppSettings };
 export type AppState = {
   cards: Card[];
   expenses: Expense[];
+  expenseCategories: ExpenseCategory[];
   balanceAdjustments: BalanceAdjustment[];
   monthlyPayments: MonthlyPayment[];
   pendingCarryovers: PendingCarryover[];
@@ -48,6 +59,28 @@ export type AppState = {
   lastUpdated: string | null; // ISO timestamp of the last data change this session
   loading: boolean; // true while fetching data from Supabase
 };
+
+export type ExpenseMutationInput = {
+  categoryName?: string;
+};
+
+type ExpenseCreateInput = Omit<Expense, "id" | "categoryId"> & {
+  categoryId?: string | null;
+} & ExpenseMutationInput;
+
+type ExpenseUpdateInput = Partial<
+  Pick<
+    Expense,
+    | "description"
+    | "totalAmount"
+    | "totalAmountUsd"
+    | "installments"
+    | "startMonth"
+    | "isMonthlyCharge"
+    | "categoryId"
+  >
+> &
+  ExpenseMutationInput;
 
 type AppContextValue = {
   state: AppState;
@@ -58,21 +91,11 @@ type AppContextValue = {
     input: Partial<Pick<Card, "name" | "holder" | "color" | "backgroundColor">>,
   ) => Promise<string | null>;
   deleteCard: (id: string) => Promise<string | null>;
-  addExpense: (input: Omit<Expense, "id">) => Promise<string | null>;
-  addExpenses: (inputs: Omit<Expense, "id">[]) => Promise<string | null>;
+  addExpense: (input: ExpenseCreateInput) => Promise<string | null>;
+  addExpenses: (inputs: ExpenseCreateInput[]) => Promise<string | null>;
   updateExpense: (
     id: string,
-    input: Partial<
-      Pick<
-        Expense,
-        | "description"
-        | "totalAmount"
-        | "totalAmountUsd"
-        | "installments"
-        | "startMonth"
-        | "isMonthlyCharge"
-      >
-    >,
+    input: ExpenseUpdateInput,
   ) => Promise<string | null>;
   deleteExpense: (id: string) => Promise<string | null>;
   addBalanceAdjustment: (
@@ -139,6 +162,12 @@ type ExpenseRow = {
   installments: number;
   start_month: string;
   is_monthly_charge?: boolean;
+  category_id?: string | null;
+};
+
+type ExpenseCategoryRow = {
+  id: string;
+  name: string;
 };
 
 type BalanceAdjustmentRow = {
@@ -184,6 +213,13 @@ function mapCard(row: CardRow): Card {
   };
 }
 
+function mapExpenseCategory(row: ExpenseCategoryRow): ExpenseCategory {
+  return {
+    id: row.id,
+    name: row.name,
+  };
+}
+
 function mapExpense(row: ExpenseRow): Expense {
   return {
     id: row.id,
@@ -194,6 +230,7 @@ function mapExpense(row: ExpenseRow): Expense {
     installments: row.installments,
     startMonth: row.start_month,
     isMonthlyCharge: Boolean(row.is_monthly_charge),
+    categoryId: row.category_id ?? null,
   };
 }
 
@@ -249,6 +286,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [cards, setCards] = useState<Card[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>(
+    [],
+  );
   const [balanceAdjustments, setBalanceAdjustments] = useState<
     BalanceAdjustment[]
   >([]);
@@ -266,6 +306,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  const expenseCategoriesRef = useRef(expenseCategories);
+  expenseCategoriesRef.current = expenseCategories;
+  const expenseCategorySchemaRef = useRef(true);
   const persistedSettingsRef = useRef(settingsSnapshot(initialSettings));
   const settingsAutoPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -358,6 +401,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const seed = createDemoSeed(language);
     setCards(seed.cards);
     setExpenses(seed.expenses);
+    setExpenseCategories(seed.expenseCategories);
     setBalanceAdjustments(seed.balanceAdjustments);
     setMonthlyPayments(seed.monthlyPayments);
     setPendingCarryovers(seed.pendingCarryovers);
@@ -444,6 +488,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!userId) {
       setCards([]);
       setExpenses([]);
+      setExpenseCategories([]);
       setBalanceAdjustments([]);
       setMonthlyPayments([]);
       setPendingCarryovers([]);
@@ -458,12 +503,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .from("cards")
         .select("id, name, holder, color, background_color")
         .order("created_at"),
+      supabase.from("expenses").select(EXPENSE_SELECT_WITH_CATEGORY).order("created_at"),
       supabase
-        .from("expenses")
-        .select(
-          "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
-        )
-        .order("created_at"),
+        .from("expense_categories")
+        .select("id, name")
+        .order("name"),
       supabase
         .from("balance_adjustments")
         .select(
@@ -480,7 +524,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
           "id, card_id, apply_month, source_month, amount, amount_usd, payment_id",
         )
         .order("created_at"),
-    ]).then(([cardsResult, expensesResult, adjustmentsResult, paymentsResult, carryoversResult]) => {
+    ]).then(
+      ([
+        cardsResult,
+        expensesResult,
+        categoriesResult,
+        adjustmentsResult,
+        paymentsResult,
+        carryoversResult,
+      ]) => {
       if (cancelled) return;
       if (cardsResult.error) {
         console.error("Failed to load cards:", cardsResult.error);
@@ -489,8 +541,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       if (expensesResult.error) {
         console.error("Failed to load expenses:", expensesResult.error);
+        if (isExpenseCategorySchemaError(expensesResult.error)) {
+          expenseCategorySchemaRef.current = false;
+          void supabase
+            .from("expenses")
+            .select(EXPENSE_SELECT_LEGACY)
+            .order("created_at")
+            .then(({ data, error }) => {
+              if (cancelled || error) {
+                if (error) {
+                  console.error("Failed to load legacy expenses:", error);
+                }
+                return;
+              }
+              setExpenses((data as ExpenseRow[]).map(mapExpense));
+            });
+        }
       } else {
         setExpenses((expensesResult.data as ExpenseRow[]).map(mapExpense));
+      }
+      if (categoriesResult.error) {
+        console.error("Failed to load expense categories:", categoriesResult.error);
+        if (isExpenseCategorySchemaError(categoriesResult.error)) {
+          expenseCategorySchemaRef.current = false;
+        }
+        setExpenseCategories([]);
+      } else {
+        setExpenseCategories(
+          (categoriesResult.data as ExpenseCategoryRow[]).map(
+            mapExpenseCategory,
+          ),
+        );
       }
       if (adjustmentsResult.error) {
         console.error("Failed to load balance adjustments:", adjustmentsResult.error);
@@ -521,7 +602,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
       }
       setLoading(false);
-    });
+    },
+    );
 
     return () => {
       cancelled = true;
@@ -530,6 +612,123 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   function stamp() {
     setLastUpdated(new Date().toISOString());
+  }
+
+  function buildExpenseInsertRow(
+    payload: Omit<Expense, "id">,
+    ownerId: string,
+  ): Record<string, unknown> {
+    const row: Record<string, unknown> = {
+      card_id: payload.cardId,
+      description: payload.description,
+      total_amount: payload.totalAmount,
+      total_amount_usd: payload.totalAmountUsd,
+      installments: payload.installments,
+      start_month: payload.startMonth,
+      is_monthly_charge: payload.isMonthlyCharge,
+      user_id: ownerId,
+    };
+    if (expenseCategorySchemaRef.current) {
+      row.category_id = payload.categoryId;
+    }
+    return row;
+  }
+
+  function buildExpenseUpdateRow(updates: {
+    description: string;
+    totalAmount: number;
+    totalAmountUsd: number;
+    installments: number;
+    startMonth: string;
+    isMonthlyCharge: boolean;
+    categoryId: string | null;
+  }): Record<string, unknown> {
+    const row: Record<string, unknown> = {
+      description: updates.description,
+      total_amount: updates.totalAmount,
+      total_amount_usd: updates.totalAmountUsd,
+      installments: updates.installments,
+      start_month: updates.startMonth,
+      is_monthly_charge: updates.isMonthlyCharge,
+    };
+    if (expenseCategorySchemaRef.current) {
+      row.category_id = updates.categoryId;
+    }
+    return row;
+  }
+
+  async function resolveCategoryIdFromName(
+    categoryName: string | undefined,
+  ): Promise<{ categoryId: string | null | undefined; error: string | null }> {
+    if (categoryName === undefined) {
+      return { categoryId: undefined, error: null };
+    }
+
+    if (!isDemo && !expenseCategorySchemaRef.current) {
+      return { categoryId: null, error: null };
+    }
+
+    const normalized = normalizeCategoryName(categoryName);
+    if (!normalized) {
+      return { categoryId: null, error: null };
+    }
+
+    const existing = findCategoryByName(
+      expenseCategoriesRef.current,
+      normalized,
+    );
+    if (existing) {
+      return { categoryId: existing.id, error: null };
+    }
+
+    if (isDemo) {
+      const category = { id: newDemoId(), name: normalized };
+      setExpenseCategories((prev) => [...prev, category]);
+      return { categoryId: category.id, error: null };
+    }
+
+    const { data, error } = await supabase
+      .from("expense_categories")
+      .insert({ user_id: userId, name: normalized })
+      .select("id, name")
+      .single();
+
+    if (error) {
+      if (error.code === "23505") {
+        const { data: existingRow, error: fetchError } = await supabase
+          .from("expense_categories")
+          .select("id, name")
+          .eq("user_id", userId)
+          .eq("name", normalized)
+          .maybeSingle();
+
+        if (fetchError || !existingRow) {
+          console.error("Failed to load existing expense category:", fetchError);
+          return {
+            categoryId: null,
+            error: fetchError?.message ?? i18n.t("errors.failedSaveCategory"),
+          };
+        }
+
+        const mapped = mapExpenseCategory(existingRow as ExpenseCategoryRow);
+        setExpenseCategories((prev) =>
+          prev.some((category) => category.id === mapped.id)
+            ? prev
+            : [...prev, mapped],
+        );
+        return { categoryId: mapped.id, error: null };
+      }
+
+      console.error("Failed to create expense category:", error);
+      return {
+        categoryId: null,
+        error: error.message ?? i18n.t("errors.failedSaveCategory"),
+      };
+    }
+
+    const mapped = mapExpenseCategory(data as ExpenseCategoryRow);
+    setExpenseCategories((prev) => [...prev, mapped]);
+    return { categoryId: mapped.id, error: null };
   }
 
   async function addCard(input: Omit<Card, "id">) {
@@ -660,29 +859,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return null;
   }
 
-  async function addExpense(input: Omit<Expense, "id">) {
+  async function addExpense(input: ExpenseCreateInput) {
+    const { categoryName, ...expenseInput } = input;
+    const resolved = await resolveCategoryIdFromName(categoryName ?? "");
+    if (resolved.error) return resolved.error;
+
+    const payload: Omit<Expense, "id"> = {
+      ...expenseInput,
+      categoryId: resolved.categoryId ?? null,
+    };
+
     if (isDemo) {
-      setExpenses((prev) => [...prev, { ...input, id: newDemoId() }]);
+      setExpenses((prev) => [...prev, { ...payload, id: newDemoId() }]);
       stamp();
       return null;
     }
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .insert({
-        card_id: input.cardId,
-        description: input.description,
-        total_amount: input.totalAmount,
-        total_amount_usd: input.totalAmountUsd,
-        installments: input.installments,
-        start_month: input.startMonth,
-        is_monthly_charge: input.isMonthlyCharge,
-        user_id: userId,
-      })
-      .select(
-        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
-      )
-      .single();
+    if (!userId) {
+      return i18n.t("errors.failedAddExpense");
+    }
+
+    const insertPayload = buildExpenseInsertRow(payload, userId);
+    const { data, error } = expenseCategorySchemaRef.current
+      ? await supabase
+          .from("expenses")
+          .insert(insertPayload)
+          .select(EXPENSE_SELECT_WITH_CATEGORY)
+          .single()
+      : await supabase
+          .from("expenses")
+          .insert(insertPayload)
+          .select(EXPENSE_SELECT_LEGACY)
+          .single();
+
+    if (error && isExpenseCategorySchemaError(error)) {
+      expenseCategorySchemaRef.current = false;
+      const retry = await supabase
+        .from("expenses")
+        .insert(buildExpenseInsertRow(payload, userId))
+        .select(EXPENSE_SELECT_LEGACY)
+        .single();
+      if (retry.error || !retry.data) {
+        console.error("Failed to add expense:", retry.error);
+        return retry.error?.message ?? i18n.t("errors.failedAddExpense");
+      }
+      setExpenses((prev) => [...prev, mapExpense(retry.data as ExpenseRow)]);
+      stamp();
+      return null;
+    }
 
     if (error || !data) {
       console.error("Failed to add expense:", error);
@@ -693,35 +917,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return null;
   }
 
-  async function addExpenses(inputs: Omit<Expense, "id">[]) {
+  async function addExpenses(inputs: ExpenseCreateInput[]) {
     if (inputs.length === 0) return null;
+
+    const resolvedInputs: Omit<Expense, "id">[] = [];
+    for (const input of inputs) {
+      const { categoryName, ...expenseInput } = input;
+      const resolved = await resolveCategoryIdFromName(categoryName ?? "");
+      if (resolved.error) return resolved.error;
+      resolvedInputs.push({
+        ...expenseInput,
+        categoryId: resolved.categoryId ?? null,
+      });
+    }
 
     if (isDemo) {
       setExpenses((prev) => [
         ...prev,
-        ...inputs.map((input) => ({ ...input, id: newDemoId() })),
+        ...resolvedInputs.map((input) => ({ ...input, id: newDemoId() })),
       ]);
       stamp();
       return null;
     }
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .insert(
-        inputs.map((input) => ({
-          card_id: input.cardId,
-          description: input.description,
-          total_amount: input.totalAmount,
-          total_amount_usd: input.totalAmountUsd,
-          installments: input.installments,
-          start_month: input.startMonth,
-          is_monthly_charge: input.isMonthlyCharge,
-          user_id: userId,
-        })),
-      )
-      .select(
-        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
-      );
+    if (!userId) {
+      return i18n.t("errors.failedImportExpenses");
+    }
+
+    const insertRows = resolvedInputs.map((input) =>
+      buildExpenseInsertRow(input, userId),
+    );
+    const { data, error } = expenseCategorySchemaRef.current
+      ? await supabase
+          .from("expenses")
+          .insert(insertRows)
+          .select(EXPENSE_SELECT_WITH_CATEGORY)
+      : await supabase
+          .from("expenses")
+          .insert(insertRows)
+          .select(EXPENSE_SELECT_LEGACY);
+
+    if (error && isExpenseCategorySchemaError(error)) {
+      expenseCategorySchemaRef.current = false;
+      const retry = await supabase
+        .from("expenses")
+        .insert(
+          resolvedInputs.map((input) => buildExpenseInsertRow(input, userId)),
+        )
+        .select(EXPENSE_SELECT_LEGACY);
+      if (retry.error || !retry.data) {
+        console.error("Failed to import expenses:", retry.error);
+        return retry.error?.message ?? i18n.t("errors.failedImportExpenses");
+      }
+      setExpenses((prev) => [
+        ...prev,
+        ...(retry.data as ExpenseRow[]).map(mapExpense),
+      ]);
+      stamp();
+      return null;
+    }
 
     if (error || !data) {
       console.error("Failed to import expenses:", error);
@@ -735,20 +989,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return null;
   }
 
-  async function updateExpense(
-    id: string,
-    input: Partial<
-      Pick<
-        Expense,
-        | "description"
-        | "totalAmount"
-        | "totalAmountUsd"
-        | "installments"
-        | "startMonth"
-        | "isMonthlyCharge"
-      >
-    >,
-  ) {
+  async function updateExpense(id: string, input: ExpenseUpdateInput) {
     const current = expenses.find((expense) => expense.id === id);
     if (!current) return i18n.t("errors.expenseNotFound");
 
@@ -762,6 +1003,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const startMonth = input.startMonth ?? current.startMonth;
     const isMonthlyCharge =
       input.isMonthlyCharge ?? current.isMonthlyCharge;
+
+    let categoryId = input.categoryId ?? current.categoryId;
+    if (input.categoryName !== undefined) {
+      const resolved = await resolveCategoryIdFromName(input.categoryName);
+      if (resolved.error) return resolved.error;
+      categoryId = resolved.categoryId ?? null;
+    }
 
     if (!description) return i18n.t("errors.descriptionRequired");
     if (totalAmount <= 0 && totalAmountUsd <= 0) {
@@ -783,6 +1031,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 installments,
                 startMonth,
                 isMonthlyCharge,
+                categoryId,
               }
             : expense,
         ),
@@ -791,21 +1040,59 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .update({
-        description,
-        total_amount: totalAmount,
-        total_amount_usd: totalAmountUsd,
-        installments,
-        start_month: startMonth,
-        is_monthly_charge: isMonthlyCharge,
-      })
-      .eq("id", id)
-      .select(
-        "id, card_id, description, total_amount, total_amount_usd, installments, start_month, is_monthly_charge",
-      )
-      .single();
+    const updatePayload = buildExpenseUpdateRow({
+      description,
+      totalAmount,
+      totalAmountUsd,
+      installments,
+      startMonth,
+      isMonthlyCharge,
+      categoryId,
+    });
+    const { data, error } = expenseCategorySchemaRef.current
+      ? await supabase
+          .from("expenses")
+          .update(updatePayload)
+          .eq("id", id)
+          .select(EXPENSE_SELECT_WITH_CATEGORY)
+          .single()
+      : await supabase
+          .from("expenses")
+          .update(updatePayload)
+          .eq("id", id)
+          .select(EXPENSE_SELECT_LEGACY)
+          .single();
+
+    if (error && isExpenseCategorySchemaError(error)) {
+      expenseCategorySchemaRef.current = false;
+      const retry = await supabase
+        .from("expenses")
+        .update(
+          buildExpenseUpdateRow({
+            description,
+            totalAmount,
+            totalAmountUsd,
+            installments,
+            startMonth,
+            isMonthlyCharge,
+            categoryId,
+          }),
+        )
+        .eq("id", id)
+        .select(EXPENSE_SELECT_LEGACY)
+        .single();
+      if (retry.error || !retry.data) {
+        console.error("Failed to update expense:", retry.error);
+        return retry.error?.message ?? i18n.t("errors.failedUpdateExpense");
+      }
+      setExpenses((prev) =>
+        prev.map((expense) =>
+          expense.id === id ? mapExpense(retry.data as ExpenseRow) : expense,
+        ),
+      );
+      stamp();
+      return null;
+    }
 
     if (error || !data) {
       console.error("Failed to update expense:", error);
@@ -1209,6 +1496,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const state: AppState = {
     cards,
     expenses,
+    expenseCategories,
     balanceAdjustments,
     monthlyPayments,
     pendingCarryovers,

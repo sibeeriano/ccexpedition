@@ -11,6 +11,14 @@ create table public.cards (
   created_at timestamptz not null default now()
 );
 
+create table public.expense_categories (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  name text not null check (char_length(trim(name)) > 0),
+  created_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
 create table public.expenses (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -21,9 +29,13 @@ create table public.expenses (
   installments integer not null default 1 check (installments between 1 and 48),
   start_month text not null check (start_month ~ '^\d{4}-\d{2}$'),
   is_monthly_charge boolean not null default false,
+  category_id uuid references public.expense_categories (id) on delete set null,
   constraint expenses_has_amount check (total_amount > 0 or total_amount_usd > 0),
   created_at timestamptz not null default now()
 );
+
+create index expense_categories_user_id_idx on public.expense_categories (user_id);
+create index expenses_category_id_idx on public.expenses (category_id);
 
 create table public.balance_adjustments (
   id uuid primary key default gen_random_uuid(),
@@ -82,12 +94,18 @@ create table public.user_settings (
 );
 
 -- Row Level Security: each user only sees and manages their own data.
+alter table public.expense_categories enable row level security;
 alter table public.cards enable row level security;
 alter table public.expenses enable row level security;
 alter table public.balance_adjustments enable row level security;
 alter table public.monthly_payments enable row level security;
 alter table public.pending_carryovers enable row level security;
 alter table public.user_settings enable row level security;
+
+create policy "Users manage own expense categories"
+  on public.expense_categories for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create policy "Users manage own cards"
   on public.cards for all
