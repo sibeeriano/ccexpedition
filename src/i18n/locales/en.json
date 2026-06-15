@@ -283,6 +283,17 @@
     "backToList": "Back to list",
     "notFound": "We couldn't find that post."
   },
+  "dashboard": {
+    "cta": "Dashboard",
+    "title": "Dashboard",
+    "subtitle": "Monthly spending grouped by category across all your cards.",
+    "backToApp": "Back to app",
+    "selectMonth": "Month",
+    "detailTitle": "Category breakdown",
+    "uncategorized": "Other expenses",
+    "noExpenses": "No expenses recorded for this month.",
+    "share": "{{percent}}%"
+  },
   "cardDetail": {
     "noExpensesInMonth": "No expenses in {{month}}.",
     "noExpensesHintEmpty": "Add your first purchase to see it spread across the months above.",

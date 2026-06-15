@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConsolidatedTour } from "../hooks/useConsolidatedTour";
-import { useNewsNavigation } from "../hooks/useNewsNavigation";
+import { useWorkspaceNavigation } from "../hooks/useWorkspaceNavigation";
 import { useDemoMode } from "../context/DemoModeContext";
 import { Navbar } from "./Navbar";
 import { CardList, ALL_CARDS_VIEW } from "./CardList";
@@ -16,6 +16,7 @@ import { LanguageToggle } from "./LanguageToggle";
 import { DemoBanner } from "./DemoBanner";
 import { ThankYouBanner } from "./ThankYouBanner";
 import { NewsView } from "./NewsView";
+import { DashboardView } from "./DashboardView";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
@@ -40,11 +41,13 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const { exitDemo, goToSignUp } = useDemoMode();
   const {
     isNewsView,
+    isDashboardView,
     newsSlug,
     openNewsList,
     openNewsPost,
+    openDashboard,
     backToWorkspace,
-  } = useNewsNavigation(demoMode);
+  } = useWorkspaceNavigation(demoMode);
   const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -148,6 +151,8 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
             onBack={backToWorkspace}
             onOpenPost={openNewsPost}
           />
+        ) : isDashboardView ? (
+          <DashboardView onBack={backToWorkspace} />
         ) : state.cards.length === 0 ? (
           <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
             <img
@@ -172,13 +177,22 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
           </div>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={openNewsList}
-              className="self-start text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
-            >
-              {t("news.cta")}
-            </button>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <button
+                type="button"
+                onClick={openNewsList}
+                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
+              >
+                {t("news.cta")}
+              </button>
+              <button
+                type="button"
+                onClick={openDashboard}
+                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
+              >
+                {t("dashboard.cta")}
+              </button>
+            </div>
             <CardList
               selectedId={selectedCard?.id ?? ALL_CARDS_VIEW}
               onSelect={setSelectedView}

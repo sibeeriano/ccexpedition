@@ -283,6 +283,17 @@
     "backToList": "Volver al listado",
     "notFound": "No encontramos esa novedad."
   },
+  "dashboard": {
+    "cta": "Tablero",
+    "title": "Tablero",
+    "subtitle": "Gastos del mes agrupados por categoría, en todas tus tarjetas.",
+    "backToApp": "Volver a la app",
+    "selectMonth": "Mes",
+    "detailTitle": "Detalle por categoría",
+    "uncategorized": "Otros gastos",
+    "noExpenses": "No hay gastos registrados en este mes.",
+    "share": "{{percent}}%"
+  },
   "cardDetail": {
     "noExpensesInMonth": "Sin gastos en {{month}}.",
     "noExpensesHintEmpty": "Agregá tu primera compra para verla repartida en los meses de arriba.",

@@ -14,6 +14,28 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "tablero-dashboard",
+    date: "2026-06-14",
+    title: {
+      es: "Tablero: gastos por categoría",
+      en: "Dashboard: spending by category",
+    },
+    excerpt: {
+      es: "Una vista nueva para ver cuánto gastaste por categoría cada mes.",
+      en: "A new view to see how much you spent per category each month.",
+    },
+    body: [
+      {
+        es: "Desde el link Tablero (al lado de Novedades) podés ver todos tus gastos del mes agrupados por categoría, en todas las tarjetas a la vez. Elegís el mes en un desplegable para no llenar la pantalla de datos.",
+        en: "From the Dashboard link (next to News) you can see all monthly spending grouped by category across every card at once. Pick the month from a dropdown so the screen stays readable.",
+      },
+      {
+        es: "Arriba hay un gráfico de torta con el reparto por categoría; abajo, el detalle desplegable de cada una con sus gastos. Lo que no tiene categoría aparece como «Otros gastos».",
+        en: "Up top there's a pie chart breaking down each category; below, collapsible sections list every expense. Anything without a category shows up as «Other expenses».",
+      },
+    ],
+  },
+  {
     id: "categorias-gasto",
     date: "2026-06-13",
     title: {

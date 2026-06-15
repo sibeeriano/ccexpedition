@@ -16,6 +16,7 @@ import {
 import { AmountDisplay } from "./AmountDisplay";
 import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { getCategoryDisplayName } from "../utils/expenseCategories";
 
 type CardDetailProps = {
   card: Card;
@@ -91,6 +92,11 @@ export function CardDetail({
     expense.installments === 1
       ? t("common.oneTime")
       : `${monthDiff(expense.startMonth, selectedMonth) + 1}/${expense.installments}`;
+
+  const categoryLabel = (categoryId: string | null) => {
+    const name = getCategoryDisplayName(categoryId, state.expenseCategories);
+    return name || "—";
+  };
 
   const adjustmentTypeLabel = (type: BalanceAdjustment["type"]) =>
     type === "payment_advance"
@@ -297,6 +303,8 @@ export function CardDetail({
                 <p className="mt-1 text-xs text-zinc-500">
                   {installmentLabel(expense)} · {t("cardDetail.startLabel")}{" "}
                   {formatMonthLabel(expense.startMonth)}
+                  {" · "}
+                  {t("expenseCategory.label")} {categoryLabel(expense.categoryId)}
                 </p>
                 <div className="mt-3 flex items-end justify-between gap-3 border-t border-white/5 pt-3">
                   <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
@@ -389,6 +397,9 @@ export function CardDetail({
                     {t("common.start")}
                   </th>
                   <th className="px-3.5 py-2.5 text-right font-medium">
+                    {t("expenseCategory.label")}
+                  </th>
+                  <th className="px-3.5 py-2.5 text-right font-medium">
                     {t("cardDetail.totalUsd")}
                   </th>
                   <th className="px-3.5 py-2.5 text-right font-medium">
@@ -425,6 +436,7 @@ export function CardDetail({
                     <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
                     <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
                     <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
+                    <td className="px-3.5 py-2.5 text-right text-zinc-600">—</td>
                     <td className="px-2 py-2.5" />
                   </tr>
                 )}
@@ -449,6 +461,9 @@ export function CardDetail({
                     </td>
                     <td className="px-3.5 py-2.5 text-right text-zinc-400">
                       {formatMonthLabel(expense.startMonth)}
+                    </td>
+                    <td className="max-w-[8rem] truncate px-3.5 py-2.5 text-right text-zinc-400">
+                      {categoryLabel(expense.categoryId)}
                     </td>
                     <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
                       {expense.totalAmountUsd > 0

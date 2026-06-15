@@ -109,6 +109,17 @@ export function getCurrentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/** "2026-06" → "junio de 2026" / "June 2026" */
+export function formatMonthLong(month: string): string {
+  const [year, mon] = month.split("-").map(Number);
+  const locale = currentLocale() === "es" ? "es-AR" : "en-US";
+  const formatted = new Intl.DateTimeFormat(locale, {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, mon - 1, 1));
+  return currentLocale() === "es" ? formatted.toLowerCase() : formatted;
+}
+
 /** ARS primero si hay monto en pesos; si no, USD (como AmountDisplay). */
 export function primaryMonthTotal(
   ars: number,
