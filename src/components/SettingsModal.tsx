@@ -7,6 +7,7 @@ import {
   settingsSnapshot,
 } from "../utils/settings";
 import { BrandName } from "./BrandName";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { LanguageToggle } from "./LanguageToggle";
 
 const CURRENCIES: CurrencySymbol[] = ["$", "€", "ARS"];
@@ -306,12 +307,15 @@ function SettingsContent({
   const [editBackgroundColor, setEditBackgroundColor] = useState(
     DEFAULT_CARD_BACKGROUND,
   );
-  const [deleting, setDeleting] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const confirmCard =
     state.cards.find((card) => card.id === confirmCardId) ?? null;
+  const confirmCardExpenseCount = confirmCard
+    ? state.expenses.filter((expense) => expense.cardId === confirmCard.id)
+        .length
+    : 0;
 
   function startEditingCard(card: Card) {
     setEditingCardId(card.id);
@@ -372,67 +376,6 @@ function SettingsContent({
     cancelEditingCard();
   }
 
-  async function handleDelete() {
-    if (!confirmCard || deleting) return;
-    setDeleting(true);
-    setError(null);
-    const errorMessage = await deleteCard(confirmCard.id);
-    setDeleting(false);
-    if (errorMessage) {
-      setError(errorMessage);
-      return;
-    }
-    setConfirmCardId(null);
-  }
-
-  // Confirmation step
-  if (confirmCard) {
-    const expenseCount = state.expenses.filter(
-      (e) => e.cardId === confirmCard.id,
-    ).length;
-
-    return (
-      <div className="flex flex-col gap-4">
-        <p className="text-sm text-zinc-300">
-          {t("settings.deleteConfirm", {
-            name: confirmCard.name,
-            holder: confirmCard.holder,
-          })}
-        </p>
-        <p className="rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-300">
-          {t("settings.deleteWarning", {
-            count: expenseCount,
-            expenseLabel: t("common.expense", { count: expenseCount }),
-          })}
-        </p>
-
-        {error && (
-          <p role="alert" className="text-xs text-red-400">
-            {error}
-          </p>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setConfirmCardId(null)}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
-          >
-            {t("common.cancel")}
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="rounded-md bg-red-500/80 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
-          >
-            {deleting ? t("settings.deleting") : t("settings.deleteCard")}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const {
     backgroundColor,
     titleColor,
@@ -456,7 +399,8 @@ function SettingsContent({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
+      <div className="flex flex-col gap-3">
       <SettingsDropdown
         title={t("settings.personalize")}
         summary={
@@ -831,6 +775,26 @@ function SettingsContent({
           }
         />
       </SettingsDropdown>
-    </div>
+      </div>
+
+      {confirmCard && (
+        <ConfirmDeleteModal
+          title={t("settings.deleteCard")}
+          message={t("settings.deleteConfirm", {
+            name: confirmCard.name,
+            holder: confirmCard.holder,
+          })}
+          warning={t("settings.deleteWarning", {
+            count: confirmCardExpenseCount,
+            expenseLabel: t("common.expense", {
+              count: confirmCardExpenseCount,
+            }),
+          })}
+          confirmLabel={t("settings.deleteCard")}
+          onClose={() => setConfirmCardId(null)}
+          onConfirm={() => deleteCard(confirmCard.id)}
+        />
+      )}
+    </>
   );
 }

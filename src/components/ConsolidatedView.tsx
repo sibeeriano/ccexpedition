@@ -23,6 +23,11 @@ type CellPopover = {
   y: number;
 };
 
+const STICKY_CARD_COL =
+  "sticky left-0 z-20 border-r border-white/10 bg-[#0e1c32]";
+const STICKY_CARD_COL_TOTAL =
+  "sticky left-0 z-20 border-r border-white/10 bg-[#101f38]";
+
 export function ConsolidatedView() {
   const { t } = useTranslation();
   const { state, setBudgetAlert, flushSettingsPersist } = useApp();
@@ -271,7 +276,9 @@ export function ConsolidatedView() {
           <table className="relative z-[1] w-full min-w-160 text-sm">
           <thead>
             <tr className="border-b border-white/5 text-xs text-zinc-500">
-              <th className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-left font-medium">
+              <th
+                className={`${STICKY_CARD_COL} px-3.5 py-2.5 text-left text-xs font-semibold text-zinc-200`}
+              >
                 {t("consolidated.card")}
               </th>
               {monthsRange.map((month) => (
@@ -294,17 +301,17 @@ export function ConsolidatedView() {
           <tbody>
             {rows.map(({ card, totals, totalsUsd }) => (
               <tr key={card.id} className="border-b border-white/5">
-                <td className="sticky left-0 z-20 max-w-36 border-r border-white/5 bg-surface px-2.5 py-2 sm:max-w-40 sm:px-3 sm:py-2.5">
+                <td className={`${STICKY_CARD_COL} max-w-36 px-2.5 py-2 sm:max-w-40 sm:px-3 sm:py-2.5`}>
                   <div className="flex min-w-0 items-start gap-1.5">
                     <span
                       className="mt-1 size-2 shrink-0 rounded-full"
                       style={{ backgroundColor: card.color }}
                     />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium leading-tight text-zinc-200">
+                      <p className="truncate text-sm font-semibold leading-tight text-white">
                         {card.name}
                       </p>
-                      <p className="truncate text-[11px] leading-tight text-zinc-500">
+                      <p className="truncate text-[11px] leading-tight text-zinc-400">
                         {card.holder}
                       </p>
                     </div>
@@ -341,7 +348,9 @@ export function ConsolidatedView() {
               </tr>
             ))}
             <tr className="border-t border-white/[0.06] bg-white/[0.03]">
-              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+              <td
+                className={`${STICKY_CARD_COL_TOTAL} px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-300`}
+              >
                 {t("consolidated.totalAllCards")}
               </td>
               {grandTotals.map((total, i) => (
@@ -367,7 +376,9 @@ export function ConsolidatedView() {
             </tr>
             {showPaidRow && (
             <tr data-tour="paid-row" className="border-t border-white/10">
-              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <td
+                className={`${STICKY_CARD_COL} px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300`}
+              >
                 {t("payment.paidRow")}
               </td>
               {monthsRange.map((month) => (
@@ -380,7 +391,9 @@ export function ConsolidatedView() {
             </tr>
           )}
             <tr className="border-t border-white/10">
-              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <td
+                className={`${STICKY_CARD_COL} px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300`}
+              >
                 {t("consolidated.monthlyIncome")}
               </td>
               {monthsRange.map((month, i) => (

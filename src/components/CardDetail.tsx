@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCardDetailTour } from "../hooks/useCardDetailTour";
 import { BalanceAdjustmentModal } from "./BalanceAdjustmentModal";
 import { EditExpenseModal } from "./EditExpenseModal";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import {
   getAdjustmentsForCardMonth,
   getCarryoverForCardMonth,
@@ -24,6 +25,10 @@ type CardDetailProps = {
   onImport: () => void;
   tourPaused?: boolean;
 };
+
+type PendingDelete =
+  | { kind: "expense"; id: string; description: string }
+  | { kind: "adjustment"; id: string; description: string };
 
 export function CardDetail({
   card,
@@ -56,6 +61,7 @@ export function CardDetail({
   const [editingAdjustment, setEditingAdjustment] =
     useState<BalanceAdjustment | null>(null);
   const [isAddAdjustmentOpen, setIsAddAdjustmentOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const expenses = state.expenses.filter((e) => e.cardId === card.id);
   const monthAdjustments = getAdjustmentsForCardMonth(
     card.id,
@@ -290,7 +296,13 @@ export function CardDetail({
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteExpense(expense.id)}
+                      onClick={() =>
+                        setPendingDelete({
+                          kind: "expense",
+                          id: expense.id,
+                          description: expense.description,
+                        })
+                      }
                       aria-label={t("cardDetail.deleteExpense", {
                         description: expense.description,
                       })}
@@ -356,7 +368,13 @@ export function CardDetail({
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteBalanceAdjustment(adjustment.id)}
+                      onClick={() =>
+                        setPendingDelete({
+                          kind: "adjustment",
+                          id: adjustment.id,
+                          description: adjustment.description,
+                        })
+                      }
                       aria-label={t("cardDetail.deleteAdjustment", {
                         description: adjustment.description,
                       })}
@@ -489,7 +507,13 @@ export function CardDetail({
                         </button>
                         <button
                           type="button"
-                          onClick={() => deleteExpense(expense.id)}
+                          onClick={() =>
+                        setPendingDelete({
+                          kind: "expense",
+                          id: expense.id,
+                          description: expense.description,
+                        })
+                      }
                           aria-label={t("cardDetail.deleteExpense", {
                             description: expense.description,
                           })}
@@ -542,7 +566,13 @@ export function CardDetail({
                         </button>
                         <button
                           type="button"
-                          onClick={() => deleteBalanceAdjustment(adjustment.id)}
+                          onClick={() =>
+                            setPendingDelete({
+                              kind: "adjustment",
+                              id: adjustment.id,
+                              description: adjustment.description,
+                            })
+                          }
                           aria-label={t("cardDetail.deleteAdjustment", {
                             description: adjustment.description,
                           })}
@@ -558,6 +588,29 @@ export function CardDetail({
             </table>
           </div>
         </div>
+      )}
+
+      {pendingDelete && (
+        <ConfirmDeleteModal
+          title={t(
+            pendingDelete.kind === "expense"
+              ? "confirmDelete.expenseTitle"
+              : "confirmDelete.adjustmentTitle",
+          )}
+          message={t(
+            pendingDelete.kind === "expense"
+              ? "confirmDelete.expenseMessage"
+              : "confirmDelete.adjustmentMessage",
+            { description: pendingDelete.description },
+          )}
+          warning={t("confirmDelete.cannotUndo")}
+          onClose={() => setPendingDelete(null)}
+          onConfirm={() =>
+            pendingDelete.kind === "expense"
+              ? deleteExpense(pendingDelete.id)
+              : deleteBalanceAdjustment(pendingDelete.id)
+          }
+        />
       )}
 
       {editingExpense && (

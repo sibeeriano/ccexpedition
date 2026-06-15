@@ -25,6 +25,16 @@
     "selectCard": "Select a card…",
     "past": "(past)"
   },
+  "confirmDelete": {
+    "deleting": "Deleting…",
+    "cannotUndo": "This action cannot be undone.",
+    "expenseTitle": "Delete expense",
+    "expenseMessage": "Delete «{{description}}»?",
+    "adjustmentTitle": "Delete advance / credit",
+    "adjustmentMessage": "Delete «{{description}}»?",
+    "clearPaymentTitle": "Remove recorded payment",
+    "clearPaymentMessage": "Remove the payment for {{card}} in {{month}}?"
+  },
   "demo": {
     "tryDemo": "Try demo",
     "badge": "Demo",

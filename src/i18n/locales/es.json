@@ -25,6 +25,16 @@
     "selectCard": "Elegir tarjeta…",
     "past": "(pasado)"
   },
+  "confirmDelete": {
+    "deleting": "Eliminando…",
+    "cannotUndo": "Esta acción no se puede deshacer.",
+    "expenseTitle": "Eliminar gasto",
+    "expenseMessage": "¿Eliminar «{{description}}»?",
+    "adjustmentTitle": "Eliminar adelanto / saldo a favor",
+    "adjustmentMessage": "¿Eliminar «{{description}}»?",
+    "clearPaymentTitle": "Quitar pago registrado",
+    "clearPaymentMessage": "¿Quitar el pago de {{card}} en {{month}}?"
+  },
   "demo": {
     "tryDemo": "Probar demo",
     "badge": "Demo",

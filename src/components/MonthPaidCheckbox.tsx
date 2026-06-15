@@ -4,6 +4,7 @@ import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyDueByCard } from "../utils/expenses";
 import { PaymentModal } from "./PaymentModal";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { formatMonthLabel } from "../utils/format";
 import { isBeforeCurrentMonth } from "../utils/months";
 
@@ -17,6 +18,7 @@ export function MonthPaidCheckbox({ card, month }: MonthPaidCheckboxProps) {
   const { state, isMonthPaid, clearMonthlyPayment, settleMonthlyPayment } =
     useApp();
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const implicitPaid = isBeforeCurrentMonth(month);
   const checked = isMonthPaid(card.id, month);
@@ -44,9 +46,7 @@ export function MonthPaidCheckbox({ card, month }: MonthPaidCheckboxProps) {
       setModalOpen(true);
       return;
     }
-    setBusy(true);
-    await clearMonthlyPayment(card.id, month);
-    setBusy(false);
+    setConfirmClearOpen(true);
   }
 
   return (
@@ -76,6 +76,24 @@ export function MonthPaidCheckbox({ card, month }: MonthPaidCheckboxProps) {
           card={card}
           month={month}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {confirmClearOpen && (
+        <ConfirmDeleteModal
+          title={t("confirmDelete.clearPaymentTitle")}
+          message={t("confirmDelete.clearPaymentMessage", {
+            card: card.name,
+            month: formatMonthLabel(month),
+          })}
+          warning={t("confirmDelete.cannotUndo")}
+          onClose={() => setConfirmClearOpen(false)}
+          onConfirm={async () => {
+            setBusy(true);
+            const error = await clearMonthlyPayment(card.id, month);
+            setBusy(false);
+            return error;
+          }}
         />
       )}
     </>
