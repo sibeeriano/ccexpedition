@@ -228,7 +228,7 @@
     "budgetPreview": {
       "title": "Expedición detectó terreno complicado",
       "description": "Establece un monto mensual total. Si tus especulaciones se van por las nubes, los meses que pasen el limite se ponen en rojo.",
-      "budgetLabel": "Alerta de presupuesto mensual:",
+      "budgetLabel": "Límite de gasto mensual:",
       "budgetValue": "$ 900000",
       "imageAlt": "Gato explorador con mapa"
     }
@@ -328,13 +328,17 @@
     "submit": "Guardar cambios"
   },
   "consolidated": {
-    "budgetAlert": "Alerta de presupuesto mensual:",
+    "budgetAlert": "Límite de gasto mensual:",
     "importXlsx": "Importar XLSX",
     "exportCsv": "Exportar CSV",
     "exportComingSoon": "Próximamente",
     "exportComingSoonHint": "La exportación CSV todavía está en camino.",
-    "card": "Tarjeta",
+    "card": "Tarjeta/Gasto/Crédito",
     "totalAllCards": "Totales mensuales",
+    "monthlyIncome": "Ingreso mensual",
+    "monthlyIncomeOk": "OK",
+    "monthlyIncomeInput": "Ingreso mensual para {{month}}",
+    "editMonthlyIncome": "Editar ingreso mensual de {{month}}",
     "budgetExceeded": "Los meses {{months}} superan tu alerta de {{amount}}. Puede que sea mejor esperar.",
     "popoverLabel": "Gastos de {{card}} en {{month}}",
     "noExpensesThisMonth": "Sin gastos este mes.",
@@ -342,10 +346,10 @@
   },
   "addCard": {
     "title": "Agregar tarjeta",
-    "cardName": "Nombre de tarjeta",
-    "cardNamePlaceholder": "ej. Mastercard",
-    "holderLabel": "Titular/Banco",
-    "holderPlaceholder": "ej. nombre/banco",
+    "cardName": "Gasto/Tarjeta/Crédito",
+    "cardNamePlaceholder": "ej. Visa",
+    "holderLabel": "Referencia",
+    "holderPlaceholder": "BBVA",
     "color": "Color de acento",
     "backgroundColor": "Fondo de color",
     "backgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",

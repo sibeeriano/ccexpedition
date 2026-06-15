@@ -101,6 +101,10 @@ type AppContextValue = {
   /** Flush any pending auto-saved settings (e.g. budget alert on blur). */
   flushSettingsPersist: () => void;
   setLanguage: (language: AppLanguage) => void;
+  updateMonthlyIncome: (
+    month: string,
+    update: { amount: number; confirmed: boolean },
+  ) => void;
   /** Apply workspace settings and persist (used by the settings modal Save button). */
   applySettings: (settings: AppSettings) => Promise<string | null>;
 };
@@ -1182,6 +1186,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  function updateMonthlyIncome(
+    month: string,
+    update: { amount: number; confirmed: boolean },
+  ) {
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        monthlyIncomeByMonth: {
+          ...prev.monthlyIncomeByMonth,
+          [month]: {
+            amount: Math.max(0, update.amount),
+            confirmed: update.confirmed,
+          },
+        },
+      };
+      scheduleAutoPersistSettings(next);
+      return next;
+    });
+  }
+
   const state: AppState = {
     cards,
     expenses,
@@ -1213,6 +1237,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setBudgetAlert,
         flushSettingsPersist,
         setLanguage,
+        updateMonthlyIncome,
         applySettings,
       }}
     >

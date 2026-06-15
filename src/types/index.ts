@@ -2,6 +2,11 @@ export type CardHolder = string;
 
 export type CurrencySymbol = "$" | "€" | "ARS";
 
+export type MonthlyIncomeEntry = {
+  amount: number;
+  confirmed: boolean;
+};
+
 export type Card = {
   id: string;
   name: string; // e.g. "Mastercard BBVA"

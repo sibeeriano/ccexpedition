@@ -228,7 +228,7 @@
     "budgetPreview": {
       "title": "Expedition detected difficult terrain",
       "description": "Set a total monthly amount. If your projections go through the roof, months that exceed the limit turn red.",
-      "budgetLabel": "Monthly budget alert:",
+      "budgetLabel": "Monthly spending limit:",
       "budgetValue": "$ 900000",
       "imageAlt": "Explorer cat with a map"
     }
@@ -328,13 +328,17 @@
     "submit": "Save changes"
   },
   "consolidated": {
-    "budgetAlert": "Monthly budget alert:",
+    "budgetAlert": "Monthly spending limit:",
     "importXlsx": "Import XLSX",
     "exportCsv": "Export CSV",
     "exportComingSoon": "Coming soon",
     "exportComingSoonHint": "CSV export is still on the way.",
-    "card": "Card",
+    "card": "Card/Expense/Credit",
     "totalAllCards": "Monthly totals",
+    "monthlyIncome": "Monthly income",
+    "monthlyIncomeOk": "OK",
+    "monthlyIncomeInput": "Monthly income for {{month}}",
+    "editMonthlyIncome": "Edit monthly income for {{month}}",
     "budgetExceeded": "Months {{months}} exceed your {{amount}} budget alert. You might want to wait.",
     "popoverLabel": "Expenses for {{card}} in {{month}}",
     "noExpensesThisMonth": "No expenses this month.",
@@ -342,10 +346,10 @@
   },
   "addCard": {
     "title": "Add Card",
-    "cardName": "Card Name",
-    "cardNamePlaceholder": "e.g. Mastercard",
-    "holderLabel": "Cardholder/Bank",
-    "holderPlaceholder": "e.g. name/bank",
+    "cardName": "Expense/Card/Credit",
+    "cardNamePlaceholder": "e.g. Visa",
+    "holderLabel": "Reference",
+    "holderPlaceholder": "BBVA",
     "color": "Accent color",
     "backgroundColor": "Background color",
     "backgroundHint": "Optional. Tints the card chip in the top bar.",

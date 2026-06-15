@@ -10,8 +10,9 @@ import {
 } from "../utils/expenses";
 import { AmountDisplay } from "./AmountDisplay";
 import { PaidMonthCell } from "./PaidMonthCell";
+import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
-import { formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { formatMonthLabel, getCurrentMonth, primaryMonthTotal } from "../utils/format";
 import { Modal } from "./Modal";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
 
@@ -84,6 +85,10 @@ export function ConsolidatedView() {
     const sum = rows.reduce((acc, row) => acc + row.totalsUsd[i], 0);
     return Math.round(sum * 100) / 100;
   });
+
+  const monthIncomeTargets = monthsRange.map((_, i) =>
+    primaryMonthTotal(grandTotals[i], grandTotalsUsd[i]),
+  );
 
   const isOverBudget = grandTotals.map(
     (total) => budgetAlert > 0 && total > budgetAlert,
@@ -289,19 +294,21 @@ export function ConsolidatedView() {
           <tbody>
             {rows.map(({ card, totals, totalsUsd }) => (
               <tr key={card.id} className="border-b border-white/5">
-                <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5">
-                  <span className="flex items-center gap-1.5">
+                <td className="sticky left-0 z-20 max-w-36 border-r border-white/5 bg-surface px-2.5 py-2 sm:max-w-40 sm:px-3 sm:py-2.5">
+                  <div className="flex min-w-0 items-start gap-1.5">
                     <span
-                      className="size-2 shrink-0 rounded-full"
+                      className="mt-1 size-2 shrink-0 rounded-full"
                       style={{ backgroundColor: card.color }}
                     />
-                    <span className="font-medium text-zinc-200">
-                      {card.name}
-                    </span>
-                    <span className="text-xs text-zinc-500">
-                      {card.holder}
-                    </span>
-                  </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium leading-tight text-zinc-200">
+                        {card.name}
+                      </p>
+                      <p className="truncate text-[11px] leading-tight text-zinc-500">
+                        {card.holder}
+                      </p>
+                    </div>
+                  </div>
                 </td>
                 {totals.map((total, i) => (
                   <td
@@ -372,30 +379,41 @@ export function ConsolidatedView() {
               ))}
             </tr>
           )}
+            <tr className="border-t border-white/10">
+              <td className="sticky left-0 z-20 border-r border-white/5 bg-surface px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                {t("consolidated.monthlyIncome")}
+              </td>
+              {monthsRange.map((month, i) => (
+                <MonthlyIncomeCell
+                  key={month}
+                  month={month}
+                  monthTotal={monthIncomeTargets[i].amount}
+                  currency={monthIncomeTargets[i].currency}
+                />
+              ))}
+            </tr>
           </tbody>
         </table>
         </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        {budgetAlert > 0 && overBudgetMonths.length > 0 ? (
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          data-tour="export-csv"
+          onClick={() => setExportComingSoonOpen(true)}
+          className="self-end shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
+        >
+          {t("consolidated.exportCsv")}
+        </button>
+        {budgetAlert > 0 && overBudgetMonths.length > 0 && (
           <BudgetExceededNotice
             months={overBudgetMonths}
             budgetAlert={budgetAlert}
             currency={currency}
           />
-        ) : (
-          <span aria-hidden />
         )}
-        <button
-          type="button"
-          data-tour="export-csv"
-          onClick={() => setExportComingSoonOpen(true)}
-          className="shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
-        >
-          {t("consolidated.exportCsv")}
-        </button>
       </div>
 
       {exportComingSoonOpen && (

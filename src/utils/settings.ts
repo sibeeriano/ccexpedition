@@ -1,4 +1,4 @@
-import type { CurrencySymbol } from "../types";
+import type { CurrencySymbol, MonthlyIncomeEntry } from "../types";
 import type { AppLanguage } from "../i18n";
 import i18n from "../i18n";
 import {
@@ -23,6 +23,7 @@ export type AppSettings = {
   budgetAlertColor: string;
   showPreviousMonths: boolean;
   showPaidRow: boolean;
+  monthlyIncomeByMonth: Record<string, MonthlyIncomeEntry>;
   backgroundColor: string;
   titleColor: string;
   titleText: string;
@@ -42,6 +43,7 @@ export function getDefaultSettings(): AppSettings {
     budgetAlertColor: DEFAULT_BUDGET_ALERT_COLOR,
     showPreviousMonths: true,
     showPaidRow: true,
+    monthlyIncomeByMonth: {},
     backgroundColor: DEFAULT_BACKGROUND,
     titleColor: DEFAULT_TITLE_COLOR,
     titleText: DEFAULT_WORKSPACE_TITLE,
@@ -67,6 +69,7 @@ export function parseAppSettings(
       : defaults.budgetAlertColor,
     showPreviousMonths: parsed.showPreviousMonths !== false,
     showPaidRow: parsed.showPaidRow !== false,
+    monthlyIncomeByMonth: parseMonthlyIncomeByMonth(parsed.monthlyIncomeByMonth),
     backgroundColor: isValidHexColor(parsed.backgroundColor ?? "")
       ? parsed.backgroundColor!
       : defaults.backgroundColor,
@@ -119,4 +122,26 @@ export function saveSettingsToLocalStorage(
 
 export function settingsSnapshot(value: AppSettings): string {
   return JSON.stringify(value);
+}
+
+function parseMonthlyIncomeByMonth(
+  raw: unknown,
+): Record<string, MonthlyIncomeEntry> {
+  if (!raw || typeof raw !== "object") return {};
+
+  const result: Record<string, MonthlyIncomeEntry> = {};
+  for (const [month, entry] of Object.entries(
+    raw as Record<string, unknown>,
+  )) {
+    if (!/^\d{4}-\d{2}$/.test(month)) continue;
+    const parsed = entry as Partial<MonthlyIncomeEntry>;
+    if (typeof parsed.amount !== "number" || !Number.isFinite(parsed.amount)) {
+      continue;
+    }
+    result[month] = {
+      amount: Math.max(0, parsed.amount),
+      confirmed: parsed.confirmed === true,
+    };
+  }
+  return result;
 }

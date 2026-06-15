@@ -109,6 +109,16 @@ export function getCurrentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/** ARS primero si hay monto en pesos; si no, USD (como AmountDisplay). */
+export function primaryMonthTotal(
+  ars: number,
+  usd: number,
+): { amount: number; currency: CurrencySymbol } {
+  if (ars !== 0) return { amount: ars, currency: "ARS" };
+  if (usd !== 0) return { amount: usd, currency: "$" };
+  return { amount: 0, currency: "ARS" };
+}
+
 /** ISO timestamp → localized date/time */
 export function formatTimestamp(iso: string): string {
   const locale = currentLocale() === "es" ? "es-AR" : "en-US";

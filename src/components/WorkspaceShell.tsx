@@ -178,7 +178,7 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       </main>
 
       <footer className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3 px-4 pb-5 text-center text-xs text-zinc-600">
-        <ThankYouBanner />
+        {!demoMode && <ThankYouBanner />}
         <LanguageToggle className="sm:hidden" />
         {state.lastUpdated && (
           <span>
