@@ -309,6 +309,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const expenseCategoriesRef = useRef(expenseCategories);
   expenseCategoriesRef.current = expenseCategories;
   const expenseCategorySchemaRef = useRef(true);
+  const settingsHydratedForUserRef = useRef<string | null>(null);
   const persistedSettingsRef = useRef(settingsSnapshot(initialSettings));
   const settingsAutoPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -333,11 +334,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    const { error } = await supabase.from("user_settings").upsert({
-      user_id: activeUserId,
-      settings: value,
-      updated_at: new Date().toISOString(),
-    });
+    if (settingsHydratedForUserRef.current !== activeUserId) {
+      return null;
+    }
+
+    const { error } = await supabase.from("user_settings").upsert(
+      {
+        user_id: activeUserId,
+        settings: value,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
 
     if (error) {
       console.error("Failed to save user settings:", error);
@@ -355,7 +363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     saveSettingsToLocalStorage(userId, value);
-    if (!userId) {
+    if (!userId || settingsHydratedForUserRef.current !== userId) {
       markSettingsPersisted(value);
       return;
     }
@@ -391,6 +399,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await i18n.changeLanguage(normalized.language);
     }
     document.documentElement.lang = normalized.language;
+    if (userId) {
+      settingsHydratedForUserRef.current = userId;
+    }
     return persistSettingsToStorage(normalized, userId);
   }
 
@@ -423,9 +434,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [isDemo, settings.language]);
 
   useEffect(() => {
-    if (isDemo || !userId) return;
+    if (isDemo || !userId) {
+      settingsHydratedForUserRef.current = null;
+      return;
+    }
 
     let cancelled = false;
+    settingsHydratedForUserRef.current = null;
 
     void (async () => {
       const { data, error } = await supabase
@@ -445,24 +460,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
         saveSettingsToLocalStorage(userId, loaded);
       } else {
         loaded = loadSettingsFromLocalStorage(userId);
-        const { error: seedError } = await supabase.from("user_settings").upsert({
-          user_id: userId,
-          settings: loaded,
-          updated_at: new Date().toISOString(),
-        });
+        const { error: seedError } = await supabase.from("user_settings").upsert(
+          {
+            user_id: userId,
+            settings: loaded,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
         if (seedError) {
           console.error("Failed to seed user settings:", seedError);
         }
       }
 
+      if (cancelled) return;
+
       setSettings(loaded);
       markSettingsPersisted(loaded);
       applySettingsTheme(loaded);
+      settingsHydratedForUserRef.current = userId;
     })();
 
     return () => {
       cancelled = true;
     };
+  }, [userId, isDemo]);
+
+  useEffect(() => {
+    if (isDemo || !userId) return;
+
+    function handleBeforeUnload() {
+      flushSettingsPersist();
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [userId, isDemo]);
 
   useEffect(() => {

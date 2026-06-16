@@ -22,13 +22,19 @@ function shouldRemember(): boolean {
   return localStorage.getItem(REMEMBER_KEY) !== "0";
 }
 
+function activeAuthStorage(): Storage {
+  return shouldRemember() ? localStorage : sessionStorage;
+}
+
 // Persistent (localStorage) or per-tab-session (sessionStorage) auth storage,
 // depending on the "keep me signed in" choice made at login.
 const authStorage = {
-  getItem: (key: string) =>
-    localStorage.getItem(key) ?? sessionStorage.getItem(key),
+  getItem: (key: string) => activeAuthStorage().getItem(key),
   setItem: (key: string, value: string) => {
-    (shouldRemember() ? localStorage : sessionStorage).setItem(key, value);
+    const primary = activeAuthStorage();
+    const secondary = shouldRemember() ? sessionStorage : localStorage;
+    secondary.removeItem(key);
+    primary.setItem(key, value);
   },
   removeItem: (key: string) => {
     localStorage.removeItem(key);
@@ -37,5 +43,10 @@ const authStorage = {
 };
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: { storage: authStorage },
+  auth: {
+    storage: authStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
 });
