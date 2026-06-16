@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 function siteOriginPlugin(): Plugin {
   return {
@@ -19,5 +20,28 @@ function siteOriginPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), siteOriginPlugin()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    siteOriginPlugin(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      includeAssets: [
+        'icon-192.png',
+        'icon-512.png',
+        'logo2.png',
+        'logo32.png',
+      ],
+      manifest: false,
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ],
 })
