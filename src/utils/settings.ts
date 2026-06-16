@@ -124,6 +124,39 @@ export function settingsSnapshot(value: AppSettings): string {
   return JSON.stringify(value);
 }
 
+/** Recupera personalización local si la nube quedó con valores por defecto. */
+export function reconcileAppSettings(
+  remote: Partial<AppSettings> | null | undefined,
+  local: AppSettings,
+): { settings: AppSettings; shouldSyncToRemote: boolean } {
+  const defaults = getDefaultSettings();
+  const fromRemote = parseAppSettings(remote ?? {});
+  const merged: Partial<AppSettings> = { ...fromRemote };
+  let shouldSyncToRemote = false;
+
+  const keys = Object.keys(defaults) as (keyof AppSettings)[];
+  for (const key of keys) {
+    if (key === "monthlyIncomeByMonth") {
+      merged.monthlyIncomeByMonth = {
+        ...local.monthlyIncomeByMonth,
+        ...fromRemote.monthlyIncomeByMonth,
+      };
+      continue;
+    }
+
+    const remoteValue = fromRemote[key];
+    const localValue = local[key];
+    const defaultValue = defaults[key];
+
+    if (remoteValue === defaultValue && localValue !== defaultValue) {
+      merged[key] = localValue as never;
+      shouldSyncToRemote = true;
+    }
+  }
+
+  return { settings: parseAppSettings(merged), shouldSyncToRemote };
+}
+
 function parseMonthlyIncomeByMonth(
   raw: unknown,
 ): Record<string, MonthlyIncomeEntry> {

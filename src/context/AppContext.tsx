@@ -37,8 +37,9 @@ import {
 } from "../utils/theme";
 import {
   type AppSettings,
+  getDefaultSettings,
   loadSettingsFromLocalStorage,
-  parseAppSettings,
+  reconcileAppSettings,
   saveSettingsToLocalStorage,
   settingsSnapshot,
 } from "../utils/settings";
@@ -280,7 +281,7 @@ function newDemoId(): string {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const { isDemo } = useDemoMode();
   const userId = session?.user.id ?? null;
 
@@ -298,19 +299,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const initialSettings = (() => {
-    const loaded = loadSettingsFromLocalStorage(null);
-    applySettingsTheme(loaded);
-    return loaded;
-  })();
-  const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [settings, setSettings] = useState<AppSettings>(() => getDefaultSettings());
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   const expenseCategoriesRef = useRef(expenseCategories);
   expenseCategoriesRef.current = expenseCategories;
   const expenseCategorySchemaRef = useRef(true);
   const settingsHydratedForUserRef = useRef<string | null>(null);
-  const persistedSettingsRef = useRef(settingsSnapshot(initialSettings));
+  const persistedSettingsRef = useRef(settingsSnapshot(getDefaultSettings()));
   const settingsAutoPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -322,6 +318,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   async function persistSettingsToStorage(
     value: AppSettings,
     activeUserId: string | null,
+    options?: { force?: boolean },
   ): Promise<string | null> {
     if (isDemo) {
       markSettingsPersisted(value);
@@ -334,7 +331,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    if (settingsHydratedForUserRef.current !== activeUserId) {
+    if (
+      !options?.force &&
+      settingsHydratedForUserRef.current !== activeUserId
+    ) {
       return null;
     }
 
@@ -402,7 +402,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (userId) {
       settingsHydratedForUserRef.current = userId;
     }
-    return persistSettingsToStorage(normalized, userId);
+    return persistSettingsToStorage(normalized, userId, { force: true });
   }
 
   useEffect(() => {
@@ -434,8 +434,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [isDemo, settings.language]);
 
   useEffect(() => {
-    if (isDemo || !userId) {
+    if (isDemo || authLoading) return;
+
+    if (!userId) {
       settingsHydratedForUserRef.current = null;
+      const guest = loadSettingsFromLocalStorage(null);
+      setSettings(guest);
+      markSettingsPersisted(guest);
+      applySettingsTheme(guest);
       return;
     }
 
@@ -443,6 +449,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settingsHydratedForUserRef.current = null;
 
     void (async () => {
+      const fromLocal = loadSettingsFromLocalStorage(userId);
       const { data, error } = await supabase
         .from("user_settings")
         .select("settings")
@@ -452,15 +459,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       let loaded: AppSettings;
+      let shouldSyncToRemote = false;
+
       if (error) {
         console.error("Failed to load user settings:", error);
-        loaded = loadSettingsFromLocalStorage(userId);
+        loaded = fromLocal;
       } else if (data?.settings && typeof data.settings === "object") {
-        loaded = parseAppSettings((data as UserSettingsRow).settings);
-        saveSettingsToLocalStorage(userId, loaded);
+        const reconciled = reconcileAppSettings(
+          (data as UserSettingsRow).settings,
+          fromLocal,
+        );
+        loaded = reconciled.settings;
+        shouldSyncToRemote = reconciled.shouldSyncToRemote;
       } else {
-        loaded = loadSettingsFromLocalStorage(userId);
-        const { error: seedError } = await supabase.from("user_settings").upsert(
+        loaded = fromLocal;
+        shouldSyncToRemote = true;
+      }
+
+      saveSettingsToLocalStorage(userId, loaded);
+
+      if (shouldSyncToRemote) {
+        const { error: syncError } = await supabase.from("user_settings").upsert(
           {
             user_id: userId,
             settings: loaded,
@@ -468,8 +487,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
           { onConflict: "user_id" },
         );
-        if (seedError) {
-          console.error("Failed to seed user settings:", seedError);
+        if (syncError) {
+          console.error("Failed to sync user settings:", syncError);
         }
       }
 
@@ -484,7 +503,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, isDemo]);
+  }, [userId, isDemo, authLoading]);
 
   useEffect(() => {
     if (isDemo || !userId) return;

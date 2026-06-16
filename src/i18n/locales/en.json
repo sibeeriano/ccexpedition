@@ -306,7 +306,7 @@
     "uncategorized": "Other expenses",
     "noExpenses": "No expenses recorded for this month.",
     "share": "{{percent}}%",
-    "chartHint": "Hover a slice to see details",
+    "chartHint": "Hover or tap a slice to see details",
     "chartAria": "Spending by category chart"
   },
   "cardDetail": {

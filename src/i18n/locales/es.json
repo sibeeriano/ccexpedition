@@ -306,7 +306,7 @@
     "uncategorized": "Otros gastos",
     "noExpenses": "No hay gastos registrados en este mes.",
     "share": "{{percent}}%",
-    "chartHint": "Pasá el mouse sobre una porción para ver el detalle",
+    "chartHint": "Pasá el mouse o tocá una porción para ver el detalle",
     "chartAria": "Gráfico de gastos por categoría"
   },
   "cardDetail": {

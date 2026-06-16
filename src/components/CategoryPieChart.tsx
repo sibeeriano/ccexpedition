@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 export const CATEGORY_CHART_COLORS = [
@@ -79,11 +79,14 @@ type CategoryPieChartProps = {
 
 export function CategoryPieChart({ slices, size = 260 }: CategoryPieChartProps) {
   const { t } = useTranslation();
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const touchHandledRef = useRef(false);
   const total = slices.reduce((sum, slice) => sum + slice.value, 0);
   const cx = size / 2;
   const cy = size / 2;
   const radius = size / 2 - 10;
+  const activeKey = selectedKey ?? hoverKey;
   const activeSlice =
     slices.find((slice) => slice.key === activeKey) ?? null;
 
@@ -103,23 +106,54 @@ export function CategoryPieChart({ slices, size = 260 }: CategoryPieChartProps) 
       ? [{ ...slices[0], path: "" }]
       : buildSlicePaths(slices, cx, cy, radius, total);
 
-  function handleSliceEnter(key: string) {
-    setActiveKey(key);
+  function handleSlicePointerEnter(
+    event: ReactPointerEvent,
+    key: string,
+  ) {
+    if (event.pointerType === "mouse") {
+      setHoverKey(key);
+    }
   }
 
-  function handleSliceLeave() {
-    setActiveKey(null);
+  function handleSlicePointerDown(
+    event: ReactPointerEvent,
+    key: string,
+  ) {
+    if (event.pointerType !== "touch") return;
+    event.preventDefault();
+    touchHandledRef.current = true;
+    setSelectedKey((current) => (current === key ? null : key));
   }
 
-  function toggleSlice(key: string) {
-    setActiveKey((current) => (current === key ? null : key));
+  function handleSliceClick(key: string) {
+    if (touchHandledRef.current) {
+      touchHandledRef.current = false;
+      return;
+    }
+    setSelectedKey((current) => (current === key ? null : key));
   }
+
+  function handleContainerPointerLeave(event: ReactPointerEvent) {
+    if (event.pointerType === "mouse") {
+      setHoverKey(null);
+    }
+  }
+
+  const sliceInteractionProps = (key: string) => ({
+    className:
+      "cursor-pointer touch-manipulation transition-[opacity,filter] duration-150 hover:brightness-110",
+    onPointerEnter: (event: ReactPointerEvent) =>
+      handleSlicePointerEnter(event, key),
+    onPointerDown: (event: ReactPointerEvent) =>
+      handleSlicePointerDown(event, key),
+    onClick: () => handleSliceClick(key),
+  });
 
   return (
     <div
-      className="relative mx-auto shrink-0"
+      className="relative mx-auto shrink-0 touch-manipulation"
       style={{ width: size, height: size }}
-      onMouseLeave={handleSliceLeave}
+      onPointerLeave={handleContainerPointerLeave}
     >
       <svg
         width={size}
@@ -127,7 +161,7 @@ export function CategoryPieChart({ slices, size = 260 }: CategoryPieChartProps) 
         viewBox={`0 0 ${size} ${size}`}
         role="img"
         aria-label={t("dashboard.chartAria")}
-        className="block"
+        className="block touch-manipulation"
       >
         {slices.length === 1 ? (
           <circle
@@ -135,26 +169,32 @@ export function CategoryPieChart({ slices, size = 260 }: CategoryPieChartProps) 
             cy={cy}
             r={radius}
             fill={slices[0].color}
-            className="cursor-pointer transition-[filter] duration-150 hover:brightness-110"
-            onMouseEnter={() => handleSliceEnter(slices[0].key)}
-            onClick={() => toggleSlice(slices[0].key)}
+            {...sliceInteractionProps(slices[0].key)}
           />
         ) : (
           paths.map((slice) => {
             const dimmed = activeKey !== null && activeKey !== slice.key;
             return (
-              <path
-                key={slice.key}
-                d={slice.path}
-                fill={slice.color}
-                stroke="var(--color-surface)"
-                strokeWidth={2}
-                className={`cursor-pointer transition-[opacity,filter] duration-150 hover:brightness-110 ${
-                  dimmed ? "opacity-45" : "opacity-100"
-                }`}
-                onMouseEnter={() => handleSliceEnter(slice.key)}
-                onClick={() => toggleSlice(slice.key)}
-              />
+              <g key={slice.key}>
+                <path
+                  d={slice.path}
+                  fill="transparent"
+                  stroke="transparent"
+                  strokeWidth={18}
+                  {...sliceInteractionProps(slice.key)}
+                />
+                <path
+                  d={slice.path}
+                  fill={slice.color}
+                  stroke="var(--color-surface)"
+                  strokeWidth={2}
+                  pointerEvents="none"
+                  className={`transition-[opacity,filter] duration-150 ${
+                    dimmed ? "opacity-45" : "opacity-100"
+                  } ${activeKey === slice.key ? "brightness-110" : ""}`}
+                  style={{ filter: activeKey === slice.key ? "brightness(1.1)" : undefined }}
+                />
+              </g>
             );
           })
         )}
