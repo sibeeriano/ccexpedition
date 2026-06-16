@@ -14,6 +14,32 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "app-instalable",
+    date: "2026-06-15",
+    title: {
+      es: "ccExpedition como app en tu teléfono",
+      en: "ccExpedition as a phone app",
+    },
+    excerpt: {
+      es: "Ahora podés instalar la web en tu pantalla de inicio, como una app.",
+      en: "You can now install the site on your home screen, like an app.",
+    },
+    body: [
+      {
+        es: "ccExpedition ahora se puede instalar en Android e iOS. Agregá el ícono de la app a la pantalla de inicio para una experiencia más práctica.",
+        en: "ccExpedition can now be installed on Android and iOS. Add the app icon to your home screen for a more practical experience.",
+      },
+      {
+        es: "Android (Chrome): abrís la web y aparece un banner abajo que dice «Agregar a pantalla de inicio» o un ícono de instalar en la barra de direcciones. También podés ir a los tres puntitos y marcar «Agregar a la pantalla de inicio». Aparecerá el ícono de la app en el inicio o cajón de aplicaciones.",
+        en: "Android (Chrome): open the site and a banner at the bottom says «Add to Home screen», or look for the install icon in the address bar. You can also open the three-dot menu and tap «Add to Home screen». The app icon will show up on your home screen or app drawer.",
+      },
+      {
+        es: "iOS (Safari): no aparece un banner automático. Tenés que ir manualmente a Compartir (el cuadradito con la flecha) → «Agregar a pantalla de inicio». Es un paso más, pero funciona igual.",
+        en: "iOS (Safari): there's no automatic banner. Go to Share (the square with the arrow) → «Add to Home Screen». One extra step, but it works the same.",
+      },
+    ],
+  },
+  {
     id: "tablero-dashboard",
     date: "2026-06-14",
     title: {
