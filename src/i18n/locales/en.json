@@ -291,10 +291,12 @@
     "consolidated": "Outstanding debt"
   },
   "future": {
-    "cta": "My future"
+    "cta": "My future",
+    "ctaShort": "Future"
   },
   "news": {
     "cta": "News!",
+    "ctaShort": "News",
     "title": "News",
     "subtitle": "Latest updates and announcements from ccExpedition.",
     "readMore": "Read more",
@@ -304,6 +306,7 @@
   },
   "dashboard": {
     "cta": "Dashboard",
+    "ctaShort": "Board",
     "title": "Dashboard",
     "subtitle": "Monthly spending grouped by category across all your cards.",
     "backToApp": "Back to app",
@@ -320,6 +323,7 @@
   },
   "profile": {
     "cta": "Profile",
+    "ctaShort": "Profile",
     "title": "Profile",
     "subtitle": "Customize the app, manage your cards, and your account.",
     "backToApp": "Back to app",
@@ -523,6 +527,13 @@
     "workspaceTitleEmpty": "No custom title",
     "backgroundColor": "Background color",
     "titleColor": "Title color",
+    "tabColors": "Tab colors",
+    "tabColorsHint": "Pick a tab and customize its background and text color.",
+    "tabSelect": "Tab",
+    "tabColor": "Tab color",
+    "tabTextColor": "Text color",
+    "tabColorPreview": "Preview",
+    "tabColorsPreview": "All tabs",
     "noCards": "No cards yet.",
     "cardName": "Card name",
     "deleteConfirm": "Delete {{name}} ({{holder}})?",
@@ -546,6 +557,7 @@
       "forest": "Forest",
       "warm": "Warm",
       "slate": "Slate",
+      "darkSlate": "Dark slate",
       "white": "White",
       "silver": "Silver",
       "gold": "Gold",

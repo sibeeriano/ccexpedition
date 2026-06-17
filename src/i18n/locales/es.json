@@ -291,10 +291,12 @@
     "consolidated": "Deuda pendiente"
   },
   "future": {
-    "cta": "Mi futuro"
+    "cta": "Mi futuro",
+    "ctaShort": "Futuro"
   },
   "news": {
     "cta": "¡Novedades!",
+    "ctaShort": "Novedades",
     "title": "Novedades",
     "subtitle": "Últimas mejoras y noticias de ccExpedition.",
     "readMore": "Leer más",
@@ -304,6 +306,7 @@
   },
   "dashboard": {
     "cta": "Tablero",
+    "ctaShort": "Tablero",
     "title": "Tablero",
     "subtitle": "Gastos del mes agrupados por categoría, en todas tus tarjetas.",
     "backToApp": "Volver a la app",
@@ -320,6 +323,7 @@
   },
   "profile": {
     "cta": "Perfil",
+    "ctaShort": "Perfil",
     "title": "Perfil",
     "subtitle": "Personalizá la app, gestioná tus tarjetas y tu cuenta.",
     "backToApp": "Volver a la app",
@@ -523,6 +527,13 @@
     "workspaceTitleEmpty": "Sin título personalizado",
     "backgroundColor": "Color de fondo",
     "titleColor": "Color del título",
+    "tabColors": "Color de fichas",
+    "tabColorsHint": "Elegí una ficha y personalizá su color de fondo y de letra.",
+    "tabSelect": "Ficha",
+    "tabColor": "Color de ficha",
+    "tabTextColor": "Color de letra",
+    "tabColorPreview": "Ejemplo",
+    "tabColorsPreview": "Todas las fichas",
     "noCards": "Sin tarjetas aún.",
     "cardName": "Nombre de tarjeta",
     "deleteConfirm": "¿Eliminar {{name}} ({{holder}})?",
@@ -546,6 +557,7 @@
       "forest": "Bosque",
       "warm": "Cálido",
       "slate": "Pizarra",
+      "darkSlate": "Pizarra oscura",
       "white": "Blanco",
       "silver": "Plateado",
       "gold": "Dorado",

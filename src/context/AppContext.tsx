@@ -144,6 +144,14 @@ function applySettingsTheme(settings: AppSettings) {
     titleText: settings.titleText,
     budgetAlertColor: settings.budgetAlertColor,
     cardColumnColor: settings.cardColumnColor,
+    tabFutureColor: settings.tabFutureColor,
+    tabFutureTextColor: settings.tabFutureTextColor,
+    tabNewsColor: settings.tabNewsColor,
+    tabNewsTextColor: settings.tabNewsTextColor,
+    tabDashboardColor: settings.tabDashboardColor,
+    tabDashboardTextColor: settings.tabDashboardTextColor,
+    tabProfileColor: settings.tabProfileColor,
+    tabProfileTextColor: settings.tabProfileTextColor,
   });
 }
 

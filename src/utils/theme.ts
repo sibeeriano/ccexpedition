@@ -112,12 +112,72 @@ export const CARD_COLUMN_PRESETS: ColorPreset[] = [
   { id: "warm", color: "#171310" },
 ];
 
+export const TAB_COLOR_PRESETS: ColorPreset[] = [
+  { id: "slate", color: "#8a96a8" },
+  { id: "blue", color: "#2f6eb5" },
+  { id: "green", color: "#2d9a58" },
+  { id: "amber", color: "#d9921f" },
+  { id: "red", color: "#ef4444" },
+  { id: "purple", color: "#8b5cf6" },
+  { id: "cyan", color: "#06b6d4" },
+  { id: "pink", color: "#ec4899" },
+];
+
+export const TAB_TEXT_PRESETS: ColorPreset[] = [
+  { id: "white", color: "#ffffff" },
+  { id: "darkSlate", color: "#1e293b" },
+  { id: "silver", color: "#d4d4d8" },
+  { id: "gold", color: "#fbbf24" },
+  { id: "sky", color: "#38bdf8" },
+  { id: "mint", color: "#34d399" },
+];
+
+export const WORKSPACE_TAB_KEYS = [
+  "future",
+  "news",
+  "dashboard",
+  "profile",
+] as const;
+
+export type WorkspaceTabKey = (typeof WORKSPACE_TAB_KEYS)[number];
+
+export const DEFAULT_TAB_FUTURE_COLOR = TAB_COLOR_PRESETS[0].color;
+export const DEFAULT_TAB_FUTURE_TEXT_COLOR = TAB_TEXT_PRESETS[1].color;
+export const DEFAULT_TAB_NEWS_COLOR = TAB_COLOR_PRESETS[1].color;
+export const DEFAULT_TAB_NEWS_TEXT_COLOR = TAB_TEXT_PRESETS[0].color;
+export const DEFAULT_TAB_DASHBOARD_COLOR = TAB_COLOR_PRESETS[2].color;
+export const DEFAULT_TAB_DASHBOARD_TEXT_COLOR = TAB_TEXT_PRESETS[0].color;
+export const DEFAULT_TAB_PROFILE_COLOR = TAB_COLOR_PRESETS[3].color;
+export const DEFAULT_TAB_PROFILE_TEXT_COLOR = TAB_TEXT_PRESETS[0].color;
+
+export function getWorkspaceTabGradientStyle(
+  color: string,
+  textColor: string,
+): CSSProperties {
+  const bg = isValidHexColor(color) ? color : DEFAULT_TAB_NEWS_COLOR;
+  const text = isValidHexColor(textColor) ? textColor : "#ffffff";
+  return {
+    background: `linear-gradient(180deg, color-mix(in srgb, ${bg} 72%, white) 0%, ${bg} 55%, color-mix(in srgb, ${bg} 82%, black) 100%)`,
+    color: text,
+    boxShadow:
+      "inset 0 1px 0 rgb(255 255 255 / 0.22), 0 -1px 3px rgb(0 0 0 / 0.25)",
+  };
+}
+
 export type ThemeSettings = {
   backgroundColor: string;
   titleColor: string;
   titleText: string;
   budgetAlertColor: string;
   cardColumnColor: string;
+  tabFutureColor: string;
+  tabFutureTextColor: string;
+  tabNewsColor: string;
+  tabNewsTextColor: string;
+  tabDashboardColor: string;
+  tabDashboardTextColor: string;
+  tabProfileColor: string;
+  tabProfileTextColor: string;
 };
 
 export function normalizeWorkspaceTitle(titleText: string): string {
@@ -171,6 +231,14 @@ export function applyTheme({
   titleColor,
   budgetAlertColor,
   cardColumnColor,
+  tabFutureColor,
+  tabFutureTextColor,
+  tabNewsColor,
+  tabNewsTextColor,
+  tabDashboardColor,
+  tabDashboardTextColor,
+  tabProfileColor,
+  tabProfileTextColor,
 }: ThemeSettings): void {
   const base = isValidHexColor(backgroundColor)
     ? backgroundColor
@@ -184,6 +252,17 @@ export function applyTheme({
     : DEFAULT_CARD_COLUMN_COLOR;
   const surface = getSurfaceColor(base);
 
+  const tabVars: [string, string, string][] = [
+    ["--tab-future-bg", tabFutureColor, DEFAULT_TAB_FUTURE_COLOR],
+    ["--tab-future-text", tabFutureTextColor, DEFAULT_TAB_FUTURE_TEXT_COLOR],
+    ["--tab-news-bg", tabNewsColor, DEFAULT_TAB_NEWS_COLOR],
+    ["--tab-news-text", tabNewsTextColor, DEFAULT_TAB_NEWS_TEXT_COLOR],
+    ["--tab-dashboard-bg", tabDashboardColor, DEFAULT_TAB_DASHBOARD_COLOR],
+    ["--tab-dashboard-text", tabDashboardTextColor, DEFAULT_TAB_DASHBOARD_TEXT_COLOR],
+    ["--tab-profile-bg", tabProfileColor, DEFAULT_TAB_PROFILE_COLOR],
+    ["--tab-profile-text", tabProfileTextColor, DEFAULT_TAB_PROFILE_TEXT_COLOR],
+  ];
+
   document.documentElement.style.setProperty("--color-base", base);
   document.documentElement.style.setProperty("--color-surface", surface);
   document.documentElement.style.setProperty("--color-brand-accent", BRAND_ACCENT);
@@ -195,6 +274,14 @@ export function applyTheme({
     "--color-card-column-total",
     deriveSurfaceColor(columnColor),
   );
+
+  for (const [name, value, fallback] of tabVars) {
+    document.documentElement.style.setProperty(
+      name,
+      isValidHexColor(value) ? value : fallback,
+    );
+  }
+
   document.title = PAGE_TITLE;
   document
     .querySelector('meta[name="theme-color"]')

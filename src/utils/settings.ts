@@ -5,6 +5,14 @@ import {
   DEFAULT_BACKGROUND,
   DEFAULT_BUDGET_ALERT_COLOR,
   DEFAULT_CARD_COLUMN_COLOR,
+  DEFAULT_TAB_DASHBOARD_COLOR,
+  DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+  DEFAULT_TAB_FUTURE_COLOR,
+  DEFAULT_TAB_FUTURE_TEXT_COLOR,
+  DEFAULT_TAB_NEWS_COLOR,
+  DEFAULT_TAB_NEWS_TEXT_COLOR,
+  DEFAULT_TAB_PROFILE_COLOR,
+  DEFAULT_TAB_PROFILE_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
   isValidHexColor,
@@ -30,6 +38,14 @@ export type AppSettings = {
   titleColor: string;
   titleText: string;
   language: AppLanguage;
+  tabFutureColor: string;
+  tabFutureTextColor: string;
+  tabNewsColor: string;
+  tabNewsTextColor: string;
+  tabDashboardColor: string;
+  tabDashboardTextColor: string;
+  tabProfileColor: string;
+  tabProfileTextColor: string;
 };
 
 export function settingsStorageKey(userId: string | null): string {
@@ -51,6 +67,14 @@ export function getDefaultSettings(): AppSettings {
     titleColor: DEFAULT_TITLE_COLOR,
     titleText: DEFAULT_WORKSPACE_TITLE,
     language: i18n.language === "es" ? "es" : "en",
+    tabFutureColor: DEFAULT_TAB_FUTURE_COLOR,
+    tabFutureTextColor: DEFAULT_TAB_FUTURE_TEXT_COLOR,
+    tabNewsColor: DEFAULT_TAB_NEWS_COLOR,
+    tabNewsTextColor: DEFAULT_TAB_NEWS_TEXT_COLOR,
+    tabDashboardColor: DEFAULT_TAB_DASHBOARD_COLOR,
+    tabDashboardTextColor: DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+    tabProfileColor: DEFAULT_TAB_PROFILE_COLOR,
+    tabProfileTextColor: DEFAULT_TAB_PROFILE_TEXT_COLOR,
   };
 }
 
@@ -91,6 +115,30 @@ export function parseAppSettings(
       parsed.language === "en" || parsed.language === "es"
         ? parsed.language
         : defaults.language,
+    tabFutureColor: isValidHexColor(parsed.tabFutureColor ?? "")
+      ? parsed.tabFutureColor!
+      : defaults.tabFutureColor,
+    tabFutureTextColor: isValidHexColor(parsed.tabFutureTextColor ?? "")
+      ? parsed.tabFutureTextColor!
+      : defaults.tabFutureTextColor,
+    tabNewsColor: isValidHexColor(parsed.tabNewsColor ?? "")
+      ? parsed.tabNewsColor!
+      : defaults.tabNewsColor,
+    tabNewsTextColor: isValidHexColor(parsed.tabNewsTextColor ?? "")
+      ? parsed.tabNewsTextColor!
+      : defaults.tabNewsTextColor,
+    tabDashboardColor: isValidHexColor(parsed.tabDashboardColor ?? "")
+      ? parsed.tabDashboardColor!
+      : defaults.tabDashboardColor,
+    tabDashboardTextColor: isValidHexColor(parsed.tabDashboardTextColor ?? "")
+      ? parsed.tabDashboardTextColor!
+      : defaults.tabDashboardTextColor,
+    tabProfileColor: isValidHexColor(parsed.tabProfileColor ?? "")
+      ? parsed.tabProfileColor!
+      : defaults.tabProfileColor,
+    tabProfileTextColor: isValidHexColor(parsed.tabProfileTextColor ?? "")
+      ? parsed.tabProfileTextColor!
+      : defaults.tabProfileTextColor,
   };
 }
 

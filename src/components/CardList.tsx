@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { getOutstandingDebt } from "../utils/expenses";
@@ -73,6 +73,40 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   );
 
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
+  const firstCardRef = useRef<HTMLButtonElement>(null);
+  const [chipSize, setChipSize] = useState<{ width: number; height: number }>();
+
+  useLayoutEffect(() => {
+    const el = firstCardRef.current;
+    if (!el) {
+      setChipSize(undefined);
+      return;
+    }
+
+    function measure() {
+      if (!el) return;
+      const { width, height } = el.getBoundingClientRect();
+      setChipSize({ width: Math.ceil(width), height: Math.ceil(height) });
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [state.cards]);
+
+  const chipStyle = chipSize
+    ? {
+        width: chipSize.width,
+        minWidth: chipSize.width,
+        maxWidth: chipSize.width,
+        height: chipSize.height,
+        minHeight: chipSize.height,
+      }
+    : undefined;
+
+  const chipClass =
+    "flex shrink-0 flex-col gap-1 rounded-lg border px-3.5 py-2.5 text-left transition-colors";
 
   return (
     <div
@@ -82,26 +116,27 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       <button
         type="button"
         onClick={() => onSelect(ALL_CARDS_VIEW)}
-        className={`flex shrink-0 flex-col gap-1 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
+        style={chipStyle}
+        className={`${chipClass} ${
           isAllSelected
             ? "border-white/40 bg-surface"
             : "border-white/5 bg-transparent hover:bg-surface/60"
         }`}
       >
-        <span className="text-sm font-medium text-white">
+        <span className="truncate text-sm font-medium text-white">
           {t("cardList.allCards")}
         </span>
-        <span className="text-xs text-zinc-400">
+        <span className="truncate text-xs text-zinc-400">
           {t("cardList.consolidated")}
         </span>
         <AmountDisplay
           ars={grandDebt.ars}
           usd={grandDebt.usd}
-          className="text-sm text-zinc-100"
+          className="truncate text-sm text-zinc-100"
         />
       </button>
 
-      {state.cards.map((card) => {
+      {state.cards.map((card, index) => {
         const isSelected = card.id === selectedId;
         const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
         const customBg = hasCardBackground(card);
@@ -109,9 +144,10 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
         return (
           <button
             key={card.id}
+            ref={index === 0 ? firstCardRef : undefined}
             type="button"
             onClick={() => onSelect(card.id)}
-            className={`flex shrink-0 flex-col gap-1 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
+            className={`${chipClass} ${
               isSelected
                 ? customBg
                   ? "border-transparent"
@@ -120,22 +156,25 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
                   ? "border-white/5 hover:brightness-110"
                   : "border-white/5 bg-transparent hover:bg-surface/60"
             }`}
-            style={getCardChipStyle(card, { selected: isSelected })}
+            style={{
+              ...chipStyle,
+              ...getCardChipStyle(card, { selected: isSelected }),
+            }}
           >
-            <span className="flex items-center gap-1.5">
+            <span className="flex min-w-0 items-center gap-1.5">
               <span
-                className="size-2 rounded-full"
+                className="size-2 shrink-0 rounded-full"
                 style={{ backgroundColor: card.color }}
               />
-              <span className="text-sm font-medium text-white">
+              <span className="truncate text-sm font-medium text-white">
                 {card.name}
               </span>
             </span>
-            <span className="text-xs text-zinc-400">{card.holder}</span>
+            <span className="truncate text-xs text-zinc-400">{card.holder}</span>
             <AmountDisplay
               ars={debt.ars}
               usd={debt.usd}
-              className="text-sm text-zinc-100"
+              className="truncate text-sm text-zinc-100"
             />
           </button>
         );

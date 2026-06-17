@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CurrencySymbol } from "../../types";
 import type { AppSettings } from "../../utils/settings";
@@ -8,12 +9,25 @@ import {
   DEFAULT_BACKGROUND,
   DEFAULT_BUDGET_ALERT_COLOR,
   DEFAULT_CARD_COLUMN_COLOR,
+  DEFAULT_TAB_DASHBOARD_COLOR,
+  DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+  DEFAULT_TAB_FUTURE_COLOR,
+  DEFAULT_TAB_FUTURE_TEXT_COLOR,
+  DEFAULT_TAB_NEWS_COLOR,
+  DEFAULT_TAB_NEWS_TEXT_COLOR,
+  DEFAULT_TAB_PROFILE_COLOR,
+  DEFAULT_TAB_PROFILE_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
   deriveSurfaceColor,
+  getWorkspaceTabGradientStyle,
   getWorkspaceTitle,
   MAX_TITLE_TEXT_LENGTH,
+  TAB_COLOR_PRESETS,
+  TAB_TEXT_PRESETS,
   TITLE_PRESETS,
+  WORKSPACE_TAB_KEYS,
+  type WorkspaceTabKey,
 } from "../../utils/theme";
 import { BrandName } from "../BrandName";
 import {
@@ -26,6 +40,46 @@ type PersonalizationSectionProps = {
   draft: AppSettings;
   patchDraft: (patch: Partial<AppSettings>) => void;
   idPrefix?: string;
+};
+
+const TAB_SETTING_FIELDS: Record<
+  WorkspaceTabKey,
+  {
+    colorKey: keyof AppSettings;
+    textKey: keyof AppSettings;
+    defaultColor: string;
+    defaultText: string;
+    labelKey: string;
+  }
+> = {
+  future: {
+    colorKey: "tabFutureColor",
+    textKey: "tabFutureTextColor",
+    defaultColor: DEFAULT_TAB_FUTURE_COLOR,
+    defaultText: DEFAULT_TAB_FUTURE_TEXT_COLOR,
+    labelKey: "future.cta",
+  },
+  news: {
+    colorKey: "tabNewsColor",
+    textKey: "tabNewsTextColor",
+    defaultColor: DEFAULT_TAB_NEWS_COLOR,
+    defaultText: DEFAULT_TAB_NEWS_TEXT_COLOR,
+    labelKey: "news.cta",
+  },
+  dashboard: {
+    colorKey: "tabDashboardColor",
+    textKey: "tabDashboardTextColor",
+    defaultColor: DEFAULT_TAB_DASHBOARD_COLOR,
+    defaultText: DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+    labelKey: "dashboard.cta",
+  },
+  profile: {
+    colorKey: "tabProfileColor",
+    textKey: "tabProfileTextColor",
+    defaultColor: DEFAULT_TAB_PROFILE_COLOR,
+    defaultText: DEFAULT_TAB_PROFILE_TEXT_COLOR,
+    labelKey: "profile.cta",
+  },
 };
 
 export function PersonalizationSection({
@@ -45,6 +99,10 @@ export function PersonalizationSection({
     showPaidRow,
   } = draft;
   const workspaceTitle = getWorkspaceTitle(titleText);
+  const [selectedTabId, setSelectedTabId] = useState<WorkspaceTabKey>("future");
+  const selectedTabFields = TAB_SETTING_FIELDS[selectedTabId];
+  const selectedTabColor = draft[selectedTabFields.colorKey] as string;
+  const selectedTabTextColor = draft[selectedTabFields.textKey] as string;
 
   return (
     <div className="flex flex-col divide-y divide-white/10">
@@ -92,6 +150,96 @@ export function PersonalizationSection({
           inputId={`${idPrefix}-title-color`}
           onChange={(color) => patchDraft({ titleColor: color })}
         />
+      </div>
+
+      <div className="py-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold text-zinc-200">
+              {t("settings.tabColors")}
+            </h3>
+            <p className="text-xs text-zinc-500">{t("settings.tabColorsHint")}</p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor={`${idPrefix}-tab-select`}
+              className="text-sm text-zinc-300"
+            >
+              {t("settings.tabSelect")}
+            </label>
+            <select
+              id={`${idPrefix}-tab-select`}
+              value={selectedTabId}
+              onChange={(e) => setSelectedTabId(e.target.value as WorkspaceTabKey)}
+              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
+            >
+              {WORKSPACE_TAB_KEYS.map((tabId) => (
+                <option key={tabId} value={tabId}>
+                  {t(TAB_SETTING_FIELDS[tabId].labelKey)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <ColorPickerField
+            label={t("settings.tabColor")}
+            color={selectedTabColor}
+            presets={TAB_COLOR_PRESETS}
+            defaultColor={selectedTabFields.defaultColor}
+            inputId={`${idPrefix}-tab-${selectedTabId}-color`}
+            onChange={(color) =>
+              patchDraft({ [selectedTabFields.colorKey]: color })
+            }
+          />
+          <ColorPickerField
+            label={t("settings.tabTextColor")}
+            color={selectedTabTextColor}
+            presets={TAB_TEXT_PRESETS}
+            defaultColor={selectedTabFields.defaultText}
+            inputId={`${idPrefix}-tab-${selectedTabId}-text`}
+            onChange={(color) =>
+              patchDraft({ [selectedTabFields.textKey]: color })
+            }
+          />
+
+          <div className="overflow-hidden rounded-md border border-white/10 px-3 py-3">
+            <p className="mb-2 text-[10px] uppercase tracking-wide text-zinc-500">
+              {t("settings.tabColorPreview")}
+            </p>
+            <span
+              className="folder-tab-preview truncate"
+              style={getWorkspaceTabGradientStyle(
+                selectedTabColor,
+                selectedTabTextColor,
+              )}
+            >
+              {t(selectedTabFields.labelKey)}
+            </span>
+          </div>
+
+          <div className="overflow-hidden rounded-md border border-white/10 px-3 py-3">
+            <p className="mb-2 text-[10px] uppercase tracking-wide text-zinc-500">
+              {t("settings.tabColorsPreview")}
+            </p>
+            <div className="flex flex-wrap items-end gap-1">
+              {WORKSPACE_TAB_KEYS.map((tabId) => {
+                const fields = TAB_SETTING_FIELDS[tabId];
+                const tabColor = draft[fields.colorKey] as string;
+                const tabTextColor = draft[fields.textKey] as string;
+                return (
+                  <span
+                    key={tabId}
+                    className="folder-tab-preview min-w-[4.75rem] flex-1 truncate"
+                    style={getWorkspaceTabGradientStyle(tabColor, tabTextColor)}
+                  >
+                    {t(fields.labelKey)}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="py-5">
