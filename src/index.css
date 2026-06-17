@@ -8,6 +8,8 @@
   --color-brand-cc: #ffa549;
   --color-workspace-title: #ffffff;
   --color-budget-alert: #ef4444;
+  --color-card-column: #0e1c32;
+  --color-card-column-total: #101f38;
   --font-sans: "Ubuntu", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

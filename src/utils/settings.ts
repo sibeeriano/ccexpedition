@@ -4,6 +4,7 @@ import i18n from "../i18n";
 import {
   DEFAULT_BACKGROUND,
   DEFAULT_BUDGET_ALERT_COLOR,
+  DEFAULT_CARD_COLUMN_COLOR,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
   isValidHexColor,
@@ -21,6 +22,7 @@ export type AppSettings = {
   /** 0 = alert disabled */
   budgetAlert: number;
   budgetAlertColor: string;
+  cardColumnColor: string;
   showPreviousMonths: boolean;
   showPaidRow: boolean;
   monthlyIncomeByMonth: Record<string, MonthlyIncomeEntry>;
@@ -41,6 +43,7 @@ export function getDefaultSettings(): AppSettings {
     currency: "$",
     budgetAlert: 0,
     budgetAlertColor: DEFAULT_BUDGET_ALERT_COLOR,
+    cardColumnColor: DEFAULT_CARD_COLUMN_COLOR,
     showPreviousMonths: true,
     showPaidRow: true,
     monthlyIncomeByMonth: {},
@@ -67,6 +70,9 @@ export function parseAppSettings(
     budgetAlertColor: isValidHexColor(parsed.budgetAlertColor ?? "")
       ? parsed.budgetAlertColor!
       : defaults.budgetAlertColor,
+    cardColumnColor: isValidHexColor(parsed.cardColumnColor ?? "")
+      ? parsed.cardColumnColor!
+      : defaults.cardColumnColor,
     showPreviousMonths: parsed.showPreviousMonths !== false,
     showPaidRow: parsed.showPaidRow !== false,
     monthlyIncomeByMonth: parseMonthlyIncomeByMonth(parsed.monthlyIncomeByMonth),

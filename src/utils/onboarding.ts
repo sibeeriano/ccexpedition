@@ -154,9 +154,9 @@ function buildWelcomeTourSteps(t: TFunction): DriveStep[] {
       "bottom",
     ),
     step(
-      '[data-tour="settings"]',
-      t("onboarding.settings.title"),
-      t("onboarding.settings.body"),
+      '[data-tour="profile-link"]',
+      t("onboarding.profile.title"),
+      t("onboarding.profile.body"),
       "bottom",
     ),
   ];

@@ -9,7 +9,6 @@ import { CardDetail } from "./CardDetail";
 import { ConsolidatedView } from "./ConsolidatedView";
 import { AddCardModal } from "./AddCardModal";
 import { AddExpenseModal } from "./AddExpenseModal";
-import { SettingsModal } from "./SettingsModal";
 import { ImportModal } from "./ImportModal";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
@@ -17,6 +16,7 @@ import { DemoBanner } from "./DemoBanner";
 import { ThankYouBanner } from "./ThankYouBanner";
 import { NewsView } from "./NewsView";
 import { DashboardView } from "./DashboardView";
+import { ProfileView } from "./ProfileView";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
@@ -25,7 +25,6 @@ import {
   hasCompletedWelcomeTour,
   markWelcomeTourComplete,
   startWelcomeTour,
-  type TourContext,
 } from "../utils/onboarding";
 
 const TOUR_START_DELAY_MS = 150;
@@ -42,29 +41,23 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
   const {
     isNewsView,
     isDashboardView,
+    isProfileView,
     newsSlug,
     openNewsList,
     openNewsPost,
     openDashboard,
+    openProfile,
     backToWorkspace,
   } = useWorkspaceNavigation(demoMode);
   const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
   const selectedCard =
     selectedView === ALL_CARDS_VIEW
       ? null
       : (state.cards.find((card) => card.id === selectedView) ?? null);
-
-  const tourContext: TourContext =
-    state.cards.length === 0
-      ? "empty"
-      : selectedCard
-        ? "card-detail"
-        : "consolidated";
 
   const appReady = !state.loading && (demoMode || Boolean(session));
   const hasCards = state.cards.length > 0;
@@ -138,7 +131,6 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       {demoMode && <DemoBanner />}
       <Navbar
         onAddCard={() => setIsAddCardOpen(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
         demoMode={demoMode}
         onExitDemo={exitDemo}
         onSignUp={goToSignUp}
@@ -153,6 +145,8 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
           />
         ) : isDashboardView ? (
           <DashboardView onBack={backToWorkspace} />
+        ) : isProfileView ? (
+          <ProfileView onBack={backToWorkspace} demoMode={demoMode} />
         ) : state.cards.length === 0 ? (
           <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
             <img
@@ -174,6 +168,16 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
             >
               {t("nav.addCard")}
             </button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+              <button
+                type="button"
+                onClick={openProfile}
+                data-tour="profile-link"
+                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
+              >
+                {t("profile.cta")}
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -191,6 +195,14 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
                 className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
               >
                 {t("dashboard.cta")}
+              </button>
+              <button
+                type="button"
+                onClick={openProfile}
+                data-tour="profile-link"
+                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
+              >
+                {t("profile.cta")}
               </button>
             </div>
             <CardList
@@ -227,12 +239,6 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       </footer>
 
       {isAddCardOpen && <AddCardModal onClose={() => setIsAddCardOpen(false)} />}
-      {isSettingsOpen && (
-        <SettingsModal
-          tourContext={tourContext}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      )}
       {isImportOpen && (
         <ImportModal onClose={() => setIsImportOpen(false)} />
       )}

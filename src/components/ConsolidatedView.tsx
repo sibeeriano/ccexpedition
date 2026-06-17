@@ -24,9 +24,9 @@ type CellPopover = {
 };
 
 const STICKY_CARD_COL =
-  "sticky left-0 z-20 border-r border-white/10 bg-[#0e1c32]";
+  "sticky left-0 z-20 border-r border-white/10 bg-[var(--color-card-column)]";
 const STICKY_CARD_COL_TOTAL =
-  "sticky left-0 z-20 border-r border-white/10 bg-[#101f38]";
+  "sticky left-0 z-20 border-r border-white/10 bg-[var(--color-card-column-total)]";
 
 export function ConsolidatedView() {
   const { t } = useTranslation();

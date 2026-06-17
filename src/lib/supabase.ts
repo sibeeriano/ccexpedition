@@ -22,6 +22,49 @@ function shouldRemember(): boolean {
   return localStorage.getItem(REMEMBER_KEY) !== "0";
 }
 
+const AUTH_KEY_PATTERN = /^sb-.+-auth-token$/;
+
+function findAuthKeys(storage: Storage): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key && AUTH_KEY_PATTERN.test(key)) keys.push(key);
+  }
+  return keys;
+}
+
+/** Current "keep signed in" preference from login or profile. */
+export function getRememberMe(): boolean {
+  return shouldRemember();
+}
+
+/** Updates preference and migrates the Supabase session to the right storage. */
+export function applyRememberMe(remember: boolean): void {
+  const authKeys = new Set([
+    ...findAuthKeys(localStorage),
+    ...findAuthKeys(sessionStorage),
+  ]);
+  const values = new Map<string, string>();
+
+  for (const key of authKeys) {
+    const value =
+      localStorage.getItem(key) ?? sessionStorage.getItem(key) ?? null;
+    if (value !== null) values.set(key, value);
+  }
+
+  setRememberMe(remember);
+
+  for (const key of authKeys) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  }
+
+  const target = remember ? localStorage : sessionStorage;
+  for (const [key, value] of values) {
+    target.setItem(key, value);
+  }
+}
+
 function activeAuthStorage(): Storage {
   return shouldRemember() ? localStorage : sessionStorage;
 }

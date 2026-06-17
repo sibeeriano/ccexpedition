@@ -88,7 +88,7 @@
     },
     "consolidated": {
       "title": "Alerta de presupuesto",
-      "body": "Definí un tope mensual: los meses que lo superen se resaltan en la grilla. En Ajustes podés cambiar la moneda y el color de la alerta."
+      "body": "Definí un tope mensual: los meses que lo superen se resaltan en la grilla. En Perfil podés cambiar la moneda y el color de la alerta."
     },
     "table": {
       "title": "Cuotas por mes",
@@ -116,11 +116,15 @@
     },
     "language": {
       "title": "Idioma",
-      "body": "Cambiá entre español e inglés con ES / EN. También podés elegir el idioma en Ajustes."
+      "body": "Cambiá entre español e inglés con ES / EN. También podés elegir el idioma en Perfil."
     },
     "settings": {
       "title": "Ajustes",
-      "body": "Personalizá colores, título, moneda y color de alerta, meses visibles, fila de pagos, tarjetas y repetí este tutorial cuando quieras."
+      "body": "En Perfil podés personalizar la app, gestionar tarjetas y repetir tutoriales."
+    },
+    "profile": {
+      "title": "Perfil",
+      "body": "Desde Perfil personalizás colores, tarjetas, idioma, cuenta y podés repetir cualquier tutorial."
     },
     "monthBar": {
       "title": "Meses",
@@ -309,6 +313,48 @@
     "chartHint": "Pasá el mouse o tocá una porción para ver el detalle",
     "chartAria": "Gráfico de gastos por categoría"
   },
+  "profile": {
+    "cta": "Perfil",
+    "title": "Perfil",
+    "subtitle": "Personalizá la app, gestioná tus tarjetas y tu cuenta.",
+    "backToApp": "Volver a la app",
+    "tutorialHint": "Elegí qué recorrido guiado querés repetir.",
+    "startTutorial": "Iniciar tutorial",
+    "tutorialEmptyHint": "Para empezar sin tarjetas: agregar tarjeta, idioma y acceso a Perfil.",
+    "tutorialConsolidatedHint": "Vista consolidada: tarjetas, grilla mensual, pagos y exportación.",
+    "tutorialCardDetailHint": "Vista de una tarjeta: gastos, importación y adelantos. Abrí una tarjeta antes de iniciarlo.",
+    "tutorialDemoHint": "Los tutoriales están disponibles cuando creás una cuenta propia.",
+    "tutorialSignInHint": "Iniciá sesión para repetir los tutoriales.",
+    "personalization": "Personalización",
+    "personalizationHint": "Tema, colores y opciones de visualización.",
+    "displayOptions": "Opciones de visualización",
+    "displayOptionsHint": "Controlá qué elementos se muestran en la grilla principal.",
+    "cardsHint": "Editá o eliminá las tarjetas de crédito registradas.",
+    "data": "Datos",
+    "dataHint": "Descargá una copia de tus gastos.",
+    "exportCsv": "Exportar CSV",
+    "exportCsvHint": "Incluye tarjeta, titular, descripción, totales y cuotas por mes.",
+    "exportCsvEmpty": "Todavía no hay gastos para exportar.",
+    "account": "Cuenta",
+    "accountHint": "Datos de acceso y preferencias de idioma.",
+    "userEmail": "Mail de usuario",
+    "changePassword": "Cambiar contraseña",
+    "changePasswordHint": "Ingresá una contraseña nueva de al menos 6 caracteres.",
+    "changePasswordShortHint": "Actualizá la contraseña de tu cuenta.",
+    "sendRecoveryEmail": "Enviar email de recuperación",
+    "recoveryEmailTitle": "¿No recordás tu contraseña?",
+    "recoveryEmailHint": "Te enviamos un enlace a tu mail para elegir una contraseña nueva.",
+    "keepSignedInHint": "Si está desactivado, la sesión se cierra al cerrar el navegador.",
+    "savePassword": "Guardar contraseña",
+    "passwordUpdated": "Contraseña actualizada.",
+    "languageHint": "Afecta textos e instrucciones de la app.",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteAccountShortHint": "Borra tu cuenta y todos tus datos de forma permanente.",
+    "deleteAccountMessage": "¿Estás seguro de que querés eliminar tu cuenta?",
+    "deleteAccountWarning": "Se eliminarán permanentemente tus tarjetas, gastos, categorías y configuración. Esta acción no se puede deshacer.",
+    "deleteAccountConfirmLabel": "Para confirmar, escribí {{token}} en el campo de abajo.",
+    "demoAccountHint": "La gestión de cuenta está disponible cuando creás una cuenta propia."
+  },
   "cardDetail": {
     "noExpensesInMonth": "Sin gastos en {{month}}.",
     "noExpensesHintEmpty": "Agregá tu primera compra para verla repartida en los meses de arriba.",
@@ -443,6 +489,7 @@
     "personalize": "Personalizar",
     "cards": "Tarjetas",
     "tutorial": "Tutorial",
+    "tutorialHint": "Volvé a ver el recorrido guiado según la pantalla en la que estés.",
     "repeatTutorial": "Repetir tutorial",
     "repeatTutorialEmpty": "Repetir tutorial inicial",
     "repeatTutorialConsolidated": "Repetir tutorial de vista consolidada",
@@ -450,6 +497,17 @@
     "language": "Idioma",
     "currency": "Moneda de alerta",
     "alertColor": "Color de alerta",
+    "cardColumnColor": "Color de columna (todas las tarjetas)",
+    "previewLabel": "Vista previa",
+    "alertColorPreview": "Ejemplo de alerta",
+    "alertPreviewNormal": "Mes normal",
+    "alertPreviewNormalAmount": "{{currency}} 50.000",
+    "alertPreviewOver": "Mes sobre tope",
+    "alertPreviewOverAmount": "{{currency}} 95.000",
+    "cardColumnPreview": "Ejemplo de columna",
+    "columnPreviewCard": "Credito - Hipotecario",
+    "columnPreviewAmount": "{{currency}} 12.500",
+    "columnPreviewTotalAmount": "{{currency}} 45.000",
     "showPreviousMonths": "Mostrar meses anteriores",
     "showPreviousMonthsHint": "Incluye en la grilla los meses anteriores al mes actual.",
     "showPaidRow": "Mostrar checkboxes de pagos",
@@ -470,8 +528,8 @@
     "deleteCard": "Eliminar tarjeta",
     "cardNameRequired": "El nombre de la tarjeta es obligatorio.",
     "holderRequired": "El nombre del titular es obligatorio.",
-    "cardColor": "Color de acento",
-    "cardBackground": "Fondo de color",
+    "cardColor": "Color identificador",
+    "cardBackground": "Color de fondo",
     "cardBackgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",
     "cardPreview": "Vista previa",
     "saved": "Guardado"

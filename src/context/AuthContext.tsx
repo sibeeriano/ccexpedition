@@ -9,6 +9,7 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { setRememberMe, supabase } from "../lib/supabase";
 import { mapAuthError, mapSignUpError } from "../utils/authErrors";
+import i18n from "../i18n";
 
 type AuthContextValue = {
   session: Session | null;
@@ -27,6 +28,7 @@ type AuthContextValue = {
   updatePassword: (password: string) => Promise<string | null>;
   /** True when the user opened a password-recovery link from email. */
   passwordRecovery: boolean;
+  deleteAccount: () => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
@@ -95,6 +97,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return mapAuthError(error);
   }
 
+  async function deleteAccount() {
+    const { error } = await supabase.rpc("delete_own_account");
+    if (error) {
+      return error.message || i18n.t("login.authErrorGeneric");
+    }
+    await supabase.auth.signOut();
+    return null;
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -109,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         updatePassword,
         passwordRecovery,
+        deleteAccount,
         signOut,
       }}
     >

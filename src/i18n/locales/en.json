@@ -88,7 +88,7 @@
     },
     "consolidated": {
       "title": "Budget alert",
-      "body": "Set a monthly cap and months that exceed it are highlighted in the grid. In Settings you can change the alert currency and color."
+      "body": "Set a monthly cap and months that exceed it are highlighted in the grid. In Profile you can change the alert currency and color."
     },
     "table": {
       "title": "Installments by month",
@@ -116,11 +116,15 @@
     },
     "language": {
       "title": "Language",
-      "body": "Switch between Spanish and English with ES / EN. You can also set the language in Settings."
+      "body": "Switch between Spanish and English with ES / EN. You can also set the language in Profile."
     },
     "settings": {
       "title": "Settings",
-      "body": "Customize colors, title, alert currency and color, visible months, paid row, cards, and replay this tutorial anytime."
+      "body": "In Profile you can customize the app, manage cards, and replay tutorials."
+    },
+    "profile": {
+      "title": "Profile",
+      "body": "From Profile you customize colors, cards, language, account, and replay any tutorial."
     },
     "monthBar": {
       "title": "Months",
@@ -309,6 +313,48 @@
     "chartHint": "Hover or tap a slice to see details",
     "chartAria": "Spending by category chart"
   },
+  "profile": {
+    "cta": "Profile",
+    "title": "Profile",
+    "subtitle": "Customize the app, manage your cards, and your account.",
+    "backToApp": "Back to app",
+    "tutorialHint": "Choose which guided tour you want to replay.",
+    "startTutorial": "Start tutorial",
+    "tutorialEmptyHint": "Getting started with no cards: add a card, language, and Profile access.",
+    "tutorialConsolidatedHint": "Consolidated view: cards, monthly grid, payments, and export.",
+    "tutorialCardDetailHint": "Single card view: expenses, import, and advances. Open a card before starting.",
+    "tutorialDemoHint": "Tutorials are available when you create your own account.",
+    "tutorialSignInHint": "Sign in to replay tutorials.",
+    "personalization": "Personalization",
+    "personalizationHint": "Theme, colors, and display options.",
+    "displayOptions": "Display options",
+    "displayOptionsHint": "Control what appears in the main grid.",
+    "cardsHint": "Edit or remove your registered credit cards.",
+    "data": "Data",
+    "dataHint": "Download a copy of your expenses.",
+    "exportCsv": "Export CSV",
+    "exportCsvHint": "Includes card, holder, description, totals, and installments by month.",
+    "exportCsvEmpty": "No expenses to export yet.",
+    "account": "Account",
+    "accountHint": "Login details and language preference.",
+    "userEmail": "User email",
+    "changePassword": "Change password",
+    "changePasswordHint": "Enter a new password with at least 6 characters.",
+    "changePasswordShortHint": "Update your account password.",
+    "sendRecoveryEmail": "Send recovery email",
+    "recoveryEmailTitle": "Don't remember your password?",
+    "recoveryEmailHint": "We'll send a link to your email so you can choose a new password.",
+    "keepSignedInHint": "When off, your session ends when you close the browser.",
+    "savePassword": "Save password",
+    "passwordUpdated": "Password updated.",
+    "languageHint": "Affects app text and instructions.",
+    "deleteAccount": "Delete account",
+    "deleteAccountShortHint": "Permanently delete your account and all data.",
+    "deleteAccountMessage": "Are you sure you want to delete your account?",
+    "deleteAccountWarning": "Your cards, expenses, categories, and settings will be permanently removed. This cannot be undone.",
+    "deleteAccountConfirmLabel": "To confirm, type {{token}} in the field below.",
+    "demoAccountHint": "Account management is available when you create your own account."
+  },
   "cardDetail": {
     "noExpensesInMonth": "No expenses in {{month}}.",
     "noExpensesHintEmpty": "Add your first purchase to see it spread across the months above.",
@@ -443,6 +489,7 @@
     "personalize": "Personalize",
     "cards": "Cards",
     "tutorial": "Tutorial",
+    "tutorialHint": "Replay the guided tour for your current screen.",
     "repeatTutorial": "Repeat tutorial",
     "repeatTutorialEmpty": "Repeat getting started tutorial",
     "repeatTutorialConsolidated": "Repeat consolidated view tutorial",
@@ -450,6 +497,17 @@
     "language": "Language",
     "currency": "Alert currency",
     "alertColor": "Alert color",
+    "cardColumnColor": "All-cards column color",
+    "previewLabel": "Preview",
+    "alertColorPreview": "Alert example",
+    "alertPreviewNormal": "Normal month",
+    "alertPreviewNormalAmount": "{{currency}} 50,000",
+    "alertPreviewOver": "Over budget",
+    "alertPreviewOverAmount": "{{currency}} 95,000",
+    "cardColumnPreview": "Column example",
+    "columnPreviewCard": "Credito - Hipotecario",
+    "columnPreviewAmount": "{{currency}} 12,500",
+    "columnPreviewTotalAmount": "{{currency}} 45,000",
     "showPreviousMonths": "Show previous months",
     "showPreviousMonthsHint": "Include months before the current month in the grid.",
     "showPaidRow": "Show payment checkboxes",
@@ -470,7 +528,7 @@
     "deleteCard": "Delete Card",
     "cardNameRequired": "Card name is required.",
     "holderRequired": "Cardholder name is required.",
-    "cardColor": "Accent color",
+    "cardColor": "Identifier color",
     "cardBackground": "Background color",
     "cardBackgroundHint": "Optional. Tints the card chip in the top bar.",
     "cardPreview": "Preview",

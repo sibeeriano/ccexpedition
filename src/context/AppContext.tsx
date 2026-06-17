@@ -143,6 +143,7 @@ function applySettingsTheme(settings: AppSettings) {
     titleColor: settings.titleColor,
     titleText: settings.titleText,
     budgetAlertColor: settings.budgetAlertColor,
+    cardColumnColor: settings.cardColumnColor,
   });
 }
 
@@ -523,6 +524,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings.titleColor,
     settings.titleText,
     settings.budgetAlertColor,
+    settings.cardColumnColor,
   ]);
 
   useEffect(() => {

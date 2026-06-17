@@ -8,6 +8,8 @@ export const BRAND_ACCENT = "#03b1b5";
 export const BRAND_CC_COLOR = "#ffa549";
 export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_BUDGET_ALERT_COLOR = "#ef4444";
+/** Sticky card-name column in the all-cards grid. */
+export const DEFAULT_CARD_COLUMN_COLOR = "#0e1c32";
 /** Fixed app brand — shown in navbar and login, not user-editable. */
 export const BRAND_TITLE = "ccExpedition";
 /** Fixed browser tab title — not user-editable. */
@@ -99,11 +101,23 @@ export const ALERT_COLOR_PRESETS: ColorPreset[] = [
   { id: "mint", color: "#34d399" },
 ];
 
+export const CARD_COLUMN_PRESETS: ColorPreset[] = [
+  { id: "expedition", color: DEFAULT_CARD_COLUMN_COLOR },
+  { id: "slateBlue", color: "#0d1117" },
+  { id: "midnight", color: "#12121a" },
+  { id: "blueTint", color: "#172554" },
+  { id: "slateTint", color: "#1e293b" },
+  { id: "purpleTint", color: "#2e1065" },
+  { id: "forest", color: "#0f1712" },
+  { id: "warm", color: "#171310" },
+];
+
 export type ThemeSettings = {
   backgroundColor: string;
   titleColor: string;
   titleText: string;
   budgetAlertColor: string;
+  cardColumnColor: string;
 };
 
 export function normalizeWorkspaceTitle(titleText: string): string {
@@ -156,6 +170,7 @@ export function applyTheme({
   backgroundColor,
   titleColor,
   budgetAlertColor,
+  cardColumnColor,
 }: ThemeSettings): void {
   const base = isValidHexColor(backgroundColor)
     ? backgroundColor
@@ -164,6 +179,9 @@ export function applyTheme({
   const alertColor = isValidHexColor(budgetAlertColor)
     ? budgetAlertColor
     : DEFAULT_BUDGET_ALERT_COLOR;
+  const columnColor = isValidHexColor(cardColumnColor)
+    ? cardColumnColor
+    : DEFAULT_CARD_COLUMN_COLOR;
   const surface = getSurfaceColor(base);
 
   document.documentElement.style.setProperty("--color-base", base);
@@ -172,6 +190,11 @@ export function applyTheme({
   document.documentElement.style.setProperty("--color-brand-cc", BRAND_CC_COLOR);
   document.documentElement.style.setProperty("--color-workspace-title", title);
   document.documentElement.style.setProperty("--color-budget-alert", alertColor);
+  document.documentElement.style.setProperty("--color-card-column", columnColor);
+  document.documentElement.style.setProperty(
+    "--color-card-column-total",
+    deriveSurfaceColor(columnColor),
+  );
   document.title = PAGE_TITLE;
   document
     .querySelector('meta[name="theme-color"]')
