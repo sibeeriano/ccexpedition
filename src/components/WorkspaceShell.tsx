@@ -17,6 +17,7 @@ import { ThankYouBanner } from "./ThankYouBanner";
 import { NewsView } from "./NewsView";
 import { DashboardView } from "./DashboardView";
 import { ProfileView } from "./ProfileView";
+import { WorkspaceTabs, type WorkspaceTabId } from "./WorkspaceTabs";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { formatTimestamp } from "../utils/format";
@@ -47,7 +48,7 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
     openNewsPost,
     openDashboard,
     openProfile,
-    backToWorkspace,
+    goToConsolidated,
   } = useWorkspaceNavigation(demoMode);
   const [selectedView, setSelectedView] = useState<string>(ALL_CARDS_VIEW);
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
@@ -110,6 +111,27 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
     return () => window.clearTimeout(timer);
   }, [justAddedFirstCard, isConsolidatedView]);
 
+  function goToConsolidatedView() {
+    goToConsolidated();
+    setSelectedView(ALL_CARDS_VIEW);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const activeWorkspaceTab: WorkspaceTabId = isNewsView
+    ? "news"
+    : isDashboardView
+      ? "dashboard"
+      : isProfileView
+        ? "profile"
+        : "future";
+
+  const showWorkspaceTabs =
+    hasCards ||
+    isNewsView ||
+    isDashboardView ||
+    isProfileView ||
+    state.cards.length === 0;
+
   useConsolidatedTour({
     userId: demoMode ? undefined : session?.user.id,
     ready: appReady && !demoMode,
@@ -131,22 +153,32 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
       {demoMode && <DemoBanner />}
       <Navbar
         onAddCard={() => setIsAddCardOpen(true)}
+        onLogoClick={goToConsolidatedView}
         demoMode={demoMode}
         onExitDemo={exitDemo}
         onSignUp={goToSignUp}
       />
 
       <main className="relative z-0 mx-auto flex w-full min-w-0 max-w-5xl shrink-0 grow flex-col gap-5 px-4 py-5">
+        {showWorkspaceTabs && (
+          <WorkspaceTabs
+            activeTab={activeWorkspaceTab}
+            onFuture={goToConsolidatedView}
+            onNews={openNewsList}
+            onDashboard={openDashboard}
+            onProfile={openProfile}
+          />
+        )}
         {isNewsView ? (
           <NewsView
             slug={newsSlug}
-            onBack={backToWorkspace}
+            onBack={goToConsolidatedView}
             onOpenPost={openNewsPost}
           />
         ) : isDashboardView ? (
-          <DashboardView onBack={backToWorkspace} />
+          <DashboardView onBack={goToConsolidatedView} />
         ) : isProfileView ? (
-          <ProfileView onBack={backToWorkspace} demoMode={demoMode} />
+          <ProfileView onBack={goToConsolidatedView} demoMode={demoMode} />
         ) : state.cards.length === 0 ? (
           <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
             <img
@@ -168,43 +200,9 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
             >
               {t("nav.addCard")}
             </button>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-              <button
-                type="button"
-                onClick={openProfile}
-                data-tour="profile-link"
-                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
-              >
-                {t("profile.cta")}
-              </button>
-            </div>
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <button
-                type="button"
-                onClick={openNewsList}
-                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
-              >
-                {t("news.cta")}
-              </button>
-              <button
-                type="button"
-                onClick={openDashboard}
-                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
-              >
-                {t("dashboard.cta")}
-              </button>
-              <button
-                type="button"
-                onClick={openProfile}
-                data-tour="profile-link"
-                className="cursor-pointer text-sm font-semibold text-brand-accent transition-colors hover:text-brand-accent/80"
-              >
-                {t("profile.cta")}
-              </button>
-            </div>
             <CardList
               selectedId={selectedCard?.id ?? ALL_CARDS_VIEW}
               onSelect={setSelectedView}

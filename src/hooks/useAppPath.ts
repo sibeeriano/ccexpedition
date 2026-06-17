@@ -1,30 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  isDemoPath,
+  useAppPathContext,
+} from "../context/AppPathContext";
 
-export function isDemoPath(pathname: string): boolean {
-  return pathname === "/demo" || pathname.startsWith("/demo/");
-}
+export { isDemoPath };
 
 export function useAppPath() {
-  const [path, setPath] = useState(() => window.location.pathname);
-
-  useEffect(() => {
-    function handlePopState() {
-      setPath(window.location.pathname);
-    }
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  const navigate = useCallback((to: string) => {
-    window.history.pushState({}, "", to);
-    setPath(to);
-  }, []);
-
-  return {
-    path,
-    navigate,
-    isDemo: isDemoPath(path),
-  };
+  return useAppPathContext();
 }
 
 export type UseAppPathResult = ReturnType<typeof useAppPath>;

@@ -31,6 +31,10 @@ export function useWorkspaceNavigation(demoMode: boolean) {
     navigate(workspacePath);
   }
 
+  function goToConsolidated() {
+    navigate(workspacePath);
+  }
+
   return {
     isNewsView: newsRoute.active,
     isDashboardView: dashboardRoute.active,
@@ -41,5 +45,6 @@ export function useWorkspaceNavigation(demoMode: boolean) {
     openDashboard,
     openProfile,
     backToWorkspace,
+    goToConsolidated,
   };
 }

@@ -49,6 +49,8 @@
     "addCardShort": "+ Tarjeta/Gasto",
     "settings": "Ajustes",
     "menu": "Menú",
+    "goConsolidated": "Ir a vista consolidada",
+    "workspaceTabs": "Secciones",
     "signOut": "Cerrar sesión",
     "currency": "Moneda"
   },
@@ -104,7 +106,7 @@
     },
     "exportCsv": {
       "title": "Exportar CSV",
-      "body": "Descargá todos tus gastos en un archivo CSV para usar en Excel o Google Sheets."
+      "body": "En Perfil → Datos vas a poder descargar todos tus gastos en CSV para Excel o Google Sheets."
     },
     "import": {
       "title": "Importar Excel",
@@ -288,6 +290,9 @@
     "allCards": "Todas las tarjetas",
     "consolidated": "Deuda pendiente"
   },
+  "future": {
+    "cta": "Mi futuro"
+  },
   "news": {
     "cta": "¡Novedades!",
     "title": "Novedades",
@@ -334,7 +339,8 @@
     "dataHint": "Descargá una copia de tus gastos.",
     "exportCsv": "Exportar CSV",
     "exportCsvHint": "Incluye tarjeta, titular, descripción, totales y cuotas por mes.",
-    "exportCsvEmpty": "Todavía no hay gastos para exportar.",
+    "exportComingSoon": "Próximamente",
+    "exportComingSoonHint": "La exportación CSV todavía está en camino.",
     "account": "Cuenta",
     "accountHint": "Datos de acceso y preferencias de idioma.",
     "userEmail": "Mail de usuario",
@@ -415,9 +421,6 @@
   "consolidated": {
     "budgetAlert": "Límite de gasto mensual:",
     "importXlsx": "Importar XLSX",
-    "exportCsv": "Exportar CSV",
-    "exportComingSoon": "Próximamente",
-    "exportComingSoonHint": "La exportación CSV todavía está en camino.",
     "card": "Tarjeta/Gasto/Crédito",
     "totalAllCards": "Totales mensuales",
     "monthlyIncome": "Ingreso mensual",

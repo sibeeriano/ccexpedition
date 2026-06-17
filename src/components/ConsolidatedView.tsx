@@ -13,7 +13,6 @@ import { PaidMonthCell } from "./PaidMonthCell";
 import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMonthLabel, getCurrentMonth, primaryMonthTotal } from "../utils/format";
-import { Modal } from "./Modal";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
 
 type CellPopover = {
@@ -36,7 +35,6 @@ export function ConsolidatedView() {
   const currentMonth = getCurrentMonth();
   const nextMonth = addMonths(currentMonth, 1);
   const [popover, setPopover] = useState<CellPopover | null>(null);
-  const [exportComingSoonOpen, setExportComingSoonOpen] = useState(false);
 
   const isNextMonthColumn = (month: string) => month === nextMonth;
 
@@ -412,14 +410,6 @@ export function ConsolidatedView() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <button
-          type="button"
-          data-tour="export-csv"
-          onClick={() => setExportComingSoonOpen(true)}
-          className="self-end shrink-0 rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
-        >
-          {t("consolidated.exportCsv")}
-        </button>
         {budgetAlert > 0 && overBudgetMonths.length > 0 && (
           <BudgetExceededNotice
             months={overBudgetMonths}
@@ -428,24 +418,6 @@ export function ConsolidatedView() {
           />
         )}
       </div>
-
-      {exportComingSoonOpen && (
-        <Modal
-          title={t("consolidated.exportComingSoon")}
-          onClose={() => setExportComingSoonOpen(false)}
-        >
-          <div className="flex flex-col items-center gap-4 py-2">
-            <img
-              src="/gatito2.png"
-              alt=""
-              className="max-h-52 w-auto object-contain"
-            />
-            <p className="text-center text-sm text-zinc-400">
-              {t("consolidated.exportComingSoonHint")}
-            </p>
-          </div>
-        </Modal>
-      )}
 
       {/* Cell detail popover */}
       {popover && popoverCard && (

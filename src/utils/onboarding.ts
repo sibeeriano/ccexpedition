@@ -199,10 +199,10 @@ function buildConsolidatedTourSteps(t: TFunction): DriveStep[] {
       t("onboarding.payments.body"),
     ),
     step(
-      '[data-tour="export-csv"]',
+      '[data-tour="profile-link"]',
       t("onboarding.exportCsv.title"),
       t("onboarding.exportCsv.body"),
-      "top",
+      "bottom",
     ),
     step(
       '[data-tour="add-card"]',

@@ -49,6 +49,8 @@
     "addCardShort": "+ Card",
     "settings": "Settings",
     "menu": "Menu",
+    "goConsolidated": "Go to consolidated view",
+    "workspaceTabs": "Sections",
     "signOut": "Sign out",
     "currency": "Currency"
   },
@@ -104,7 +106,7 @@
     },
     "exportCsv": {
       "title": "Export CSV",
-      "body": "Download all your expenses as a CSV file for Excel or Google Sheets."
+      "body": "In Profile → Data you'll be able to download all your expenses as a CSV for Excel or Google Sheets."
     },
     "import": {
       "title": "Import Excel",
@@ -288,6 +290,9 @@
     "allCards": "All Cards",
     "consolidated": "Outstanding debt"
   },
+  "future": {
+    "cta": "My future"
+  },
   "news": {
     "cta": "News!",
     "title": "News",
@@ -334,7 +339,8 @@
     "dataHint": "Download a copy of your expenses.",
     "exportCsv": "Export CSV",
     "exportCsvHint": "Includes card, holder, description, totals, and installments by month.",
-    "exportCsvEmpty": "No expenses to export yet.",
+    "exportComingSoon": "Coming soon",
+    "exportComingSoonHint": "CSV export is still on the way.",
     "account": "Account",
     "accountHint": "Login details and language preference.",
     "userEmail": "User email",
@@ -415,9 +421,6 @@
   "consolidated": {
     "budgetAlert": "Monthly spending limit:",
     "importXlsx": "Import XLSX",
-    "exportCsv": "Export CSV",
-    "exportComingSoon": "Coming soon",
-    "exportComingSoonHint": "CSV export is still on the way.",
     "card": "Card/Expense/Credit",
     "totalAllCards": "Monthly totals",
     "monthlyIncome": "Monthly income",

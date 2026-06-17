@@ -1,23 +1,24 @@
 import { useTranslation } from "react-i18next";
 import { DemoModeProvider } from "./context/DemoModeContext";
+import { AppPathProvider } from "./context/AppPathContext";
 import { AppProvider } from "./context/AppContext";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
 import { ResetPassword } from "./components/ResetPassword";
 import { WorkspaceShell } from "./components/WorkspaceShell";
 import { DevSignature } from "./components/DevSignature";
-import { useAppPath, type UseAppPathResult } from "./hooks/useAppPath";
+import { useAppPath } from "./hooks/useAppPath";
 import { useAuth } from "./context/AuthContext";
 import { useApp } from "./context/AppContext";
 import { useEffect, useState } from "react";
 
 const AUTH_INTENT_KEY = "ccexpedition-auth-intent";
 
-function AppRoutes({ appPath }: { appPath: UseAppPathResult }) {
+function AppRoutes() {
   const { t } = useTranslation();
   const { session, loading: authLoading, passwordRecovery } = useAuth();
   const { state } = useApp();
-  const { isDemo, navigate } = appPath;
+  const { isDemo, navigate } = useAppPath();
   const [showLogin, setShowLogin] = useState(false);
   const [loginMode, setLoginMode] = useState<"sign-in" | "sign-up">("sign-in");
 
@@ -75,9 +76,8 @@ function AppRoutes({ appPath }: { appPath: UseAppPathResult }) {
   return <WorkspaceShell />;
 }
 
-function App() {
-  const appPath = useAppPath();
-  const { isDemo, navigate } = appPath;
+function AppContent() {
+  const { isDemo, navigate } = useAppPath();
 
   const demoContextValue = {
     isDemo,
@@ -91,9 +91,17 @@ function App() {
   return (
     <DemoModeProvider value={demoContextValue}>
       <AppProvider>
-        <AppRoutes appPath={appPath} />
+        <AppRoutes />
       </AppProvider>
     </DemoModeProvider>
+  );
+}
+
+function App() {
+  return (
+    <AppPathProvider>
+      <AppContent />
+    </AppPathProvider>
   );
 }
 

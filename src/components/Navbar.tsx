@@ -13,6 +13,7 @@ function emailWithoutAt(email: string): string {
 
 type NavbarProps = {
   onAddCard: () => void;
+  onLogoClick: () => void;
   demoMode?: boolean;
   onExitDemo?: () => void;
   onSignUp?: () => void;
@@ -20,6 +21,7 @@ type NavbarProps = {
 
 export function Navbar({
   onAddCard,
+  onLogoClick,
   demoMode = false,
   onExitDemo,
   onSignUp,
@@ -61,47 +63,40 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-surface/95 backdrop-blur">
       <div className="mx-auto grid min-h-14 w-full min-w-0 max-w-5xl grid-cols-[auto_1fr_auto] items-center gap-1.5 px-3 py-1.5 sm:grid-cols-[1fr_auto_1fr] sm:gap-3 sm:px-4">
-        {userLabel || demoMode ? (
-          <div className="flex min-w-0 items-center gap-2">
-            {demoMode ? (
-              <button
-                type="button"
-                onClick={onExitDemo}
-                aria-label={t("demo.backHome")}
-                className="shrink-0 rounded-md transition-opacity hover:opacity-80"
-              >
-                <img
-                  src="/logoBN.png"
-                  alt=""
-                  className="size-8 object-contain sm:size-9"
-                />
-              </button>
-            ) : (
-              <img
-                src="/logoBN.png"
-                alt=""
-                className="size-8 shrink-0 object-contain sm:size-9"
-              />
-            )}
-            {demoMode ? (
-              <span className="hidden rounded-full bg-brand-accent/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-brand-accent sm:inline">
-                {t("demo.badge")}
-              </span>
-            ) : (
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onLogoClick}
+            aria-label={t("nav.goConsolidated")}
+            className="shrink-0 rounded-md transition-opacity hover:opacity-80"
+          >
+            <img
+              src="/logoBN.png"
+              alt=""
+              className="size-8 object-contain sm:size-9"
+            />
+          </button>
+          {demoMode ? (
+            <span className="hidden rounded-full bg-brand-accent/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-brand-accent sm:inline">
+              {t("demo.badge")}
+            </span>
+          ) : (
+            userLabel && (
               <span
                 className="hidden min-w-0 truncate text-xs text-zinc-500 sm:inline"
                 title={userEmail}
               >
                 {userLabel}
               </span>
-            )}
-          </div>
-        ) : (
-          <div className="min-w-0" aria-hidden />
-        )}
+            )
+          )}
+        </div>
 
-        <div
-          className="flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center sm:max-w-md"
+        <button
+          type="button"
+          onClick={onLogoClick}
+          aria-label={t("nav.goConsolidated")}
+          className="flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center transition-opacity hover:opacity-80 sm:max-w-md"
           title={workspaceTitle ? `ccExpedition — ${workspaceTitle}` : "ccExpedition"}
         >
           <p className="whitespace-nowrap text-xs font-semibold tracking-tight sm:text-base">
@@ -115,7 +110,7 @@ export function Navbar({
               {workspaceTitle}
             </p>
           )}
-        </div>
+        </button>
 
         <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
           <button

@@ -14,6 +14,32 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "vista-perfil",
+    date: "2026-06-17",
+    title: {
+      es: "Perfil: personalización, tarjetas y cuenta",
+      en: "Profile: personalization, cards, and account",
+    },
+    excerpt: {
+      es: "Una vista nueva para ajustar la app, tus tarjetas y tu cuenta en un solo lugar.",
+      en: "A new view to manage app settings, your cards, and your account in one place.",
+    },
+    body: [
+      {
+        es: "Desde el link Perfil (junto a Novedades y Tablero) accedés a todo lo que antes estaba repartido en Ajustes: colores, título, columna de la grilla, moneda de alerta y opciones de visualización. Cada sección es una tarjeta que podés expandir.",
+        en: "From the Profile link (next to News and Dashboard) you get everything that used to live in Settings: colors, title, grid column, alert currency, and display options. Each section is a card you can expand.",
+      },
+      {
+        es: "También podés editar o eliminar tarjetas, exportar tus gastos en CSV, repetir cualquier tutorial, cambiar contraseña, elegir idioma, activar «Mantener sesión» o eliminar tu cuenta. El ícono de engranaje ya no está: todo quedó acá.",
+        en: "You can also edit or delete cards, export expenses as CSV, replay any tutorial, change your password, pick a language, toggle «Keep signed in», or delete your account. The gear icon is gone — it's all here now.",
+      },
+      {
+        es: "Hay ejemplos en vivo para el título, la alerta de presupuesto y el color de la columna de tarjetas, así ves el cambio antes de guardar.",
+        en: "There are live previews for the title, budget alert, and all-cards column color, so you see changes before saving.",
+      },
+    ],
+  },
+  {
     id: "app-instalable",
     date: "2026-06-15",
     title: {

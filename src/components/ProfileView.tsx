@@ -4,8 +4,8 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { applyRememberMe, getRememberMe } from "../lib/supabase";
 import { type AppSettings, settingsSnapshot } from "../utils/settings";
-import { buildExpensesCsv, downloadCsv } from "../utils/csv";
 import { ChangePasswordModal } from "./ChangePasswordModal";
+import { Modal } from "./Modal";
 import { ConfirmDeleteAccountModal } from "./ConfirmDeleteAccountModal";
 import { LanguageToggle } from "./LanguageToggle";
 import { SettingsCheckbox } from "./settings/SettingsFields";
@@ -115,6 +115,7 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
   const [sendingRecovery, setSendingRecovery] = useState(false);
   const [recoverySent, setRecoverySent] = useState(false);
   const [openSections, setOpenSections] = useState(DEFAULT_OPEN_SECTIONS);
+  const [exportComingSoonOpen, setExportComingSoonOpen] = useState(false);
 
   const settingsDirty =
     settingsSnapshot(draft) !== settingsSnapshot(state.settings);
@@ -145,9 +146,7 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
       : t("common.save");
 
   function handleExportCsv() {
-    const csv = buildExpensesCsv(state.cards, state.expenses);
-    const date = new Date().toISOString().slice(0, 10);
-    downloadCsv(`ccexpedition-gastos-${date}.csv`, csv);
+    setExportComingSoonOpen(true);
   }
 
   function handleKeepSignedInChange(checked: boolean) {
@@ -254,15 +253,11 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
             <button
               type="button"
               onClick={handleExportCsv}
-              disabled={state.expenses.length === 0}
-              className="self-start rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
+              className="self-start rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 sm:self-auto"
             >
               {t("profile.exportCsv")}
             </button>
           </div>
-          {state.expenses.length === 0 && (
-            <p className="text-xs text-zinc-500">{t("profile.exportCsvEmpty")}</p>
-          )}
         </ProfileCard>
 
         <ProfileCard
@@ -357,6 +352,24 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
           )}
         </ProfileCard>
       </div>
+
+      {exportComingSoonOpen && (
+        <Modal
+          title={t("profile.exportComingSoon")}
+          onClose={() => setExportComingSoonOpen(false)}
+        >
+          <div className="flex flex-col items-center gap-4 py-2">
+            <img
+              src="/gatito2.png"
+              alt=""
+              className="max-h-52 w-auto object-contain"
+            />
+            <p className="text-center text-sm text-zinc-400">
+              {t("profile.exportComingSoonHint")}
+            </p>
+          </div>
+        </Modal>
+      )}
 
       {changePasswordOpen && (
         <ChangePasswordModal
