@@ -172,13 +172,12 @@ export function WorkspaceShell({ demoMode = false }: WorkspaceShellProps) {
         {isNewsView ? (
           <NewsView
             slug={newsSlug}
-            onBack={goToConsolidatedView}
             onOpenPost={openNewsPost}
           />
         ) : isDashboardView ? (
-          <DashboardView onBack={goToConsolidatedView} />
+          <DashboardView />
         ) : isProfileView ? (
-          <ProfileView onBack={goToConsolidatedView} demoMode={demoMode} />
+          <ProfileView onStartTour={goToConsolidatedView} demoMode={demoMode} />
         ) : state.cards.length === 0 ? (
           <div className="panel-surface flex flex-col items-center px-6 py-12 text-center sm:py-16">
             <img

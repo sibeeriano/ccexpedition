@@ -23,10 +23,6 @@ import {
 } from "../utils/format";
 import { getMonthsRange } from "../utils/months";
 
-type DashboardViewProps = {
-  onBack: () => void;
-};
-
 type CategoryDetailSectionProps = {
   category: CategoryMonthSummary;
   color: string;
@@ -108,7 +104,7 @@ function CategoryDetailSection({
   );
 }
 
-export function DashboardView({ onBack }: DashboardViewProps) {
+export function DashboardView() {
   const { t } = useTranslation();
   const { state } = useApp();
   const currentMonth = getCurrentMonth();
@@ -195,13 +191,6 @@ export function DashboardView({ onBack }: DashboardViewProps) {
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="cursor-pointer self-start text-xs text-zinc-500 transition-colors hover:text-zinc-200"
-        >
-          ← {t("dashboard.backToApp")}
-        </button>
         <h1 className="text-lg font-bold text-white sm:text-xl">
           {t("dashboard.title")}
         </h1>

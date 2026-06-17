@@ -14,7 +14,7 @@ import { PersonalizationSection } from "./settings/PersonalizationSection";
 import { TutorialSection } from "./settings/TutorialSection";
 
 type ProfileViewProps = {
-  onBack: () => void;
+  onStartTour: () => void;
   demoMode?: boolean;
 };
 
@@ -101,7 +101,7 @@ const DEFAULT_OPEN_SECTIONS: Record<ProfileSectionId, boolean> = {
   account: false,
 };
 
-export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
+export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps) {
   const { t } = useTranslation();
   const { session, deleteAccount, resetPassword } = useAuth();
   const { state, applySettings, setLanguage } = useApp();
@@ -175,13 +175,6 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="cursor-pointer self-start text-xs text-zinc-500 transition-colors hover:text-zinc-200"
-        >
-          ← {t("profile.backToApp")}
-        </button>
         <h1 className="text-lg font-bold text-white sm:text-xl">
           {t("profile.title")}
         </h1>
@@ -196,7 +189,7 @@ export function ProfileView({ onBack, demoMode = false }: ProfileViewProps) {
           open={openSections.tutorial}
           onToggle={toggleSection}
         >
-          <TutorialSection demoMode={demoMode} onStartTour={onBack} />
+          <TutorialSection demoMode={demoMode} onStartTour={onStartTour} />
         </ProfileCard>
 
         <ProfileCard

@@ -8,7 +8,6 @@ import { formatNewsDate, pickLocalized } from "../utils/news";
 
 type NewsViewProps = {
   slug?: string;
-  onBack: () => void;
   onOpenPost: (slug: string) => void;
 };
 
@@ -86,7 +85,7 @@ function NewsPostDetail({
   );
 }
 
-export function NewsView({ slug, onBack, onOpenPost }: NewsViewProps) {
+export function NewsView({ slug, onOpenPost }: NewsViewProps) {
   const { t } = useTranslation();
   const posts = getNewsPostsSorted();
   const activePost = slug ? getNewsPost(slug) : undefined;
@@ -94,13 +93,6 @@ export function NewsView({ slug, onBack, onOpenPost }: NewsViewProps) {
   return (
     <section className="flex w-full min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="self-start text-xs text-zinc-500 transition-colors hover:text-zinc-200"
-        >
-          ← {t("news.backToApp")}
-        </button>
         <h1 className="text-lg font-bold text-white sm:text-xl">
           {t("news.title")}
         </h1>
