@@ -23,6 +23,32 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "tema-neobrutalism",
+    date: "2026-07-04",
+    title: {
+      es: "Tema Neobrutalism",
+      en: "Neobrutalism theme",
+    },
+    excerpt: {
+      es: "Fondo claro, bordes negros gruesos, sombras duras y pestañas de colores. Un look neobrutalista para la app.",
+      en: "Light background, thick black borders, hard shadows, and colorful tabs. A neobrutalist look for the app.",
+    },
+    body: [
+      {
+        es: "En Perfil → Personalizar elegí Neobrutalism como tema visual. Inspirado en neobrutalism.dev: paneles blancos sobre fondo lavanda, bordes de 2px negros y sombra dura desplazada (sin blur).",
+        en: "In Profile → Personalize pick Neobrutalism as your visual theme. Inspired by neobrutalism.dev: white panels on a lavender background, 2px black borders, and a hard offset shadow (no blur).",
+      },
+      {
+        es: "Las pestañas del workspace tienen colores distintos (amarillo, verde, celeste y rosa), los chips de tarjetas llevan el mismo estilo, y la grilla consolidada también tiene borde y sombra. El logo del navbar gana una sombra para verse sobre el fondo claro.",
+        en: "Workspace tabs use different colors (yellow, green, blue, and pink), card chips match the style, and the consolidated grid gets a border and shadow too. The navbar logo gets a shadow so it stays visible on the light background.",
+      },
+      {
+        es: "Los colores del workspace quedan fijos en este tema, salvo la columna de tarjetas en la vista consolidada, que podés seguir ajustando. Como el retro Win95, lo seguimos puliendo: si algo no cierra visualmente, contanos.",
+        en: "Workspace colors are fixed in this theme, except the card column in the consolidated view, which you can still customize. Like the Win95 retro theme, we're still polishing it — if something looks off, let us know.",
+      },
+    ],
+  },
+  {
     id: "tema-retro-win95",
     date: "2026-07-03",
     title: {
@@ -35,8 +61,8 @@ export const NEWS_POSTS: NewsPost[] = [
     },
     body: [
       {
-        es: "En Perfil → Personalizar elegís el tema visual: Expedition (el de siempre), Retro (Windows 95) o Neobrutalism (bordes negros y sombra dura, estilo neobrutalism.dev).",
-        en: "In Profile → Personalize you pick the visual theme: Expedition (the usual look), Retro (Windows 95), or Neobrutalism (black borders and hard shadows, neobrutalism.dev style).",
+        es: "En Perfil → Personalizar elegí Retro (Windows 95) como tema visual. La interfaz pasa a grises clásicos, bordes en relieve y tipografía de sistema.",
+        en: "In Profile → Personalize pick Retro (Windows 95) as your visual theme. The UI switches to classic grays, raised borders, and system typography.",
       },
       {
         es: "Incluye scrollbars al estilo Windows 95, chips de tarjetas en grises distintos y una columna de grilla más oscura por defecto. Los colores del workspace quedan fijos en retro, salvo la columna de tarjetas en la vista consolidada, que podés seguir ajustando.",
