@@ -13,7 +13,8 @@ import { PaidMonthCell } from "./PaidMonthCell";
 import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
 import { MonthlyBalanceCell } from "./MonthlyBalanceCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
-import { formatMonthLabel, getCurrentMonth, primaryMonthTotal } from "../utils/format";
+import { formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
 
 type CellPopover = {
@@ -33,6 +34,7 @@ export function ConsolidatedView() {
   const { state, setBudgetAlert, flushSettingsPersist } = useApp();
   const { currency, budgetAlert, showPreviousMonths, showPaidRow } =
     state.settings;
+  const { primaryTotal } = useMoneyDisplay();
   const currentMonth = getCurrentMonth();
   const nextMonth = addMonths(currentMonth, 1);
   const [popover, setPopover] = useState<CellPopover | null>(null);
@@ -91,11 +93,14 @@ export function ConsolidatedView() {
   });
 
   const monthIncomeTargets = monthsRange.map((_, i) =>
-    primaryMonthTotal(grandTotals[i], grandTotalsUsd[i]),
+    primaryTotal(grandTotals[i], grandTotalsUsd[i]),
   );
 
-  const isOverBudget = grandTotals.map(
-    (total) => budgetAlert > 0 && total > budgetAlert,
+  const isOverBudget = monthIncomeTargets.map(
+    (primary) =>
+      budgetAlert > 0 &&
+      primary.currency === currency &&
+      primary.amount > budgetAlert,
   );
   const overBudgetMonths = monthsRange.filter((_, index) => isOverBudget[index]);
 
@@ -413,8 +418,8 @@ export function ConsolidatedView() {
                 <MonthlyBalanceCell
                   key={month}
                   month={month}
-                  monthTotal={monthIncomeTargets[i].amount}
-                  currency={monthIncomeTargets[i].currency}
+                  monthArsTotal={grandTotals[i]}
+                  monthUsdTotal={grandTotalsUsd[i]}
                 />
               ))}
             </tr>

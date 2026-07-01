@@ -15,6 +15,7 @@ import { CategorySelectField } from "./CategorySelectField";
 import { InstallmentExpenseFields } from "./InstallmentExpenseFields";
 import { MonthSelectField } from "./MonthSelectField";
 import { Modal, useModalClose } from "./Modal";
+import { UsdAmount } from "./UsdAmount";
 const DEFAULT_SUBSCRIPTION_MONTHS = 12;
 
 type PaymentType = "one-time" | "installments";
@@ -406,7 +407,7 @@ function ExpenseForm({ card }: { card: Card }) {
                 <span className="font-mono text-zinc-100">
                   {row.amount > 0 && formatMoney(row.amount, "ARS")}
                   {row.amount > 0 && row.amountUsd > 0 && " · "}
-                  {row.amountUsd > 0 && formatMoney(row.amountUsd, "$")}
+                  {row.amountUsd > 0 && <UsdAmount amount={row.amountUsd} />}
                 </span>
               </li>
             ))}

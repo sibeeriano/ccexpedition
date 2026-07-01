@@ -1,21 +1,23 @@
 import { useTranslation } from "react-i18next";
-import type { CurrencySymbol } from "../types";
 import { useApp } from "../context/AppContext";
 import { formatMoney, formatMonthLabel } from "../utils/format";
+import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 
 type MonthlyBalanceCellProps = {
   month: string;
-  monthTotal: number;
-  currency: CurrencySymbol;
+  monthArsTotal: number;
+  monthUsdTotal: number;
 };
 
 export function MonthlyBalanceCell({
   month,
-  monthTotal,
-  currency,
+  monthArsTotal,
+  monthUsdTotal,
 }: MonthlyBalanceCellProps) {
   const { t } = useTranslation();
   const { state } = useApp();
+  const { primaryTotal, resolve, convertUsdToArs, usdRate, toComparableArs } =
+    useMoneyDisplay();
   const entry = state.settings.monthlyIncomeByMonth[month];
   const confirmed = entry?.confirmed === true;
 
@@ -25,7 +27,18 @@ export function MonthlyBalanceCell({
     );
   }
 
-  const balance = Math.round((entry.amount - monthTotal) * 100) / 100;
+  const incomePrimary = primaryTotal(monthArsTotal, monthUsdTotal);
+  const debtAmount =
+    convertUsdToArs && usdRate
+      ? resolve(monthArsTotal, monthUsdTotal).combinedArs
+      : incomePrimary.amount;
+  const incomeAmount =
+    convertUsdToArs && usdRate
+      ? toComparableArs(entry.amount, incomePrimary.currency)
+      : entry.amount;
+  const balanceCurrency =
+    convertUsdToArs && usdRate ? "ARS" : incomePrimary.currency;
+  const balance = Math.round((incomeAmount - debtAmount) * 100) / 100;
 
   return (
     <td className="px-2 py-2 text-right align-top">
@@ -35,10 +48,10 @@ export function MonthlyBalanceCell({
         }`}
         aria-label={t("consolidated.balanceForMonth", {
           month: formatMonthLabel(month),
-          balance: formatMoney(balance, currency),
+          balance: formatMoney(balance, balanceCurrency),
         })}
       >
-        {formatMoney(balance, currency)}
+        {formatMoney(balance, balanceCurrency)}
       </span>
     </td>
   );

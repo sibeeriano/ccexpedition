@@ -15,8 +15,13 @@ import {
   getMonthlyTotalUsdByCard,
 } from "../utils/expenses";
 import { AmountDisplay } from "./AmountDisplay";
+import {
+  CardDetailThisMonthCell,
+  CardDetailTotalArsCell,
+  CardDetailTotalUsdCell,
+} from "./CardDetailExpenseAmounts";
 import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
-import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { getCategoryDisplayName } from "../utils/expenseCategories";
 
 type CardDetailProps = {
@@ -322,7 +327,7 @@ export function CardDetail({
                   <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
                     {t("cardDetail.thisMonth")}
                   </span>
-                  <AmountDisplay
+                  <CardDetailThisMonthCell
                     ars={amount}
                     usd={amountUsd}
                     className="items-end text-sm text-zinc-100"
@@ -331,11 +336,13 @@ export function CardDetail({
                 {(expense.totalAmount > 0 || expense.totalAmountUsd > 0) && (
                   <div className="mt-2 flex items-end justify-between gap-3 text-xs text-zinc-500">
                     <span>{t("cardDetail.totalPurchase")}</span>
-                    <AmountDisplay
-                      ars={expense.totalAmount}
-                      usd={expense.totalAmountUsd}
-                      className="items-end text-xs"
-                    />
+                    <span className="flex flex-col items-end gap-0.5">
+                      <CardDetailTotalUsdCell amount={expense.totalAmountUsd} />
+                      <CardDetailTotalArsCell
+                        totalAmount={expense.totalAmount}
+                        monthlyUsd={amountUsd}
+                      />
+                    </span>
                   </div>
                 )}
               </li>
@@ -471,7 +478,7 @@ export function CardDetail({
                       {installmentLabel(expense)}
                     </td>
                     <td className="px-3.5 py-2.5 text-right">
-                      <AmountDisplay
+                      <CardDetailThisMonthCell
                         ars={amount}
                         usd={amountUsd}
                         className="items-end text-sm"
@@ -484,14 +491,13 @@ export function CardDetail({
                       {categoryLabel(expense.categoryId)}
                     </td>
                     <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                      {expense.totalAmountUsd > 0
-                        ? formatMoney(expense.totalAmountUsd, "$")
-                        : "—"}
+                      <CardDetailTotalUsdCell amount={expense.totalAmountUsd} />
                     </td>
-                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
-                      {expense.totalAmount > 0
-                        ? formatMoney(expense.totalAmount, "ARS")
-                        : "—"}
+                    <td className="px-3.5 py-2.5 text-right">
+                      <CardDetailTotalArsCell
+                        totalAmount={expense.totalAmount}
+                        monthlyUsd={amountUsd}
+                      />
                     </td>
                     <td className="px-2 py-2.5">
                       <div className="flex items-center justify-center gap-0.5">

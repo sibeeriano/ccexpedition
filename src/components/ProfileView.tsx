@@ -12,6 +12,7 @@ import { SettingsCheckbox } from "./settings/SettingsFields";
 import { CardsSection } from "./settings/CardsSection";
 import { PersonalizationSection } from "./settings/PersonalizationSection";
 import { TutorialSection } from "./settings/TutorialSection";
+import { UsdExchangeSettings } from "./settings/UsdExchangeSettings";
 
 type ProfileViewProps = {
   onStartTour: () => void;
@@ -104,7 +105,7 @@ const DEFAULT_OPEN_SECTIONS: Record<ProfileSectionId, boolean> = {
 export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps) {
   const { t } = useTranslation();
   const { session, deleteAccount, resetPassword } = useAuth();
-  const { state, applySettings, setLanguage } = useApp();
+  const { state, applySettings, setLanguage, usdExchange } = useApp();
   const [draft, setDraft] = useState<AppSettings>(() => ({ ...state.settings }));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -238,18 +239,28 @@ export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps)
           open={openSections.data}
           onToggle={toggleSection}
         >
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-zinc-200">{t("profile.exportCsv")}</p>
-              <p className="text-xs text-zinc-500">{t("profile.exportCsvHint")}</p>
+          <div className="flex flex-col gap-4">
+            <UsdExchangeSettings
+              settings={state.settings}
+              usdExchange={usdExchange}
+              onApplySettings={(next) => {
+                void applySettings(next);
+              }}
+            />
+
+            <div className="flex flex-col gap-2 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-zinc-200">{t("profile.exportCsv")}</p>
+                <p className="text-xs text-zinc-500">{t("profile.exportCsvHint")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                className="self-start rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 sm:self-auto"
+              >
+                {t("profile.exportCsv")}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleExportCsv}
-              className="self-start rounded-md bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/15 sm:self-auto"
-            >
-              {t("profile.exportCsv")}
-            </button>
           </div>
         </ProfileCard>
 

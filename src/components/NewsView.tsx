@@ -11,6 +11,44 @@ type NewsViewProps = {
   onOpenPost: (slug: string) => void;
 };
 
+function NewsImages({
+  post,
+  afterParagraph,
+  lang,
+}: {
+  post: NewsPost;
+  afterParagraph: number;
+  lang: "es" | "en";
+}) {
+  const images =
+    post.images?.filter((image) => image.afterParagraph === afterParagraph) ??
+    [];
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {images.map((image) => (
+        <figure
+          key={image.src}
+          className="mx-auto w-1/2 min-w-[10rem] overflow-hidden rounded-md border border-white/10"
+        >
+          <img
+            src={image.src}
+            alt={pickLocalized(image.alt, lang)}
+            className="w-full object-cover"
+          />
+          {image.caption && (
+            <figcaption className="px-2 py-1.5 text-center text-xs text-zinc-500">
+              {pickLocalized(image.caption, lang)}
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
+  );
+}
+
 function NewsPostCard({
   post,
   onOpen,
@@ -76,9 +114,10 @@ function NewsPostDetail({
       </h1>
       <div className="flex flex-col gap-3 text-sm leading-relaxed text-white sm:text-base">
         {post.body.map((paragraph, index) => (
-          <p key={index} className="text-white">
-            {pickLocalized(paragraph, lang)}
-          </p>
+          <div key={index} className="flex flex-col gap-3">
+            <p className="text-white">{pickLocalized(paragraph, lang)}</p>
+            <NewsImages post={post} afterParagraph={index} lang={lang} />
+          </div>
         ))}
       </div>
     </article>

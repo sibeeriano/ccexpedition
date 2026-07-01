@@ -3,16 +3,77 @@ export type LocalizedText = {
   en: string;
 };
 
+export type NewsImage = {
+  src: string;
+  alt: LocalizedText;
+  caption?: LocalizedText;
+  /** Insert after this body paragraph index (0-based). */
+  afterParagraph: number;
+};
+
 export type NewsPost = {
   id: string;
   date: string;
   title: LocalizedText;
   excerpt: LocalizedText;
   body: LocalizedText[];
+  images?: NewsImage[];
 };
 
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
+  {
+    id: "conversion-usd-cotizacion",
+    date: "2026-07-02",
+    title: {
+      es: "Conversión USD→ARS con cotización del día",
+      en: "USD→ARS conversion with daily exchange rate",
+    },
+    excerpt: {
+      es: "Elegí oficial, tarjeta o blue, consultá la cotización en Perfil y mirá cómo se ven los montos dentro de cada tarjeta.",
+      en: "Pick official, card, or blue rate, check today's quote in Profile, and see how amounts look inside each card.",
+    },
+    body: [
+      {
+        es: "En Perfil → Datos podés elegir el tipo de cambio (oficial, tarjeta o blue), ver la cotización del día con compra y venta desde ArgentinaDatos, y activar la conversión de USD a pesos en toda la app.",
+        en: "In Profile → Data you can pick the exchange rate (official, card, or blue), see today's buy and sell rates from ArgentinaDatos, and enable USD→peso conversion across the app.",
+      },
+      {
+        es: "Dentro de cada tarjeta, los gastos en dólares muestran el monto mensual en USD en «Este mes» y el equivalente en pesos en «Total ARS» — sin paréntesis en la cuota. La vista consolidada y el resto de la app siguen mostrando la conversión entre paréntesis junto al dólar.",
+        en: "Inside each card, dollar expenses show the monthly USD amount under «This month» and the peso equivalent under «Total ARS» — no parentheses on the installment. The consolidated view and the rest of the app still show the conversion in parentheses next to the dollar amount.",
+      },
+      {
+        es: "También sumamos la fila Saldo debajo de Ingreso mensual en la grilla: el ingreso queda como lo cargás vos y el saldo muestra cuánto te queda después de restar la deuda del mes.",
+        en: "We also added a Balance row below Monthly income in the grid: income stays as you enter it, and balance shows what's left after subtracting that month's debt.",
+      },
+    ],
+    images: [
+      {
+        src: "/news/cotizacion-dolar-perfil.png",
+        afterParagraph: 0,
+        alt: {
+          es: "Perfil → Datos: selector de cotización oficial, tarjeta o blue con compra, venta y fecha del día.",
+          en: "Profile → Data: official, card, or blue rate selector with buy, sell, and date.",
+        },
+        caption: {
+          es: "Perfil → Datos: tipo de cambio y cotización del día.",
+          en: "Profile → Data: exchange rate type and daily quote.",
+        },
+      },
+      {
+        src: "/news/detalle-tarjeta-usd.png",
+        afterParagraph: 1,
+        alt: {
+          es: "Detalle de tarjeta: Spotify en USD con cuota mensual en dólares y total convertido a pesos en la columna Total ARS.",
+          en: "Card detail: Spotify in USD with monthly installment in dollars and converted total in the Total ARS column.",
+        },
+        caption: {
+          es: "Dentro de cada tarjeta: USD en «Este mes» y pesos en «Total ARS».",
+          en: "Inside each card: USD under «This month» and pesos under «Total ARS».",
+        },
+      },
+    ],
+  },
   {
     id: "cuotas-idioma-historial",
     date: "2026-07-01",

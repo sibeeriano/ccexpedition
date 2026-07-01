@@ -15,11 +15,11 @@ import {
   UNCATEGORIZED_KEY,
   type CategoryMonthSummary,
 } from "../utils/categoryDashboard";
+import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 import {
   formatMonthLong,
   formatMoney,
   getCurrentMonth,
-  primaryMonthTotal,
 } from "../utils/format";
 import { getMonthsRange } from "../utils/months";
 
@@ -107,6 +107,7 @@ function CategoryDetailSection({
 export function DashboardView() {
   const { t } = useTranslation();
   const { state } = useApp();
+  const { primaryTotal } = useMoneyDisplay();
   const currentMonth = getCurrentMonth();
 
   const monthsRange = useMemo(
@@ -170,21 +171,25 @@ export function DashboardView() {
     [selectedMonth, state.expenses],
   );
 
-  const pieCurrency = primaryMonthTotal(
-    monthTotals.total.ars,
-    monthTotals.total.usd,
-  ).currency;
-  const pieSlices: PieSlice[] = summaries.map((item, index) => ({
-    key: item.categoryKey,
-    label: item.categoryName,
-    value: item.chartValue,
-    percent: item.share,
-    formattedValue: formatMoney(item.chartValue, pieCurrency),
-    color:
-      item.categoryKey === UNCATEGORIZED_KEY
-        ? "#64748b"
-        : colorForCategoryIndex(index),
-  }));
+  const pieSlices: PieSlice[] = useMemo(() => {
+    const values = summaries.map((item) => primaryTotal(item.ars, item.usd));
+    const chartTotal = values.reduce((sum, item) => sum + item.amount, 0);
+
+    return summaries.map((item, index) => {
+      const slicePrimary = primaryTotal(item.ars, item.usd);
+      return {
+        key: item.categoryKey,
+        label: item.categoryName,
+        value: slicePrimary.amount,
+        percent: chartTotal > 0 ? slicePrimary.amount / chartTotal : 0,
+        formattedValue: formatMoney(slicePrimary.amount, slicePrimary.currency),
+        color:
+          item.categoryKey === UNCATEGORIZED_KEY
+            ? "#64748b"
+            : colorForCategoryIndex(index),
+      };
+    });
+  }, [summaries, primaryTotal]);
 
   const hasData = summaries.length > 0;
 

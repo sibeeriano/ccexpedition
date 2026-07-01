@@ -1,4 +1,5 @@
 import { formatMoney } from "../utils/format";
+import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 
 type AmountDisplayProps = {
   ars: number;
@@ -14,29 +15,50 @@ export function AmountDisplay({
   className = "",
   inline = false,
 }: AmountDisplayProps) {
+  const { convertUsdToArs, usdRate, resolve } = useMoneyDisplay();
+  const { combinedArs, convertedUsdToArs } = resolve(ars, usd);
+
   const hasArs = ars !== 0;
   const hasUsd = usd !== 0;
+  const showCombinedArs =
+    convertUsdToArs && usdRate && usdRate > 0 && (hasArs || hasUsd);
+  const displayArs = showCombinedArs ? combinedArs : ars;
+  const showArsLine = showCombinedArs ? displayArs !== 0 || hasUsd : hasArs;
+  const showUsdConversion =
+    convertUsdToArs && usdRate && usdRate > 0 && hasUsd && convertedUsdToArs !== 0;
 
   if (!hasArs && !hasUsd) {
     return <span className={className}>{formatMoney(0, "ARS")}</span>;
   }
 
-  if (inline && hasArs && hasUsd) {
+  const usdText = (
+    <>
+      {formatMoney(usd, "$")}
+      {showUsdConversion && (
+        <span className="text-zinc-500">
+          {" "}
+          ({formatMoney(convertedUsdToArs, "ARS")})
+        </span>
+      )}
+    </>
+  );
+
+  if (inline && showArsLine && hasUsd) {
     return (
       <span className={className}>
-        {formatMoney(ars, "ARS")} · {formatMoney(usd, "$")}
+        {formatMoney(displayArs, "ARS")} · {usdText}
       </span>
     );
   }
 
   return (
     <span className={`flex flex-col ${className}`}>
-      {hasArs && (
-        <span className="font-mono">{formatMoney(ars, "ARS")}</span>
+      {showArsLine && (
+        <span className="font-mono">{formatMoney(displayArs, "ARS")}</span>
       )}
       {hasUsd && (
-        <span className={`font-mono ${hasArs ? "text-zinc-400" : ""}`}>
-          {formatMoney(usd, "$")}
+        <span className={`font-mono ${showArsLine ? "text-zinc-400" : ""}`}>
+          {usdText}
         </span>
       )}
     </span>

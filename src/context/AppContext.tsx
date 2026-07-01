@@ -46,6 +46,19 @@ import {
 import { useAuth } from "./AuthContext";
 import { useDemoMode } from "./DemoModeContext";
 import { createDemoSeed, getDemoWorkspaceTitle } from "../data/demoSeed";
+import {
+  fetchLatestUsdVenta,
+  type UserUsdExchangeCasa,
+} from "../utils/usdExchange";
+
+export type UsdExchangeState = {
+  rate: number | null;
+  compra: number | null;
+  fecha: string | null;
+  casa: UserUsdExchangeCasa;
+  loading: boolean;
+  error: boolean;
+};
 
 export type { AppLanguage, AppSettings };
 
@@ -85,6 +98,7 @@ type ExpenseUpdateInput = Partial<
 
 type AppContextValue = {
   state: AppState;
+  usdExchange: UsdExchangeState;
   /** Resolve to an error message, or null on success. */
   addCard: (input: Omit<Card, "id">) => Promise<string | null>;
   updateCard: (
@@ -309,6 +323,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(() => getDefaultSettings());
+  const [usdExchange, setUsdExchange] = useState<UsdExchangeState>({
+    rate: null,
+    compra: null,
+    fecha: null,
+    casa: "blue",
+    loading: false,
+    error: false,
+  });
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   const expenseCategoriesRef = useRef(expenseCategories);
@@ -534,6 +556,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings.budgetAlertColor,
     settings.cardColumnColor,
   ]);
+
+  useEffect(() => {
+    const casa = settings.usdExchangeCasa;
+    let cancelled = false;
+    setUsdExchange((prev) => ({
+      ...prev,
+      casa,
+      loading: true,
+      error: false,
+    }));
+
+    void fetchLatestUsdVenta(casa)
+      .then((quote) => {
+        if (cancelled) return;
+        setUsdExchange({
+          rate: quote.venta,
+          compra: quote.compra,
+          fecha: quote.fecha,
+          casa: quote.casa,
+          loading: false,
+          error: false,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setUsdExchange({
+          rate: null,
+          compra: null,
+          fecha: null,
+          casa,
+          loading: false,
+          error: true,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [settings.usdExchangeCasa]);
 
   useEffect(() => {
     if (i18n.language !== settings.language) {
@@ -1570,6 +1631,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         state,
+        usdExchange,
         addCard,
         updateCard,
         deleteCard,

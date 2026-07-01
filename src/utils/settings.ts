@@ -1,4 +1,9 @@
 import type { CurrencySymbol, MonthlyIncomeEntry } from "../types";
+import type { UserUsdExchangeCasa } from "./usdExchange";
+import {
+  DEFAULT_USER_USD_EXCHANGE_CASA,
+  isUserUsdExchangeCasa,
+} from "./usdExchange";
 import type { AppLanguage } from "../i18n";
 import i18n from "../i18n";
 import {
@@ -46,6 +51,10 @@ export type AppSettings = {
   tabDashboardTextColor: string;
   tabProfileColor: string;
   tabProfileTextColor: string;
+  /** When true, show USD amounts with ARS equivalent and add converted USD to ARS totals. */
+  convertUsdToArs: boolean;
+  /** ArgentinaDatos dollar rate used for USD→ARS conversion. */
+  usdExchangeCasa: UserUsdExchangeCasa;
 };
 
 export function settingsStorageKey(userId: string | null): string {
@@ -75,6 +84,8 @@ export function getDefaultSettings(): AppSettings {
     tabDashboardTextColor: DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
     tabProfileColor: DEFAULT_TAB_PROFILE_COLOR,
     tabProfileTextColor: DEFAULT_TAB_PROFILE_TEXT_COLOR,
+    convertUsdToArs: false,
+    usdExchangeCasa: DEFAULT_USER_USD_EXCHANGE_CASA,
   };
 }
 
@@ -139,6 +150,10 @@ export function parseAppSettings(
     tabProfileTextColor: isValidHexColor(parsed.tabProfileTextColor ?? "")
       ? parsed.tabProfileTextColor!
       : defaults.tabProfileTextColor,
+    convertUsdToArs: parsed.convertUsdToArs === true,
+    usdExchangeCasa: isUserUsdExchangeCasa(parsed.usdExchangeCasa)
+      ? parsed.usdExchangeCasa
+      : defaults.usdExchangeCasa,
   };
 }
 
