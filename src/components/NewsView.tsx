@@ -35,13 +35,6 @@ function NewsPostCard({
       <p className="text-sm leading-relaxed text-white/85">
         {pickLocalized(post.excerpt, lang)}
       </p>
-      {post.image && (
-        <img
-          src={post.image.src}
-          alt={pickLocalized(post.image.alt, lang)}
-          className="mt-1 w-full rounded-md border border-white/10 object-cover"
-        />
-      )}
       <button
         type="button"
         onClick={onOpen}
@@ -86,7 +79,7 @@ function NewsPostDetail({
           <p className="text-white">{pickLocalized(post.body[0], lang)}</p>
         )}
         {post.image && (
-          <figure className="overflow-hidden rounded-md border border-white/10">
+          <figure className="mx-auto w-1/2 min-w-[10rem] overflow-hidden rounded-md border border-white/10">
             <img
               src={post.image.src}
               alt={pickLocalized(post.image.alt, lang)}
