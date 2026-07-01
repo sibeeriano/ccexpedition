@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
-import { addMonths } from "../utils/months";
+import { addMonths, EXPENSE_START_MONTH_LOOKBACK } from "../utils/months";
 import {
   parseExpensesXlsx,
   type BankImportMode,
@@ -119,8 +119,9 @@ function ImportContent() {
         )
       : null;
 
-  const monthOptions = Array.from({ length: 24 }, (_, i) =>
-    addMonths(getCurrentMonth(), i - 12),
+  const monthOptions = Array.from(
+    { length: EXPENSE_START_MONTH_LOOKBACK + 12 },
+    (_, i) => addMonths(getCurrentMonth(), i - EXPENSE_START_MONTH_LOOKBACK),
   );
 
   async function handleImport() {

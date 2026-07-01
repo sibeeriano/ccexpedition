@@ -12,6 +12,26 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** Total purchase amount from a fixed monthly installment. */
+export function totalFromMonthlyInstallment(
+  monthlyAmount: number,
+  installments: number,
+): number {
+  const count = Math.max(1, Math.floor(installments));
+  if (monthlyAmount <= 0) return 0;
+  return round2(monthlyAmount * count);
+}
+
+/** Typical monthly installment when spreading a total (matches spreadTotal base). */
+export function monthlyInstallmentFromTotal(
+  total: number,
+  installments: number,
+): number {
+  const count = Math.max(1, Math.floor(installments));
+  if (total <= 0) return 0;
+  return round2(total / count);
+}
+
 function spreadTotal(
   total: number,
   installments: number,

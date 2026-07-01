@@ -14,6 +14,28 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "cuotas-idioma-historial",
+    date: "2026-07-01",
+    title: {
+      es: "Cuotas más fáciles, español por defecto y más historial",
+      en: "Easier installments, Spanish by default, and more history",
+    },
+    excerpt: {
+      es: "Cargá gastos en cuotas con el monto del resumen, la app arranca en español y podés elegir hasta 2 años atrás.",
+      en: "Enter installment amounts from your statement, the app defaults to Spanish, and you can pick dates up to 2 years back.",
+    },
+    body: [
+      {
+        es: "Al agregar o editar un gasto en cuotas, ahora podés completar el total de la compra o el monto de cada cuota. Si ponés la cuota y la cantidad, el total se calcula solo — ideal cuando tenés el resumen del banco a mano.",
+        en: "When adding or editing an installment expense, you can fill in either the purchase total or each installment amount. If you enter the installment and the count, the total is calculated automatically — handy when you have your bank statement in front of you.",
+      },
+      {
+        es: "La app ahora abre en español por defecto (si no elegiste otro idioma en Perfil). Y al elegir el mes de inicio de un gasto o al importar un Excel, podés ir hasta 2 años hacia atrás en lugar de 1.",
+        en: "The app now opens in Spanish by default (unless you already picked another language in Profile). When choosing a start month for an expense or importing Excel, you can go up to 2 years back instead of 1.",
+      },
+    ],
+  },
+  {
     id: "vista-perfil",
     date: "2026-06-17",
     title: {
