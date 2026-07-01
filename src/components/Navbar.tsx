@@ -73,7 +73,7 @@ export function Navbar({
             <img
               src="/logoBN.png"
               alt=""
-              className="size-8 object-contain sm:size-9"
+              className="brand-logo size-8 object-contain sm:size-9"
             />
           </button>
           {demoMode ? (

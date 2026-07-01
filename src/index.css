@@ -786,6 +786,10 @@ dialog.modal-closing::backdrop {
   color: #000 !important;
 }
 
+[data-theme="neobrutalism"] .brand-logo {
+  filter: drop-shadow(2px 2px 0 #000);
+}
+
 [data-theme="neobrutalism"] .panel-surface {
   border: 2px solid #000;
   border-radius: var(--neo-radius);

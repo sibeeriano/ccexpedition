@@ -98,7 +98,7 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
           <img
             src="/logoBN.png"
             alt={t("landing.logoSmallAlt")}
-            className="h-9 w-9 shrink-0 object-contain"
+            className="brand-logo h-9 w-9 shrink-0 object-contain"
           />
           <BrandName className="truncate text-base sm:text-lg" />
         </div>
