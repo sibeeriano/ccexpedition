@@ -118,7 +118,7 @@ function applyPersonalizationTheme(settings: AppSettings) {
     tabDashboardTextColor: settings.tabDashboardTextColor,
     tabProfileColor: settings.tabProfileColor,
     tabProfileTextColor: settings.tabProfileTextColor,
-    retroTheme: settings.retroTheme,
+    visualTheme: settings.visualTheme,
   });
 }
 

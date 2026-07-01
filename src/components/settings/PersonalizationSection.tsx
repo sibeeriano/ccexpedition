@@ -19,14 +19,19 @@ import {
   DEFAULT_TAB_PROFILE_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
-  RETRO_TITLE_COLOR,
+  NEO_BACKGROUND,
+  NEO_DEFAULT_CARD_COLUMN_COLOR,
+  NEO_TITLE_COLOR,
   RETRO_BACKGROUND,
   RETRO_DEFAULT_CARD_COLUMN_COLOR,
+  RETRO_TITLE_COLOR,
   getWorkspaceTabGradientStyle,
   getWorkspaceTitle,
+  isPresetVisualTheme,
   MAX_TITLE_TEXT_LENGTH,
   resolveCardColumnColor,
   resolveCardColumnTotalColor,
+  type VisualTheme,
   TAB_COLOR_PRESETS,
   TAB_TEXT_PRESETS,
   TITLE_PRESETS,
@@ -101,41 +106,59 @@ export function PersonalizationSection({
     cardColumnColor,
     showPreviousMonths,
     showPaidRow,
-    retroTheme,
+    visualTheme,
   } = draft;
   const workspaceTitle = getWorkspaceTitle(titleText);
   const [selectedTabId, setSelectedTabId] = useState<WorkspaceTabKey>("future");
   const selectedTabFields = TAB_SETTING_FIELDS[selectedTabId];
   const selectedTabColor = draft[selectedTabFields.colorKey] as string;
   const selectedTabTextColor = draft[selectedTabFields.textKey] as string;
-  const previewBackground = retroTheme ? RETRO_BACKGROUND : backgroundColor;
-  const previewTitleColor = retroTheme ? RETRO_TITLE_COLOR : titleColor;
+  const isPreset = isPresetVisualTheme(visualTheme);
+  const previewBackground =
+    visualTheme === "win95"
+      ? RETRO_BACKGROUND
+      : visualTheme === "neobrutalism"
+        ? NEO_BACKGROUND
+        : backgroundColor;
+  const previewTitleColor =
+    visualTheme === "win95"
+      ? RETRO_TITLE_COLOR
+      : visualTheme === "neobrutalism"
+        ? NEO_TITLE_COLOR
+        : titleColor;
   const effectiveCardColumnColor = resolveCardColumnColor(
     cardColumnColor,
-    retroTheme,
+    visualTheme,
   );
   const effectiveCardColumnTotalColor = resolveCardColumnTotalColor(
     cardColumnColor,
-    retroTheme,
+    visualTheme,
   );
 
-  function handleThemeChange(nextTheme: "expedition" | "retro") {
-    const isRetro = nextTheme === "retro";
-    if (isRetro) {
-      patchDraft({
-        retroTheme: true,
-        ...(cardColumnColor === DEFAULT_CARD_COLUMN_COLOR
-          ? { cardColumnColor: RETRO_DEFAULT_CARD_COLUMN_COLOR }
-          : {}),
-      });
-      return;
+  function handleThemeChange(nextTheme: VisualTheme) {
+    const patch: Partial<AppSettings> = { visualTheme: nextTheme };
+
+    if (
+      nextTheme === "win95" &&
+      (cardColumnColor === DEFAULT_CARD_COLUMN_COLOR ||
+        cardColumnColor === NEO_DEFAULT_CARD_COLUMN_COLOR)
+    ) {
+      patch.cardColumnColor = RETRO_DEFAULT_CARD_COLUMN_COLOR;
+    } else if (
+      nextTheme === "neobrutalism" &&
+      (cardColumnColor === DEFAULT_CARD_COLUMN_COLOR ||
+        cardColumnColor === RETRO_DEFAULT_CARD_COLUMN_COLOR)
+    ) {
+      patch.cardColumnColor = NEO_DEFAULT_CARD_COLUMN_COLOR;
+    } else if (
+      nextTheme === "expedition" &&
+      (cardColumnColor === RETRO_DEFAULT_CARD_COLUMN_COLOR ||
+        cardColumnColor === NEO_DEFAULT_CARD_COLUMN_COLOR)
+    ) {
+      patch.cardColumnColor = DEFAULT_CARD_COLUMN_COLOR;
     }
-    patchDraft({
-      retroTheme: false,
-      ...(cardColumnColor === RETRO_DEFAULT_CARD_COLUMN_COLOR
-        ? { cardColumnColor: DEFAULT_CARD_COLUMN_COLOR }
-        : {}),
-    });
+
+    patchDraft(patch);
   }
 
   return (
@@ -151,20 +174,21 @@ export function PersonalizationSection({
             </label>
             <select
               id={`${idPrefix}-visual-theme`}
-              value={retroTheme ? "retro" : "expedition"}
+              value={visualTheme}
               onChange={(e) =>
-                handleThemeChange(
-                  e.target.value === "retro" ? "retro" : "expedition",
-                )
+                handleThemeChange(e.target.value as VisualTheme)
               }
               className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
             >
               <option value="expedition">{t("settings.themeExpedition")}</option>
-              <option value="retro">{t("settings.themeRetro")}</option>
+              <option value="win95">{t("settings.themeRetro")}</option>
+              <option value="neobrutalism">{t("settings.themeNeobrutalism")}</option>
             </select>
             <p className="text-xs text-zinc-500">
-              {retroTheme
-                ? t("settings.retroColorsLocked")
+              {isPreset
+                ? visualTheme === "neobrutalism"
+                  ? t("settings.neoColorsLocked")
+                  : t("settings.retroColorsLocked")
                 : t("settings.retroThemeHint")}
             </p>
           </div>
@@ -195,7 +219,7 @@ export function PersonalizationSection({
         </div>
       </div>
 
-      {!retroTheme && (
+      {!isPreset && (
         <>
       <div className="py-5">
         <ColorPickerField
@@ -353,14 +377,16 @@ export function PersonalizationSection({
           color={cardColumnColor}
           presets={CARD_COLUMN_PRESETS}
           defaultColor={
-            retroTheme
-              ? RETRO_DEFAULT_CARD_COLUMN_COLOR
-              : DEFAULT_CARD_COLUMN_COLOR
+            visualTheme === "neobrutalism"
+              ? NEO_DEFAULT_CARD_COLUMN_COLOR
+              : visualTheme === "win95"
+                ? RETRO_DEFAULT_CARD_COLUMN_COLOR
+                : DEFAULT_CARD_COLUMN_COLOR
           }
           inputId={`${idPrefix}-card-column-color`}
           onChange={(color) => patchDraft({ cardColumnColor: color })}
         />
-        {retroTheme && (
+        {isPreset && (
           <p className="mt-2 text-xs text-zinc-500">
             {t("settings.retroGridColumnHint")}
           </p>

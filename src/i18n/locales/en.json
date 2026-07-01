@@ -538,6 +538,8 @@
     "retroTheme": "Retro theme (Windows 95)",
     "themeExpedition": "Expedition",
     "themeRetro": "Retro (Windows 95)",
+    "themeNeobrutalism": "Neobrutalism",
+    "neoColorsLocked": "Fixed colors with black borders and hard shadows. You can still adjust the card column in the grid.",
     "retroThemeHint": "Preview applies when you change it. Save to keep it after reload.",
     "retroColorsLocked": "Retro theme locks workspace colors except the card column in the consolidated grid.",
     "retroGridColumnHint": "This color applies to the card name column in the «All cards» view.",

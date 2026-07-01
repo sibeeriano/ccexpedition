@@ -27,6 +27,50 @@ export const RETRO_CARD_CHIP_BG = "#dfdfdf";
 export const RETRO_TAB_COLOR = "#c0c0c0";
 export const RETRO_TAB_TEXT_COLOR = "#000000";
 export const RETRO_BRAND_ACCENT = "#000080";
+
+/** Neobrutalism palette — inspired by neobrutalism.dev defaults. */
+export const NEO_BACKGROUND = "#dfe5f2";
+export const NEO_SURFACE = "#ffffff";
+export const NEO_TITLE_COLOR = "#000000";
+export const NEO_BUDGET_ALERT_COLOR = "#ef4444";
+export const NEO_DEFAULT_CARD_COLUMN_COLOR = "#ffffff";
+export const NEO_DEFAULT_CARD_COLUMN_TOTAL = "#f0f0f0";
+export const NEO_ALL_CARDS_CHIP_BG = "#88aaee";
+export const NEO_CARD_CHIP_BG = "#ffffff";
+export const NEO_TAB_COLOR = "#fde047";
+export const NEO_TAB_TEXT_COLOR = "#000000";
+export const NEO_BRAND_ACCENT = "#88aaee";
+export const NEO_BORDER_COLOR = "#000000";
+export const NEO_SHADOW = "4px 4px 0 0 #000000";
+
+export type VisualTheme = "expedition" | "win95" | "neobrutalism";
+
+const VISUAL_THEMES: VisualTheme[] = ["expedition", "win95", "neobrutalism"];
+
+export function parseVisualTheme(
+  parsed: Partial<{ visualTheme?: string; retroTheme?: boolean }>,
+): VisualTheme {
+  if (
+    parsed.visualTheme &&
+    VISUAL_THEMES.includes(parsed.visualTheme as VisualTheme)
+  ) {
+    return parsed.visualTheme as VisualTheme;
+  }
+  if (parsed.retroTheme === true) return "win95";
+  return "expedition";
+}
+
+export function isPresetVisualTheme(theme: VisualTheme): boolean {
+  return theme !== "expedition";
+}
+
+export function isWin95Theme(theme: VisualTheme): boolean {
+  return theme === "win95";
+}
+
+export function isNeobrutalismTheme(theme: VisualTheme): boolean {
+  return theme === "neobrutalism";
+}
 /** Fixed app brand — shown in navbar and login, not user-editable. */
 export const BRAND_TITLE = "ccExpedition";
 /** Fixed browser tab title — not user-editable. */
@@ -97,16 +141,28 @@ export function hasCardBackground(card: {
 
 export function getCardChipStyle(
   card: { color: string; backgroundColor: string | null },
-  options?: { selected?: boolean; retroTheme?: boolean },
+  options?: { selected?: boolean; visualTheme?: VisualTheme },
 ): CSSProperties {
   const style: CSSProperties = {};
-  if (options?.retroTheme) {
+  const theme = options?.visualTheme ?? "expedition";
+
+  if (theme === "win95") {
     style.backgroundColor = RETRO_CARD_CHIP_BG;
+  } else if (theme === "neobrutalism") {
+    style.backgroundColor = NEO_CARD_CHIP_BG;
+    style.border = `2px solid ${NEO_BORDER_COLOR}`;
+    style.boxShadow = NEO_SHADOW;
   } else if (hasCardBackground(card)) {
     style.backgroundColor = card.backgroundColor!;
   }
+
   if (options?.selected) {
-    style.boxShadow = `inset 0 0 0 ${options.retroTheme ? 2 : 1}px ${card.color}`;
+    if (theme === "neobrutalism") {
+      style.boxShadow = "2px 2px 0 0 #000000";
+      style.transform = "translate(2px, 2px)";
+    } else {
+      style.boxShadow = `inset 0 0 0 ${theme === "win95" ? 2 : 1}px ${card.color}`;
+    }
   }
   return style;
 }
@@ -197,7 +253,7 @@ export type ThemeSettings = {
   tabDashboardTextColor: string;
   tabProfileColor: string;
   tabProfileTextColor: string;
-  retroTheme?: boolean;
+  visualTheme?: VisualTheme;
 };
 
 export function normalizeWorkspaceTitle(titleText: string): string {
@@ -246,23 +302,37 @@ export function deriveSurfaceColor(baseHex: string): string {
   return rgbToHex(lift(r), lift(g), lift(b, 4));
 }
 
-export function usesRetroDefaultCardColumn(
+export function usesAltThemeDefaultCardColumn(
   cardColumnColor: string,
-  retroTheme: boolean,
+  visualTheme: VisualTheme,
 ): boolean {
-  if (!retroTheme) return false;
-  return (
-    !isValidHexColor(cardColumnColor) ||
-    cardColumnColor === DEFAULT_CARD_COLUMN_COLOR
-  );
+  if (visualTheme === "expedition") return false;
+  if (!isValidHexColor(cardColumnColor) || cardColumnColor === DEFAULT_CARD_COLUMN_COLOR) {
+    return true;
+  }
+  if (
+    visualTheme === "win95" &&
+    cardColumnColor === NEO_DEFAULT_CARD_COLUMN_COLOR
+  ) {
+    return true;
+  }
+  if (
+    visualTheme === "neobrutalism" &&
+    cardColumnColor === RETRO_DEFAULT_CARD_COLUMN_COLOR
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export function resolveCardColumnColor(
   cardColumnColor: string,
-  retroTheme: boolean,
+  visualTheme: VisualTheme,
 ): string {
-  if (usesRetroDefaultCardColumn(cardColumnColor, retroTheme)) {
-    return RETRO_DEFAULT_CARD_COLUMN_COLOR;
+  if (usesAltThemeDefaultCardColumn(cardColumnColor, visualTheme)) {
+    return visualTheme === "neobrutalism"
+      ? NEO_DEFAULT_CARD_COLUMN_COLOR
+      : RETRO_DEFAULT_CARD_COLUMN_COLOR;
   }
   return isValidHexColor(cardColumnColor)
     ? cardColumnColor
@@ -271,12 +341,14 @@ export function resolveCardColumnColor(
 
 export function resolveCardColumnTotalColor(
   cardColumnColor: string,
-  retroTheme: boolean,
+  visualTheme: VisualTheme,
 ): string {
-  if (usesRetroDefaultCardColumn(cardColumnColor, retroTheme)) {
-    return RETRO_DEFAULT_CARD_COLUMN_TOTAL;
+  if (usesAltThemeDefaultCardColumn(cardColumnColor, visualTheme)) {
+    return visualTheme === "neobrutalism"
+      ? NEO_DEFAULT_CARD_COLUMN_TOTAL
+      : RETRO_DEFAULT_CARD_COLUMN_TOTAL;
   }
-  return deriveSurfaceColor(resolveCardColumnColor(cardColumnColor, retroTheme));
+  return deriveSurfaceColor(resolveCardColumnColor(cardColumnColor, visualTheme));
 }
 
 export function applyTheme({
@@ -292,33 +364,47 @@ export function applyTheme({
   tabDashboardTextColor,
   tabProfileColor,
   tabProfileTextColor,
-  retroTheme = false,
+  visualTheme = "expedition",
 }: ThemeSettings): void {
-  if (retroTheme) {
-    document.documentElement.dataset.theme = "win95";
-  } else {
+  if (visualTheme === "expedition") {
     delete document.documentElement.dataset.theme;
+  } else {
+    document.documentElement.dataset.theme = visualTheme;
   }
 
-  const base = retroTheme
+  const isWin95 = visualTheme === "win95";
+  const isNeo = visualTheme === "neobrutalism";
+  const isPreset = isPresetVisualTheme(visualTheme);
+
+  const base = isWin95
     ? RETRO_BACKGROUND
-    : isValidHexColor(backgroundColor)
-      ? backgroundColor
-      : DEFAULT_BACKGROUND;
-  const title = retroTheme
-    ? RETRO_TITLE_COLOR
+    : isNeo
+      ? NEO_BACKGROUND
+      : isValidHexColor(backgroundColor)
+        ? backgroundColor
+        : DEFAULT_BACKGROUND;
+  const title = isPreset
+    ? isNeo
+      ? NEO_TITLE_COLOR
+      : RETRO_TITLE_COLOR
     : isValidHexColor(titleColor)
       ? titleColor
       : DEFAULT_TITLE_COLOR;
-  const alertColor = retroTheme
+  const alertColor = isWin95
     ? RETRO_BUDGET_ALERT_COLOR
-    : isValidHexColor(budgetAlertColor)
-      ? budgetAlertColor
-      : DEFAULT_BUDGET_ALERT_COLOR;
-  const columnColor = resolveCardColumnColor(cardColumnColor, retroTheme);
-  const surface = retroTheme ? RETRO_SURFACE : getSurfaceColor(base);
+    : isNeo
+      ? NEO_BUDGET_ALERT_COLOR
+      : isValidHexColor(budgetAlertColor)
+        ? budgetAlertColor
+        : DEFAULT_BUDGET_ALERT_COLOR;
+  const columnColor = resolveCardColumnColor(cardColumnColor, visualTheme);
+  const surface = isWin95
+    ? RETRO_SURFACE
+    : isNeo
+      ? NEO_SURFACE
+      : getSurfaceColor(base);
 
-  const tabVars: [string, string, string][] = retroTheme
+  const tabVars: [string, string, string][] = isWin95
     ? [
         ["--tab-future-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
         ["--tab-future-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
@@ -329,30 +415,41 @@ export function applyTheme({
         ["--tab-profile-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
         ["--tab-profile-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
       ]
-    : [
-        ["--tab-future-bg", tabFutureColor, DEFAULT_TAB_FUTURE_COLOR],
-        ["--tab-future-text", tabFutureTextColor, DEFAULT_TAB_FUTURE_TEXT_COLOR],
-        ["--tab-news-bg", tabNewsColor, DEFAULT_TAB_NEWS_COLOR],
-        ["--tab-news-text", tabNewsTextColor, DEFAULT_TAB_NEWS_TEXT_COLOR],
-        ["--tab-dashboard-bg", tabDashboardColor, DEFAULT_TAB_DASHBOARD_COLOR],
-        [
-          "--tab-dashboard-text",
-          tabDashboardTextColor,
-          DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
-        ],
-        ["--tab-profile-bg", tabProfileColor, DEFAULT_TAB_PROFILE_COLOR],
-        [
-          "--tab-profile-text",
-          tabProfileTextColor,
-          DEFAULT_TAB_PROFILE_TEXT_COLOR,
-        ],
-      ];
+    : isNeo
+      ? [
+          ["--tab-future-bg", NEO_TAB_COLOR, NEO_TAB_COLOR],
+          ["--tab-future-text", NEO_TAB_TEXT_COLOR, NEO_TAB_TEXT_COLOR],
+          ["--tab-news-bg", "#97ee88", "#97ee88"],
+          ["--tab-news-text", NEO_TAB_TEXT_COLOR, NEO_TAB_TEXT_COLOR],
+          ["--tab-dashboard-bg", "#88aaee", "#88aaee"],
+          ["--tab-dashboard-text", NEO_TAB_TEXT_COLOR, NEO_TAB_TEXT_COLOR],
+          ["--tab-profile-bg", "#f9a8d4", "#f9a8d4"],
+          ["--tab-profile-text", NEO_TAB_TEXT_COLOR, NEO_TAB_TEXT_COLOR],
+        ]
+      : [
+          ["--tab-future-bg", tabFutureColor, DEFAULT_TAB_FUTURE_COLOR],
+          ["--tab-future-text", tabFutureTextColor, DEFAULT_TAB_FUTURE_TEXT_COLOR],
+          ["--tab-news-bg", tabNewsColor, DEFAULT_TAB_NEWS_COLOR],
+          ["--tab-news-text", tabNewsTextColor, DEFAULT_TAB_NEWS_TEXT_COLOR],
+          ["--tab-dashboard-bg", tabDashboardColor, DEFAULT_TAB_DASHBOARD_COLOR],
+          [
+            "--tab-dashboard-text",
+            tabDashboardTextColor,
+            DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+          ],
+          ["--tab-profile-bg", tabProfileColor, DEFAULT_TAB_PROFILE_COLOR],
+          [
+            "--tab-profile-text",
+            tabProfileTextColor,
+            DEFAULT_TAB_PROFILE_TEXT_COLOR,
+          ],
+        ];
 
   document.documentElement.style.setProperty("--color-base", base);
   document.documentElement.style.setProperty("--color-surface", surface);
   document.documentElement.style.setProperty(
     "--color-brand-accent",
-    retroTheme ? RETRO_BRAND_ACCENT : BRAND_ACCENT,
+    isWin95 ? RETRO_BRAND_ACCENT : isNeo ? NEO_BRAND_ACCENT : BRAND_ACCENT,
   );
   document.documentElement.style.setProperty("--color-brand-cc", BRAND_CC_COLOR);
   document.documentElement.style.setProperty("--color-workspace-title", title);
@@ -360,7 +457,7 @@ export function applyTheme({
   document.documentElement.style.setProperty("--color-card-column", columnColor);
   document.documentElement.style.setProperty(
     "--color-card-column-total",
-    resolveCardColumnTotalColor(cardColumnColor, retroTheme),
+    resolveCardColumnTotalColor(cardColumnColor, visualTheme),
   );
 
   for (const [name, value, fallback] of tabVars) {

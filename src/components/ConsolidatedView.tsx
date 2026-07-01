@@ -263,7 +263,7 @@ export function ConsolidatedView() {
       </div>
 
       {/* Consolidated table */}
-      <div className="w-full min-w-0 rounded-lg bg-surface">
+      <div className="panel-surface w-full min-w-0">
         <div
           ref={tableWrapRef}
           data-tour="consolidated-table"

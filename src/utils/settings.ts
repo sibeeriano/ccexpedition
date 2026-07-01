@@ -22,7 +22,11 @@ import {
   DEFAULT_WORKSPACE_TITLE,
   isValidHexColor,
   normalizeWorkspaceTitle,
+  parseVisualTheme,
+  type VisualTheme,
 } from "./theme";
+
+export type { VisualTheme };
 
 const SETTINGS_KEY_PREFIX = "ccexpedition-settings";
 const LEGACY_SETTINGS_KEY = "ccexpedition-settings";
@@ -55,8 +59,8 @@ export type AppSettings = {
   convertUsdToArs: boolean;
   /** ArgentinaDatos dollar rate used for USD→ARS conversion. */
   usdExchangeCasa: UserUsdExchangeCasa;
-  /** Windows 95–style retro UI skin. */
-  retroTheme: boolean;
+  /** Workspace visual theme preset. */
+  visualTheme: VisualTheme;
 };
 
 export function settingsStorageKey(userId: string | null): string {
@@ -88,7 +92,7 @@ export function getDefaultSettings(): AppSettings {
     tabProfileTextColor: DEFAULT_TAB_PROFILE_TEXT_COLOR,
     convertUsdToArs: false,
     usdExchangeCasa: DEFAULT_USER_USD_EXCHANGE_CASA,
-    retroTheme: false,
+    visualTheme: "expedition",
   };
 }
 
@@ -157,7 +161,7 @@ export function parseAppSettings(
     usdExchangeCasa: isUserUsdExchangeCasa(parsed.usdExchangeCasa)
       ? parsed.usdExchangeCasa
       : defaults.usdExchangeCasa,
-    retroTheme: parsed.retroTheme === true,
+    visualTheme: parseVisualTheme(parsed),
   };
 }
 

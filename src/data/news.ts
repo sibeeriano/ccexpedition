@@ -35,8 +35,8 @@ export const NEWS_POSTS: NewsPost[] = [
     },
     body: [
       {
-        es: "En Perfil → Personalizar podés elegir el tema visual en un desplegable: Expedition (el de siempre) o Retro (Windows 95). El retro cambia la app a grises, fondo teal, fuente Tahoma y bordes tipo ventana clásica.",
-        en: "In Profile → Personalize you can pick the visual theme from a dropdown: Expedition (the usual look) or Retro (Windows 95). Retro switches the app to grays, a teal desktop background, Tahoma font, and classic window-style borders.",
+        es: "En Perfil → Personalizar elegís el tema visual: Expedition (el de siempre), Retro (Windows 95) o Neobrutalism (bordes negros y sombra dura, estilo neobrutalism.dev).",
+        en: "In Profile → Personalize you pick the visual theme: Expedition (the usual look), Retro (Windows 95), or Neobrutalism (black borders and hard shadows, neobrutalism.dev style).",
       },
       {
         es: "Incluye scrollbars al estilo Windows 95, chips de tarjetas en grises distintos y una columna de grilla más oscura por defecto. Los colores del workspace quedan fijos en retro, salvo la columna de tarjetas en la vista consolidada, que podés seguir ajustando.",

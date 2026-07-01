@@ -3,7 +3,16 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { getOutstandingDebt } from "../utils/expenses";
 import { getMonthsRange } from "../utils/months";
-import { getCardChipStyle, hasCardBackground, RETRO_ALL_CARDS_CHIP_BG } from "../utils/theme";
+import {
+  getCardChipStyle,
+  hasCardBackground,
+  isNeobrutalismTheme,
+  isPresetVisualTheme,
+  isWin95Theme,
+  NEO_ALL_CARDS_CHIP_BG,
+  NEO_SHADOW,
+  RETRO_ALL_CARDS_CHIP_BG,
+} from "../utils/theme";
 import { AmountDisplay } from "./AmountDisplay";
 
 export const ALL_CARDS_VIEW = "all";
@@ -16,6 +25,10 @@ type CardListProps = {
 export function CardList({ selectedId, onSelect }: CardListProps) {
   const { t } = useTranslation();
   const { state } = useApp();
+  const visualTheme = state.settings.visualTheme;
+  const isWin95 = isWin95Theme(visualTheme);
+  const isNeo = isNeobrutalismTheme(visualTheme);
+  const isPreset = isPresetVisualTheme(visualTheme);
 
   const monthsRange = useMemo(
     () =>
@@ -73,7 +86,6 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   );
 
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
-  const retroTheme = state.settings.retroTheme;
   const firstCardRef = useRef<HTMLButtonElement>(null);
   const [chipSize, setChipSize] = useState<{ width: number; height: number }>();
 
@@ -109,6 +121,22 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   const chipClass =
     "flex shrink-0 flex-col gap-1 rounded-lg border px-3.5 py-2.5 text-left transition-colors";
 
+  const allCardsStyle = {
+    ...chipStyle,
+    ...(isWin95 && isAllSelected
+      ? { backgroundColor: RETRO_ALL_CARDS_CHIP_BG }
+      : undefined),
+    ...(isNeo && isAllSelected
+      ? {
+          backgroundColor: NEO_ALL_CARDS_CHIP_BG,
+          border: "2px solid #000",
+          boxShadow: isAllSelected ? "2px 2px 0 0 #000" : NEO_SHADOW,
+        }
+      : isNeo
+        ? { border: "2px solid #000", boxShadow: NEO_SHADOW }
+        : undefined),
+  };
+
   return (
     <div
       data-tour="card-list"
@@ -117,20 +145,19 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       <button
         type="button"
         onClick={() => onSelect(ALL_CARDS_VIEW)}
-        style={{
-          ...chipStyle,
-          ...(retroTheme && isAllSelected
-            ? { backgroundColor: RETRO_ALL_CARDS_CHIP_BG }
-            : undefined),
-        }}
+        style={allCardsStyle}
         className={`${chipClass} ${
-          retroTheme
+          isWin95
             ? isAllSelected
               ? "card-chip--retro-all border-[#808080]"
               : "border-white/5 bg-transparent hover:bg-[#dfdfdf]/60"
-            : isAllSelected
-              ? "border-white/40 bg-surface"
-              : "border-white/5 bg-transparent hover:bg-surface/60"
+            : isNeo
+              ? isAllSelected
+                ? "card-chip--neo card-chip--neo-selected"
+                : "card-chip--neo bg-white hover:translate-x-px hover:translate-y-px"
+              : isAllSelected
+                ? "border-white/40 bg-surface"
+                : "border-white/5 bg-transparent hover:bg-surface/60"
         }`}
       >
         <span className="truncate text-sm font-medium text-white">
@@ -149,7 +176,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       {state.cards.map((card, index) => {
         const isSelected = card.id === selectedId;
         const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
-        const customBg = hasCardBackground(card) && !retroTheme;
+        const customBg = hasCardBackground(card) && !isPreset;
 
         return (
           <button
@@ -158,21 +185,25 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
             type="button"
             onClick={() => onSelect(card.id)}
             className={`${chipClass} ${
-              retroTheme
+              isWin95
                 ? isSelected
                   ? "card-chip--retro border-[#808080]"
                   : "border-white/5 hover:brightness-95"
-                : isSelected
-                  ? customBg
-                    ? "border-transparent"
-                    : "border-transparent bg-surface"
-                  : customBg
-                    ? "border-white/5 hover:brightness-110"
-                    : "border-white/5 bg-transparent hover:bg-surface/60"
+                : isNeo
+                  ? isSelected
+                    ? "card-chip--neo card-chip--neo-selected"
+                    : "card-chip--neo hover:translate-x-px hover:translate-y-px"
+                  : isSelected
+                    ? customBg
+                      ? "border-transparent"
+                      : "border-transparent bg-surface"
+                    : customBg
+                      ? "border-white/5 hover:brightness-110"
+                      : "border-white/5 bg-transparent hover:bg-surface/60"
             }`}
             style={{
               ...chipStyle,
-              ...getCardChipStyle(card, { selected: isSelected, retroTheme }),
+              ...getCardChipStyle(card, { selected: isSelected, visualTheme }),
             }}
           >
             <span className="flex min-w-0 items-center gap-1.5">

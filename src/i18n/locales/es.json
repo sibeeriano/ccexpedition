@@ -538,6 +538,8 @@
     "retroTheme": "Tema retro (Windows 95)",
     "themeExpedition": "Expedición",
     "themeRetro": "Retro (Windows 95)",
+    "themeNeobrutalism": "Neobrutalism",
+    "neoColorsLocked": "Colores fijos con bordes negros y sombra dura. Podés ajustar la columna de tarjetas en la grilla.",
     "retroThemeHint": "Vista previa al cambiar. Guardá los cambios para conservarlo.",
     "retroColorsLocked": "Con el tema retro los colores del workspace son fijos, salvo la columna de tarjetas en la grilla.",
     "retroGridColumnHint": "Este color aplica a la columna de nombres en la vista «Todas las tarjetas».",
