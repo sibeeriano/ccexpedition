@@ -4,8 +4,15 @@ import type { Card } from "../types";
 import { useApp } from "../context/AppContext";
 import { getMonthlyBreakdown } from "../utils/expenses";
 import { getExpenseStartMonthOptions } from "../utils/months";
+import {
+  installmentAmountForTotal,
+  parseInstallmentCount,
+  totalForInstallmentAmount,
+  type InstallmentAmountSource,
+} from "../utils/installmentFormSync";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { CategorySelectField } from "./CategorySelectField";
+import { InstallmentExpenseFields } from "./InstallmentExpenseFields";
 import { MonthSelectField } from "./MonthSelectField";
 import { Modal, useModalClose } from "./Modal";
 const DEFAULT_SUBSCRIPTION_MONTHS = 12;
@@ -42,6 +49,10 @@ function ExpenseForm({ card }: { card: Card }) {
     String(DEFAULT_SUBSCRIPTION_MONTHS),
   );
   const [installmentsInput, setInstallmentsInput] = useState("3");
+  const [installmentAmountInput, setInstallmentAmountInput] = useState("");
+  const [installmentUsdAmountInput, setInstallmentUsdAmountInput] = useState("");
+  const [amountSource, setAmountSource] =
+    useState<InstallmentAmountSource>("total");
   const currentMonth = getCurrentMonth();
   const monthOptions = getExpenseStartMonthOptions(
     state.expenses,
@@ -130,6 +141,79 @@ function ExpenseForm({ card }: { card: Card }) {
     ? t("addExpense.monthlyUsd")
     : t("addExpense.totalUsd");
 
+  function handleAmountInputChange(value: string) {
+    setAmountInput(value);
+    if (paymentType !== "installments") return;
+    setAmountSource("total");
+    const count = parseInstallmentCount(installmentsInput);
+    if (count >= 1) {
+      setInstallmentAmountInput(installmentAmountForTotal(value, count));
+    }
+  }
+
+  function handleUsdAmountInputChange(value: string) {
+    setUsdAmountInput(value);
+    if (paymentType !== "installments") return;
+    setAmountSource("total");
+    const count = parseInstallmentCount(installmentsInput);
+    if (count >= 1) {
+      setInstallmentUsdAmountInput(installmentAmountForTotal(value, count));
+    }
+  }
+
+  function handleInstallmentAmountInputChange(value: string) {
+    setInstallmentAmountInput(value);
+    if (paymentType !== "installments") return;
+    setAmountSource("installment");
+    const count = parseInstallmentCount(installmentsInput);
+    if (count >= 1) {
+      setAmountInput(totalForInstallmentAmount(value, count));
+    }
+  }
+
+  function handleInstallmentUsdAmountInputChange(value: string) {
+    setInstallmentUsdAmountInput(value);
+    if (paymentType !== "installments") return;
+    setAmountSource("installment");
+    const count = parseInstallmentCount(installmentsInput);
+    if (count >= 1) {
+      setUsdAmountInput(totalForInstallmentAmount(value, count));
+    }
+  }
+
+  function handleInstallmentsInputChange(value: string) {
+    setInstallmentsInput(value);
+    if (paymentType !== "installments") return;
+    const count = parseInstallmentCount(value);
+    if (count < 1) return;
+    if (amountSource === "installment") {
+      setAmountInput(totalForInstallmentAmount(installmentAmountInput, count));
+      setUsdAmountInput(
+        totalForInstallmentAmount(installmentUsdAmountInput, count),
+      );
+    } else {
+      setInstallmentAmountInput(installmentAmountForTotal(amountInput, count));
+      setInstallmentUsdAmountInput(
+        installmentAmountForTotal(usdAmountInput, count),
+      );
+    }
+  }
+
+  function handlePaymentTypeChange(value: PaymentType) {
+    setPaymentType(value);
+    if (value === "installments") {
+      setIsMonthlyCharge(false);
+      const count = parseInstallmentCount(installmentsInput);
+      if (count >= 1 && (amountInput || usdAmountInput)) {
+        setAmountSource("total");
+        setInstallmentAmountInput(installmentAmountForTotal(amountInput, count));
+        setInstallmentUsdAmountInput(
+          installmentAmountForTotal(usdAmountInput, count),
+        );
+      }
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
@@ -173,7 +257,7 @@ function ExpenseForm({ card }: { card: Card }) {
             step="0.01"
             inputMode="decimal"
             value={amountInput}
-            onChange={(e) => setAmountInput(e.target.value)}
+            onChange={(e) => handleAmountInputChange(e.target.value)}
             placeholder="0.00"
             className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
           />
@@ -193,7 +277,7 @@ function ExpenseForm({ card }: { card: Card }) {
             step="0.01"
             inputMode="decimal"
             value={usdAmountInput}
-            onChange={(e) => setUsdAmountInput(e.target.value)}
+            onChange={(e) => handleUsdAmountInputChange(e.target.value)}
             placeholder="0.00"
             className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white placeholder:text-zinc-600 focus:border-white/30 focus:outline-none"
           />
@@ -224,7 +308,7 @@ function ExpenseForm({ card }: { card: Card }) {
                 name="payment-type"
                 value={value}
                 checked={paymentType === value}
-                onChange={() => setPaymentType(value)}
+                onChange={() => handlePaymentTypeChange(value)}
                 className="sr-only"
               />
               {label}
@@ -251,25 +335,15 @@ function ExpenseForm({ card }: { card: Card }) {
       )}
 
       {paymentType === "installments" && (
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="expense-installments"
-            className="text-xs font-medium text-zinc-400"
-          >
-            {t("addExpense.installmentCount")}
-          </label>
-          <input
-            id="expense-installments"
-            type="number"
-            required
-            min="2"
-            max="48"
-            step="1"
-            value={installmentsInput}
-            onChange={(e) => setInstallmentsInput(e.target.value)}
-            className="rounded-md border border-white/10 bg-base px-3 py-2 font-mono text-sm text-white focus:border-white/30 focus:outline-none"
-          />
-        </div>
+        <InstallmentExpenseFields
+          idPrefix="expense"
+          installmentsInput={installmentsInput}
+          onInstallmentsInputChange={handleInstallmentsInputChange}
+          installmentAmountInput={installmentAmountInput}
+          installmentUsdAmountInput={installmentUsdAmountInput}
+          onInstallmentAmountInputChange={handleInstallmentAmountInputChange}
+          onInstallmentUsdAmountInputChange={handleInstallmentUsdAmountInputChange}
+        />
       )}
 
       {isSubscription && (

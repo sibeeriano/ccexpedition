@@ -466,6 +466,9 @@
     "subscriptionMonths": "Duración (meses)",
     "installments": "Cuotas",
     "installmentCount": "Cantidad de cuotas",
+    "installmentAmountArs": "Monto por cuota (ARS)",
+    "installmentAmountUsd": "Monto por cuota (USD)",
+    "installmentsAmountHint": "Completá el total arriba o el monto de cada cuota acá — se calcula automáticamente.",
     "startMonth": "Mes de inicio",
     "paymentSchedule": "Calendario de pagos",
     "submit": "Agregar gasto"

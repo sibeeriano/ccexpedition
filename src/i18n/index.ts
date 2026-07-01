@@ -19,7 +19,7 @@ function detectInitialLanguage(): AppLanguage {
   } catch {
     // fall through
   }
-  return navigator.language.toLowerCase().startsWith("es") ? "es" : "en";
+  return "es";
 }
 
 void i18n.use(initReactI18next).init({
@@ -28,7 +28,7 @@ void i18n.use(initReactI18next).init({
     es: { translation: es },
   },
   lng: detectInitialLanguage(),
-  fallbackLng: "en",
+  fallbackLng: "es",
   interpolation: { escapeValue: false },
 });
 

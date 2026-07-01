@@ -1,7 +1,7 @@
 import type { BalanceAdjustment, Expense, PendingCarryover } from "../types";
 import { getCurrentMonth } from "./format";
 
-export const EXPENSE_START_MONTH_LOOKBACK = 12;
+export const EXPENSE_START_MONTH_LOOKBACK = 24;
 
 /** Months offered when picking a start/apply month in expense modals. */
 export function getExpenseStartMonthOptions(

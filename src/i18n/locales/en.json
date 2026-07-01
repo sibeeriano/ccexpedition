@@ -466,6 +466,9 @@
     "subscriptionMonths": "Duration (months)",
     "installments": "Installments",
     "installmentCount": "Number of installments",
+    "installmentAmountArs": "Installment amount (ARS)",
+    "installmentAmountUsd": "Installment amount (USD)",
+    "installmentsAmountHint": "Enter the total above or each installment amount here — they sync automatically.",
     "startMonth": "Start Month",
     "paymentSchedule": "Payment schedule",
     "submit": "Add Expense"
