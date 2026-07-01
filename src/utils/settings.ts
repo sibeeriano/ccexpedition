@@ -55,6 +55,8 @@ export type AppSettings = {
   convertUsdToArs: boolean;
   /** ArgentinaDatos dollar rate used for USD→ARS conversion. */
   usdExchangeCasa: UserUsdExchangeCasa;
+  /** Windows 95–style retro UI skin. */
+  retroTheme: boolean;
 };
 
 export function settingsStorageKey(userId: string | null): string {
@@ -86,6 +88,7 @@ export function getDefaultSettings(): AppSettings {
     tabProfileTextColor: DEFAULT_TAB_PROFILE_TEXT_COLOR,
     convertUsdToArs: false,
     usdExchangeCasa: DEFAULT_USER_USD_EXCHANGE_CASA,
+    retroTheme: false,
   };
 }
 
@@ -154,6 +157,7 @@ export function parseAppSettings(
     usdExchangeCasa: isUserUsdExchangeCasa(parsed.usdExchangeCasa)
       ? parsed.usdExchangeCasa
       : defaults.usdExchangeCasa,
+    retroTheme: parsed.retroTheme === true,
   };
 }
 

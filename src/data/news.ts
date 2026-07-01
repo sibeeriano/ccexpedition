@@ -23,6 +23,32 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "tema-retro-win95",
+    date: "2026-07-03",
+    title: {
+      es: "Tema retro Windows 95",
+      en: "Windows 95 retro theme",
+    },
+    excerpt: {
+      es: "Interfaz gris, bordes clásicos y scrollbars al estilo Win95. Todavía lo estamos puliendo.",
+      en: "Gray UI, classic borders, and Win95-style scrollbars. We're still polishing it.",
+    },
+    body: [
+      {
+        es: "En Perfil → Personalizar podés elegir el tema visual en un desplegable: Expedition (el de siempre) o Retro (Windows 95). El retro cambia la app a grises, fondo teal, fuente Tahoma y bordes tipo ventana clásica.",
+        en: "In Profile → Personalize you can pick the visual theme from a dropdown: Expedition (the usual look) or Retro (Windows 95). Retro switches the app to grays, a teal desktop background, Tahoma font, and classic window-style borders.",
+      },
+      {
+        es: "Incluye scrollbars al estilo Windows 95, chips de tarjetas en grises distintos y una columna de grilla más oscura por defecto. Los colores del workspace quedan fijos en retro, salvo la columna de tarjetas en la vista consolidada, que podés seguir ajustando.",
+        en: "It includes Win95-style scrollbars, card chips in different grays, and a darker default grid column. Workspace colors are fixed in retro, except the card column in the consolidated view, which you can still customize.",
+      },
+      {
+        es: "Este tema está en proceso de mejorar: algunas pantallas pueden verse inconsistentes y vamos sumando detalles en próximas actualizaciones. Si algo te choca visualmente, contanos — tu feedback ayuda a priorizar qué pulir.",
+        en: "This theme is still being improved: some screens may look inconsistent and we'll keep adding polish in upcoming updates. If something looks off, let us know — your feedback helps us prioritize what to refine.",
+      },
+    ],
+  },
+  {
     id: "conversion-usd-cotizacion",
     date: "2026-07-02",
     title: {

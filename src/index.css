@@ -473,3 +473,299 @@ dialog.modal-closing::backdrop {
 .driver-active-element {
   border-radius: 0.5rem !important;
 }
+
+/* ── Windows 95 retro theme ── */
+[data-theme="win95"] {
+  --font-sans: Tahoma, "MS Sans Serif", "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+[data-theme="win95"] body {
+  @apply text-black antialiased;
+  image-rendering: pixelated;
+}
+
+[data-theme="win95"] .brand-title {
+  color: #000080 !important;
+}
+
+[data-theme="win95"] .panel-surface {
+  border: 2px outset #dfdfdf;
+  border-radius: 0;
+  background-color: #c0c0c0;
+  box-shadow: none;
+}
+
+[data-theme="win95"] .btn-primary {
+  border: 2px outset #dfdfdf;
+  border-radius: 0;
+  background-color: #c0c0c0;
+  color: #000;
+  font-weight: 400;
+  filter: none;
+}
+
+[data-theme="win95"] .btn-primary:hover:not(:disabled) {
+  filter: none;
+}
+
+[data-theme="win95"] .btn-primary:active:not(:disabled) {
+  border-style: inset;
+}
+
+[data-theme="win95"] .folder-tabs {
+  border-bottom: 2px solid #808080;
+  background: #c0c0c0;
+  padding-top: 0.25rem;
+}
+
+[data-theme="win95"] .folder-tab {
+  color: #000;
+  font-weight: 400;
+}
+
+[data-theme="win95"] .folder-tab::before {
+  border: 2px outset #dfdfdf;
+  border-bottom: none;
+  border-radius: 0;
+  clip-path: none;
+  background: #c0c0c0;
+  box-shadow: none;
+}
+
+[data-theme="win95"] .folder-tab--active {
+  color: #000;
+}
+
+[data-theme="win95"] .folder-tab--active::before {
+  border: 2px inset #808080;
+  border-bottom: none;
+  background: #c0c0c0;
+  box-shadow: none;
+}
+
+[data-theme="win95"] .folder-tab--future:not(.folder-tab--active)::before {
+  background: #a0a0a0;
+  box-shadow: none;
+}
+
+[data-theme="win95"] .folder-tab-preview {
+  border: 2px outset #dfdfdf;
+  border-radius: 0;
+  background: #c0c0c0 !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="win95"] .text-white,
+[data-theme="win95"] .text-zinc-100,
+[data-theme="win95"] .text-zinc-200,
+[data-theme="win95"] .text-zinc-300 {
+  color: #000 !important;
+}
+
+[data-theme="win95"] .text-zinc-400,
+[data-theme="win95"] .text-zinc-500,
+[data-theme="win95"] .text-zinc-600 {
+  color: #404040 !important;
+}
+
+[data-theme="win95"] .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #808080;
+}
+
+[data-theme="win95"] .border-white\/5,
+[data-theme="win95"] .border-white\/10,
+[data-theme="win95"] .border-white\/20 {
+  border-color: #808080 !important;
+}
+
+[data-theme="win95"] .rounded-lg,
+[data-theme="win95"] .rounded-md,
+[data-theme="win95"] .rounded-xl,
+[data-theme="win95"] .rounded-full {
+  border-radius: 0 !important;
+}
+
+[data-theme="win95"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="win95"] select,
+[data-theme="win95"] textarea {
+  border: 2px inset #808080 !important;
+  border-radius: 0 !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="win95"] input::placeholder,
+[data-theme="win95"] textarea::placeholder {
+  color: #808080 !important;
+}
+
+[data-theme="win95"] input[type="checkbox"],
+[data-theme="win95"] input[type="radio"] {
+  accent-color: #000080;
+  border-radius: 0;
+}
+
+[data-theme="win95"] .hover\:bg-white\/5:hover,
+[data-theme="win95"] .hover\:bg-white\/10:hover {
+  background-color: #dfdfdf !important;
+}
+
+[data-theme="win95"] .bg-white\/5,
+[data-theme="win95"] .bg-white\/10,
+[data-theme="win95"] .bg-white\/12 {
+  background-color: #dfdfdf !important;
+}
+
+[data-theme="win95"] .bg-base,
+[data-theme="win95"] .bg-base\/40,
+[data-theme="win95"] .bg-base\/50,
+[data-theme="win95"] .bg-base\/60 {
+  background-color: #c0c0c0 !important;
+}
+
+[data-theme="win95"] .driver-popover {
+  background-color: #c0c0c0 !important;
+  color: #000 !important;
+  border: 2px outset #dfdfdf !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="win95"] .driver-popover-title {
+  color: #000 !important;
+}
+
+[data-theme="win95"] .driver-popover-description,
+[data-theme="win95"] .driver-popover-progress-text,
+[data-theme="win95"] .driver-popover-prev-btn {
+  color: #404040 !important;
+}
+
+[data-theme="win95"] .driver-popover-next-btn,
+[data-theme="win95"] .driver-popover-done-btn {
+  background-color: #c0c0c0 !important;
+  color: #000 !important;
+  border: 2px outset #dfdfdf !important;
+  border-radius: 0 !important;
+}
+
+[data-theme="win95"] .driver-popover-prev-btn {
+  border: 2px outset #dfdfdf !important;
+  border-radius: 0 !important;
+}
+
+[data-theme="win95"] .driver-active-element {
+  border-radius: 0 !important;
+}
+
+.money-balance--positive {
+  color: #34d399;
+}
+
+.money-balance--negative {
+  color: #f87171;
+}
+
+[data-theme="win95"] .money-balance--positive {
+  color: #004d00 !important;
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff;
+}
+
+[data-theme="win95"] .money-balance--negative {
+  color: #800000 !important;
+  font-weight: 700;
+}
+
+[data-theme="win95"] .card-chip--retro,
+[data-theme="win95"] .card-chip--retro-all {
+  border-radius: 0 !important;
+  border-style: outset !important;
+  border-width: 2px !important;
+  border-color: #dfdfdf !important;
+  box-shadow: none;
+}
+
+[data-theme="win95"] .card-chip--retro-all {
+  border-color: #808080 #fff #fff #808080 !important;
+}
+
+/* Windows 95 scrollbars */
+[data-theme="win95"],
+[data-theme="win95"] * {
+  scrollbar-width: auto;
+  scrollbar-color: #c0c0c0 #dfdfdf;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background: #c0c0c0;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-corner {
+  background: #c0c0c0;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-track {
+  background-color: #dfdfdf;
+  border-left: 1px solid #808080;
+  border-top: 1px solid #808080;
+  box-shadow: inset 1px 1px #808080;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-thumb {
+  background-color: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  border-radius: 0;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-thumb:hover {
+  background-color: #c0c0c0;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-thumb:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button {
+  width: 16px;
+  height: 16px;
+  background-color: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 8px 8px;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button:vertical:decrement,
+[data-theme="win95"] ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23000' d='M1 5 L4 1 L7 5 Z'/%3E%3C/svg%3E");
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button:vertical:increment,
+[data-theme="win95"] ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%23000' d='M1 0 L4 4 L7 0 Z'/%3E%3C/svg%3E");
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button:horizontal:decrement,
+[data-theme="win95"] ::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='8' viewBox='0 0 5 8'%3E%3Cpath fill='%23000' d='M5 1 L1 4 L5 7 Z'/%3E%3C/svg%3E");
+}
+
+[data-theme="win95"] ::-webkit-scrollbar-button:horizontal:increment,
+[data-theme="win95"] ::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='8' viewBox='0 0 5 8'%3E%3Cpath fill='%23000' d='M0 1 L4 4 L0 7 Z'/%3E%3C/svg%3E");
+}

@@ -10,6 +10,23 @@ export const DEFAULT_TITLE_COLOR = "#ffffff";
 export const DEFAULT_BUDGET_ALERT_COLOR = "#ef4444";
 /** Sticky card-name column in the all-cards grid. */
 export const DEFAULT_CARD_COLUMN_COLOR = "#0e1c32";
+
+/** Retro (Windows 95) palette — applied when retroTheme is enabled. */
+export const RETRO_BACKGROUND = "#008080";
+export const RETRO_SURFACE = "#c0c0c0";
+export const RETRO_TITLE_COLOR = "#000000";
+export const RETRO_BUDGET_ALERT_COLOR = "#800000";
+/** Default sticky column (card / income / balance labels) in retro mode. */
+export const RETRO_DEFAULT_CARD_COLUMN_COLOR = "#a0a0a0";
+/** Total row sticky column in retro when using the default column color. */
+export const RETRO_DEFAULT_CARD_COLUMN_TOTAL = "#888888";
+/** Card list chip for «Todas las tarjetas». */
+export const RETRO_ALL_CARDS_CHIP_BG = "#c0c0c0";
+/** Card list chips for individual cards. */
+export const RETRO_CARD_CHIP_BG = "#dfdfdf";
+export const RETRO_TAB_COLOR = "#c0c0c0";
+export const RETRO_TAB_TEXT_COLOR = "#000000";
+export const RETRO_BRAND_ACCENT = "#000080";
 /** Fixed app brand — shown in navbar and login, not user-editable. */
 export const BRAND_TITLE = "ccExpedition";
 /** Fixed browser tab title — not user-editable. */
@@ -80,14 +97,16 @@ export function hasCardBackground(card: {
 
 export function getCardChipStyle(
   card: { color: string; backgroundColor: string | null },
-  options?: { selected?: boolean },
+  options?: { selected?: boolean; retroTheme?: boolean },
 ): CSSProperties {
   const style: CSSProperties = {};
-  if (hasCardBackground(card)) {
+  if (options?.retroTheme) {
+    style.backgroundColor = RETRO_CARD_CHIP_BG;
+  } else if (hasCardBackground(card)) {
     style.backgroundColor = card.backgroundColor!;
   }
   if (options?.selected) {
-    style.boxShadow = `inset 0 0 0 1px ${card.color}`;
+    style.boxShadow = `inset 0 0 0 ${options.retroTheme ? 2 : 1}px ${card.color}`;
   }
   return style;
 }
@@ -178,6 +197,7 @@ export type ThemeSettings = {
   tabDashboardTextColor: string;
   tabProfileColor: string;
   tabProfileTextColor: string;
+  retroTheme?: boolean;
 };
 
 export function normalizeWorkspaceTitle(titleText: string): string {
@@ -226,6 +246,39 @@ export function deriveSurfaceColor(baseHex: string): string {
   return rgbToHex(lift(r), lift(g), lift(b, 4));
 }
 
+export function usesRetroDefaultCardColumn(
+  cardColumnColor: string,
+  retroTheme: boolean,
+): boolean {
+  if (!retroTheme) return false;
+  return (
+    !isValidHexColor(cardColumnColor) ||
+    cardColumnColor === DEFAULT_CARD_COLUMN_COLOR
+  );
+}
+
+export function resolveCardColumnColor(
+  cardColumnColor: string,
+  retroTheme: boolean,
+): string {
+  if (usesRetroDefaultCardColumn(cardColumnColor, retroTheme)) {
+    return RETRO_DEFAULT_CARD_COLUMN_COLOR;
+  }
+  return isValidHexColor(cardColumnColor)
+    ? cardColumnColor
+    : DEFAULT_CARD_COLUMN_COLOR;
+}
+
+export function resolveCardColumnTotalColor(
+  cardColumnColor: string,
+  retroTheme: boolean,
+): string {
+  if (usesRetroDefaultCardColumn(cardColumnColor, retroTheme)) {
+    return RETRO_DEFAULT_CARD_COLUMN_TOTAL;
+  }
+  return deriveSurfaceColor(resolveCardColumnColor(cardColumnColor, retroTheme));
+}
+
 export function applyTheme({
   backgroundColor,
   titleColor,
@@ -239,40 +292,75 @@ export function applyTheme({
   tabDashboardTextColor,
   tabProfileColor,
   tabProfileTextColor,
+  retroTheme = false,
 }: ThemeSettings): void {
-  const base = isValidHexColor(backgroundColor)
-    ? backgroundColor
-    : DEFAULT_BACKGROUND;
-  const title = isValidHexColor(titleColor) ? titleColor : DEFAULT_TITLE_COLOR;
-  const alertColor = isValidHexColor(budgetAlertColor)
-    ? budgetAlertColor
-    : DEFAULT_BUDGET_ALERT_COLOR;
-  const columnColor = isValidHexColor(cardColumnColor)
-    ? cardColumnColor
-    : DEFAULT_CARD_COLUMN_COLOR;
-  const surface = getSurfaceColor(base);
+  if (retroTheme) {
+    document.documentElement.dataset.theme = "win95";
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
 
-  const tabVars: [string, string, string][] = [
-    ["--tab-future-bg", tabFutureColor, DEFAULT_TAB_FUTURE_COLOR],
-    ["--tab-future-text", tabFutureTextColor, DEFAULT_TAB_FUTURE_TEXT_COLOR],
-    ["--tab-news-bg", tabNewsColor, DEFAULT_TAB_NEWS_COLOR],
-    ["--tab-news-text", tabNewsTextColor, DEFAULT_TAB_NEWS_TEXT_COLOR],
-    ["--tab-dashboard-bg", tabDashboardColor, DEFAULT_TAB_DASHBOARD_COLOR],
-    ["--tab-dashboard-text", tabDashboardTextColor, DEFAULT_TAB_DASHBOARD_TEXT_COLOR],
-    ["--tab-profile-bg", tabProfileColor, DEFAULT_TAB_PROFILE_COLOR],
-    ["--tab-profile-text", tabProfileTextColor, DEFAULT_TAB_PROFILE_TEXT_COLOR],
-  ];
+  const base = retroTheme
+    ? RETRO_BACKGROUND
+    : isValidHexColor(backgroundColor)
+      ? backgroundColor
+      : DEFAULT_BACKGROUND;
+  const title = retroTheme
+    ? RETRO_TITLE_COLOR
+    : isValidHexColor(titleColor)
+      ? titleColor
+      : DEFAULT_TITLE_COLOR;
+  const alertColor = retroTheme
+    ? RETRO_BUDGET_ALERT_COLOR
+    : isValidHexColor(budgetAlertColor)
+      ? budgetAlertColor
+      : DEFAULT_BUDGET_ALERT_COLOR;
+  const columnColor = resolveCardColumnColor(cardColumnColor, retroTheme);
+  const surface = retroTheme ? RETRO_SURFACE : getSurfaceColor(base);
+
+  const tabVars: [string, string, string][] = retroTheme
+    ? [
+        ["--tab-future-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
+        ["--tab-future-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
+        ["--tab-news-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
+        ["--tab-news-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
+        ["--tab-dashboard-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
+        ["--tab-dashboard-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
+        ["--tab-profile-bg", RETRO_TAB_COLOR, RETRO_TAB_COLOR],
+        ["--tab-profile-text", RETRO_TAB_TEXT_COLOR, RETRO_TAB_TEXT_COLOR],
+      ]
+    : [
+        ["--tab-future-bg", tabFutureColor, DEFAULT_TAB_FUTURE_COLOR],
+        ["--tab-future-text", tabFutureTextColor, DEFAULT_TAB_FUTURE_TEXT_COLOR],
+        ["--tab-news-bg", tabNewsColor, DEFAULT_TAB_NEWS_COLOR],
+        ["--tab-news-text", tabNewsTextColor, DEFAULT_TAB_NEWS_TEXT_COLOR],
+        ["--tab-dashboard-bg", tabDashboardColor, DEFAULT_TAB_DASHBOARD_COLOR],
+        [
+          "--tab-dashboard-text",
+          tabDashboardTextColor,
+          DEFAULT_TAB_DASHBOARD_TEXT_COLOR,
+        ],
+        ["--tab-profile-bg", tabProfileColor, DEFAULT_TAB_PROFILE_COLOR],
+        [
+          "--tab-profile-text",
+          tabProfileTextColor,
+          DEFAULT_TAB_PROFILE_TEXT_COLOR,
+        ],
+      ];
 
   document.documentElement.style.setProperty("--color-base", base);
   document.documentElement.style.setProperty("--color-surface", surface);
-  document.documentElement.style.setProperty("--color-brand-accent", BRAND_ACCENT);
+  document.documentElement.style.setProperty(
+    "--color-brand-accent",
+    retroTheme ? RETRO_BRAND_ACCENT : BRAND_ACCENT,
+  );
   document.documentElement.style.setProperty("--color-brand-cc", BRAND_CC_COLOR);
   document.documentElement.style.setProperty("--color-workspace-title", title);
   document.documentElement.style.setProperty("--color-budget-alert", alertColor);
   document.documentElement.style.setProperty("--color-card-column", columnColor);
   document.documentElement.style.setProperty(
     "--color-card-column-total",
-    deriveSurfaceColor(columnColor),
+    resolveCardColumnTotalColor(cardColumnColor, retroTheme),
   );
 
   for (const [name, value, fallback] of tabVars) {

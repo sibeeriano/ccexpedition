@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { getOutstandingDebt } from "../utils/expenses";
 import { getMonthsRange } from "../utils/months";
-import { getCardChipStyle, hasCardBackground } from "../utils/theme";
+import { getCardChipStyle, hasCardBackground, RETRO_ALL_CARDS_CHIP_BG } from "../utils/theme";
 import { AmountDisplay } from "./AmountDisplay";
 
 export const ALL_CARDS_VIEW = "all";
@@ -73,6 +73,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   );
 
   const isAllSelected = selectedId === ALL_CARDS_VIEW;
+  const retroTheme = state.settings.retroTheme;
   const firstCardRef = useRef<HTMLButtonElement>(null);
   const [chipSize, setChipSize] = useState<{ width: number; height: number }>();
 
@@ -116,11 +117,20 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       <button
         type="button"
         onClick={() => onSelect(ALL_CARDS_VIEW)}
-        style={chipStyle}
+        style={{
+          ...chipStyle,
+          ...(retroTheme && isAllSelected
+            ? { backgroundColor: RETRO_ALL_CARDS_CHIP_BG }
+            : undefined),
+        }}
         className={`${chipClass} ${
-          isAllSelected
-            ? "border-white/40 bg-surface"
-            : "border-white/5 bg-transparent hover:bg-surface/60"
+          retroTheme
+            ? isAllSelected
+              ? "card-chip--retro-all border-[#808080]"
+              : "border-white/5 bg-transparent hover:bg-[#dfdfdf]/60"
+            : isAllSelected
+              ? "border-white/40 bg-surface"
+              : "border-white/5 bg-transparent hover:bg-surface/60"
         }`}
       >
         <span className="truncate text-sm font-medium text-white">
@@ -139,7 +149,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       {state.cards.map((card, index) => {
         const isSelected = card.id === selectedId;
         const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
-        const customBg = hasCardBackground(card);
+        const customBg = hasCardBackground(card) && !retroTheme;
 
         return (
           <button
@@ -148,17 +158,21 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
             type="button"
             onClick={() => onSelect(card.id)}
             className={`${chipClass} ${
-              isSelected
-                ? customBg
-                  ? "border-transparent"
-                  : "border-transparent bg-surface"
-                : customBg
-                  ? "border-white/5 hover:brightness-110"
-                  : "border-white/5 bg-transparent hover:bg-surface/60"
+              retroTheme
+                ? isSelected
+                  ? "card-chip--retro border-[#808080]"
+                  : "border-white/5 hover:brightness-95"
+                : isSelected
+                  ? customBg
+                    ? "border-transparent"
+                    : "border-transparent bg-surface"
+                  : customBg
+                    ? "border-white/5 hover:brightness-110"
+                    : "border-white/5 bg-transparent hover:bg-surface/60"
             }`}
             style={{
               ...chipStyle,
-              ...getCardChipStyle(card, { selected: isSelected }),
+              ...getCardChipStyle(card, { selected: isSelected, retroTheme }),
             }}
           >
             <span className="flex min-w-0 items-center gap-1.5">

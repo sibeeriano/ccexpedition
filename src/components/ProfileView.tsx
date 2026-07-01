@@ -1,9 +1,10 @@
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { applyRememberMe, getRememberMe } from "../lib/supabase";
 import { type AppSettings, settingsSnapshot } from "../utils/settings";
+import { applyTheme } from "../utils/theme";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 import { Modal } from "./Modal";
 import { ConfirmDeleteAccountModal } from "./ConfirmDeleteAccountModal";
@@ -96,11 +97,30 @@ function ProfileCard({
 
 const DEFAULT_OPEN_SECTIONS: Record<ProfileSectionId, boolean> = {
   tutorial: false,
-  personalization: false,
+  personalization: true,
   cards: false,
   data: false,
   account: false,
 };
+
+function applyPersonalizationTheme(settings: AppSettings) {
+  applyTheme({
+    backgroundColor: settings.backgroundColor,
+    titleColor: settings.titleColor,
+    titleText: settings.titleText,
+    budgetAlertColor: settings.budgetAlertColor,
+    cardColumnColor: settings.cardColumnColor,
+    tabFutureColor: settings.tabFutureColor,
+    tabFutureTextColor: settings.tabFutureTextColor,
+    tabNewsColor: settings.tabNewsColor,
+    tabNewsTextColor: settings.tabNewsTextColor,
+    tabDashboardColor: settings.tabDashboardColor,
+    tabDashboardTextColor: settings.tabDashboardTextColor,
+    tabProfileColor: settings.tabProfileColor,
+    tabProfileTextColor: settings.tabProfileTextColor,
+    retroTheme: settings.retroTheme,
+  });
+}
 
 export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps) {
   const { t } = useTranslation();
@@ -117,15 +137,27 @@ export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps)
   const [recoverySent, setRecoverySent] = useState(false);
   const [openSections, setOpenSections] = useState(DEFAULT_OPEN_SECTIONS);
   const [exportComingSoonOpen, setExportComingSoonOpen] = useState(false);
+  const savedSettingsRef = useRef(state.settings);
+  savedSettingsRef.current = state.settings;
 
   const settingsDirty =
     settingsSnapshot(draft) !== settingsSnapshot(state.settings);
   const email = session?.user.email ?? "";
 
   function patchDraft(patch: Partial<AppSettings>) {
-    setDraft((prev) => ({ ...prev, ...patch }));
+    setDraft((prev) => {
+      const next = { ...prev, ...patch };
+      applyPersonalizationTheme(next);
+      return next;
+    });
     setSaved(false);
   }
+
+  useEffect(() => {
+    return () => {
+      applyPersonalizationTheme(savedSettingsRef.current);
+    };
+  }, []);
 
   async function handleSaveSettings() {
     setSaving(true);

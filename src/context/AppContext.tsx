@@ -166,6 +166,7 @@ function applySettingsTheme(settings: AppSettings) {
     tabDashboardTextColor: settings.tabDashboardTextColor,
     tabProfileColor: settings.tabProfileColor,
     tabProfileTextColor: settings.tabProfileTextColor,
+    retroTheme: settings.retroTheme,
   });
 }
 

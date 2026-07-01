@@ -19,10 +19,14 @@ import {
   DEFAULT_TAB_PROFILE_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   DEFAULT_WORKSPACE_TITLE,
-  deriveSurfaceColor,
+  RETRO_TITLE_COLOR,
+  RETRO_BACKGROUND,
+  RETRO_DEFAULT_CARD_COLUMN_COLOR,
   getWorkspaceTabGradientStyle,
   getWorkspaceTitle,
   MAX_TITLE_TEXT_LENGTH,
+  resolveCardColumnColor,
+  resolveCardColumnTotalColor,
   TAB_COLOR_PRESETS,
   TAB_TEXT_PRESETS,
   TITLE_PRESETS,
@@ -97,20 +101,81 @@ export function PersonalizationSection({
     cardColumnColor,
     showPreviousMonths,
     showPaidRow,
+    retroTheme,
   } = draft;
   const workspaceTitle = getWorkspaceTitle(titleText);
   const [selectedTabId, setSelectedTabId] = useState<WorkspaceTabKey>("future");
   const selectedTabFields = TAB_SETTING_FIELDS[selectedTabId];
   const selectedTabColor = draft[selectedTabFields.colorKey] as string;
   const selectedTabTextColor = draft[selectedTabFields.textKey] as string;
+  const previewBackground = retroTheme ? RETRO_BACKGROUND : backgroundColor;
+  const previewTitleColor = retroTheme ? RETRO_TITLE_COLOR : titleColor;
+  const effectiveCardColumnColor = resolveCardColumnColor(
+    cardColumnColor,
+    retroTheme,
+  );
+  const effectiveCardColumnTotalColor = resolveCardColumnTotalColor(
+    cardColumnColor,
+    retroTheme,
+  );
+
+  function handleThemeChange(nextTheme: "expedition" | "retro") {
+    const isRetro = nextTheme === "retro";
+    if (isRetro) {
+      patchDraft({
+        retroTheme: true,
+        ...(cardColumnColor === DEFAULT_CARD_COLUMN_COLOR
+          ? { cardColumnColor: RETRO_DEFAULT_CARD_COLUMN_COLOR }
+          : {}),
+      });
+      return;
+    }
+    patchDraft({
+      retroTheme: false,
+      ...(cardColumnColor === RETRO_DEFAULT_CARD_COLUMN_COLOR
+        ? { cardColumnColor: DEFAULT_CARD_COLUMN_COLOR }
+        : {}),
+    });
+  }
 
   return (
     <div className="flex flex-col divide-y divide-white/10">
       <div className="pb-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor={`${idPrefix}-visual-theme`}
+              className="text-sm text-zinc-300"
+            >
+              {t("settings.visualTheme")}
+            </label>
+            <select
+              id={`${idPrefix}-visual-theme`}
+              value={retroTheme ? "retro" : "expedition"}
+              onChange={(e) =>
+                handleThemeChange(
+                  e.target.value === "retro" ? "retro" : "expedition",
+                )
+              }
+              className="rounded-md border border-white/10 bg-base px-3 py-2 text-sm text-white focus:border-white/30 focus:outline-none"
+            >
+              <option value="expedition">{t("settings.themeExpedition")}</option>
+              <option value="retro">{t("settings.themeRetro")}</option>
+            </select>
+            <p className="text-xs text-zinc-500">
+              {retroTheme
+                ? t("settings.retroColorsLocked")
+                : t("settings.retroThemeHint")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="pb-5">
         <p className="mb-2 text-xs text-zinc-500">{t("settings.previewLabel")}</p>
         <div
           className="rounded-md border border-white/10 px-3 py-2 text-center"
-          style={{ backgroundColor }}
+          style={{ backgroundColor: previewBackground }}
         >
           <p className="text-sm font-semibold">
             <BrandName />
@@ -118,7 +183,7 @@ export function PersonalizationSection({
           {workspaceTitle ? (
             <p
               className="mt-0.5 truncate text-xs font-medium sm:text-sm"
-              style={{ color: titleColor }}
+              style={{ color: previewTitleColor }}
             >
               {workspaceTitle}
             </p>
@@ -130,6 +195,8 @@ export function PersonalizationSection({
         </div>
       </div>
 
+      {!retroTheme && (
+        <>
       <div className="py-5">
         <ColorPickerField
           label={t("settings.backgroundColor")}
@@ -277,16 +344,27 @@ export function PersonalizationSection({
           </div>
         </div>
       </div>
+        </>
+      )}
 
       <div className="py-5">
         <ColorPickerField
           label={t("settings.cardColumnColor")}
           color={cardColumnColor}
           presets={CARD_COLUMN_PRESETS}
-          defaultColor={DEFAULT_CARD_COLUMN_COLOR}
+          defaultColor={
+            retroTheme
+              ? RETRO_DEFAULT_CARD_COLUMN_COLOR
+              : DEFAULT_CARD_COLUMN_COLOR
+          }
           inputId={`${idPrefix}-card-column-color`}
           onChange={(color) => patchDraft({ cardColumnColor: color })}
         />
+        {retroTheme && (
+          <p className="mt-2 text-xs text-zinc-500">
+            {t("settings.retroGridColumnHint")}
+          </p>
+        )}
         <div className="mt-3 overflow-hidden rounded-md border border-white/10">
           <p className="border-b border-white/5 px-2.5 py-1.5 text-[10px] uppercase tracking-wide text-zinc-500">
             {t("settings.cardColumnPreview")}
@@ -294,7 +372,7 @@ export function PersonalizationSection({
           <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] text-xs">
             <div
               className="flex items-center gap-1.5 border-r border-white/10 px-2.5 py-2"
-              style={{ backgroundColor: cardColumnColor }}
+              style={{ backgroundColor: effectiveCardColumnColor }}
             >
               <span
                 className="size-1.5 shrink-0 rounded-full"
@@ -307,13 +385,13 @@ export function PersonalizationSection({
             </div>
             <div
               className="px-2.5 py-2 text-right text-zinc-300"
-              style={{ backgroundColor: backgroundColor }}
+              style={{ backgroundColor: previewBackground }}
             >
               {t("settings.columnPreviewAmount", { currency })}
             </div>
             <div
               className="flex items-center border-r border-t border-white/10 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400"
-              style={{ backgroundColor: deriveSurfaceColor(cardColumnColor) }}
+              style={{ backgroundColor: effectiveCardColumnTotalColor }}
             >
               {t("consolidated.totalAllCards")}
             </div>
