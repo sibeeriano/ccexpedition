@@ -6,7 +6,6 @@ import { formatMoney, formatMonthLabel } from "../utils/format";
 
 type MonthlyIncomeCellProps = {
   month: string;
-  monthTotal: number;
   currency: CurrencySymbol;
 };
 
@@ -26,7 +25,6 @@ function PencilIcon() {
 
 export function MonthlyIncomeCell({
   month,
-  monthTotal,
   currency,
 }: MonthlyIncomeCellProps) {
   const { t } = useTranslation();
@@ -40,11 +38,6 @@ export function MonthlyIncomeCell({
       setDraft(entry?.amount ? String(entry.amount) : "");
     }
   }, [month, entry?.amount, confirmed]);
-
-  const remainder =
-    entry && confirmed
-      ? Math.round((entry.amount - monthTotal) * 100) / 100
-      : 0;
 
   function handleConfirm() {
     const amount = Number.parseFloat(draft) || 0;
@@ -61,12 +54,8 @@ export function MonthlyIncomeCell({
     return (
       <td className="px-2 py-2 text-right align-top">
         <div className="flex items-center justify-end gap-1.5">
-          <span
-            className={`font-mono text-sm font-medium ${
-              remainder >= 0 ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {formatMoney(remainder, currency)}
+          <span className="font-mono text-sm font-medium text-zinc-100">
+            {formatMoney(entry.amount, currency)}
           </span>
           <button
             type="button"

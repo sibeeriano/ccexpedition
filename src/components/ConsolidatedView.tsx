@@ -11,6 +11,7 @@ import {
 import { AmountDisplay } from "./AmountDisplay";
 import { PaidMonthCell } from "./PaidMonthCell";
 import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
+import { MonthlyBalanceCell } from "./MonthlyBalanceCell";
 import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMonthLabel, getCurrentMonth, primaryMonthTotal } from "../utils/format";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
@@ -396,6 +397,20 @@ export function ConsolidatedView() {
               </td>
               {monthsRange.map((month, i) => (
                 <MonthlyIncomeCell
+                  key={month}
+                  month={month}
+                  currency={monthIncomeTargets[i].currency}
+                />
+              ))}
+            </tr>
+            <tr className="border-t border-white/10">
+              <td
+                className={`${STICKY_CARD_COL} px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-300`}
+              >
+                {t("consolidated.balance")}
+              </td>
+              {monthsRange.map((month, i) => (
+                <MonthlyBalanceCell
                   key={month}
                   month={month}
                   monthTotal={monthIncomeTargets[i].amount}

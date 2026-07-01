@@ -428,6 +428,8 @@
     "card": "Card/Expense/Credit",
     "totalAllCards": "Monthly totals",
     "monthlyIncome": "Monthly income",
+    "balance": "Balance",
+    "balanceForMonth": "Balance for {{month}}: {{balance}}",
     "monthlyIncomeOk": "OK",
     "monthlyIncomeInput": "Monthly income for {{month}}",
     "editMonthlyIncome": "Edit monthly income for {{month}}",

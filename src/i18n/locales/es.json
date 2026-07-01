@@ -428,6 +428,8 @@
     "card": "Tarjeta/Gasto/Crédito",
     "totalAllCards": "Totales mensuales",
     "monthlyIncome": "Ingreso mensual",
+    "balance": "Saldo",
+    "balanceForMonth": "Saldo de {{month}}: {{balance}}",
     "monthlyIncomeOk": "OK",
     "monthlyIncomeInput": "Ingreso mensual para {{month}}",
     "editMonthlyIncome": "Editar ingreso mensual de {{month}}",
