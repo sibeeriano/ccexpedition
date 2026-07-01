@@ -35,6 +35,13 @@ function NewsPostCard({
       <p className="text-sm leading-relaxed text-white/85">
         {pickLocalized(post.excerpt, lang)}
       </p>
+      {post.image && (
+        <img
+          src={post.image.src}
+          alt={pickLocalized(post.image.alt, lang)}
+          className="mt-1 w-full rounded-md border border-white/10 object-cover"
+        />
+      )}
       <button
         type="button"
         onClick={onOpen}
@@ -75,8 +82,20 @@ function NewsPostDetail({
         {pickLocalized(post.title, lang)}
       </h1>
       <div className="flex flex-col gap-3 text-sm leading-relaxed text-white sm:text-base">
-        {post.body.map((paragraph, index) => (
-          <p key={index} className="text-white">
+        {post.body.length > 0 && (
+          <p className="text-white">{pickLocalized(post.body[0], lang)}</p>
+        )}
+        {post.image && (
+          <figure className="overflow-hidden rounded-md border border-white/10">
+            <img
+              src={post.image.src}
+              alt={pickLocalized(post.image.alt, lang)}
+              className="w-full object-cover"
+            />
+          </figure>
+        )}
+        {post.body.slice(1).map((paragraph, index) => (
+          <p key={index + 1} className="text-white">
             {pickLocalized(paragraph, lang)}
           </p>
         ))}

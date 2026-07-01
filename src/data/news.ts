@@ -9,6 +9,10 @@ export type NewsPost = {
   title: LocalizedText;
   excerpt: LocalizedText;
   body: LocalizedText[];
+  image?: {
+    src: string;
+    alt: LocalizedText;
+  };
 };
 
 /** Agregá entradas nuevas arriba (más reciente primero). */
@@ -34,6 +38,13 @@ export const NEWS_POSTS: NewsPost[] = [
         en: "The app now opens in Spanish by default (unless you already picked another language in Profile). When choosing a start month for an expense or importing Excel, you can go up to 2 years back instead of 1.",
       },
     ],
+    image: {
+      src: "/news/cuotas-bidireccionales.png",
+      alt: {
+        es: "Formulario de gasto en cuotas: podés cargar el total o el monto por cuota y se sincronizan solos.",
+        en: "Installment expense form: enter the total or each installment amount and they sync automatically.",
+      },
+    },
   },
   {
     id: "vista-perfil",
