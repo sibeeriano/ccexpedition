@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "../../context/AppContext";
 import type { Card } from "../../types";
 import {
-  CARD_BACKGROUND_PRESETS,
   CARD_COLOR_PRESETS,
-  DEFAULT_CARD_BACKGROUND,
+  getCardBackgroundPresetsForTheme,
   getCardChipStyle,
-  hasCardBackground,
+  getDefaultCardBackgroundForTheme,
+  getEffectiveCardBackground,
+  hasEffectiveCardBackground,
 } from "../../utils/theme";
 import { ConfirmDeleteModal } from "../ConfirmDeleteModal";
 import {
@@ -18,15 +19,16 @@ import {
 export function CardsSection() {
   const { t } = useTranslation();
   const { state, deleteCard, updateCard } = useApp();
+  const visualTheme = state.settings.visualTheme;
+  const backgroundPresets = getCardBackgroundPresetsForTheme(visualTheme);
+  const defaultBackground = getDefaultCardBackgroundForTheme(visualTheme);
   const [confirmCardId, setConfirmCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editHolder, setEditHolder] = useState("");
   const [editColor, setEditColor] = useState(CARD_COLOR_PRESETS[0].color);
   const [editUseBackground, setEditUseBackground] = useState(false);
-  const [editBackgroundColor, setEditBackgroundColor] = useState(
-    DEFAULT_CARD_BACKGROUND,
-  );
+  const [editBackgroundColor, setEditBackgroundColor] = useState(defaultBackground);
   const [savingCard, setSavingCard] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,8 +44,10 @@ export function CardsSection() {
     setEditName(card.name);
     setEditHolder(card.holder);
     setEditColor(card.color);
-    setEditUseBackground(hasCardBackground(card));
-    setEditBackgroundColor(card.backgroundColor ?? DEFAULT_CARD_BACKGROUND);
+    setEditUseBackground(hasEffectiveCardBackground(card, visualTheme));
+    setEditBackgroundColor(
+      getEffectiveCardBackground(card, visualTheme) ?? defaultBackground,
+    );
     setError(null);
   }
 
@@ -53,7 +57,7 @@ export function CardsSection() {
     setEditHolder("");
     setEditColor(CARD_COLOR_PRESETS[0].color);
     setEditUseBackground(false);
-    setEditBackgroundColor(DEFAULT_CARD_BACKGROUND);
+    setEditBackgroundColor(defaultBackground);
     setError(null);
   }
 
@@ -178,14 +182,19 @@ export function CardsSection() {
                       label={t("settings.cardBackground")}
                       hint={t("settings.cardBackgroundHint")}
                       checked={editUseBackground}
-                      onChange={setEditUseBackground}
+                      onChange={(checked) => {
+                        setEditUseBackground(checked);
+                        if (checked) {
+                          setEditBackgroundColor(defaultBackground);
+                        }
+                      }}
                     />
                     {editUseBackground && (
                       <ColorPickerField
                         label={t("settings.cardBackground")}
                         color={editBackgroundColor}
-                        presets={CARD_BACKGROUND_PRESETS}
-                        defaultColor={DEFAULT_CARD_BACKGROUND}
+                        presets={backgroundPresets}
+                        defaultColor={defaultBackground}
                         inputId={`edit-card-bg-${card.id}`}
                         onChange={setEditBackgroundColor}
                       />
@@ -204,7 +213,7 @@ export function CardsSection() {
                               ? editBackgroundColor
                               : null,
                           },
-                          { selected: true },
+                          { selected: true, visualTheme },
                         )}
                       >
                         <span className="flex items-center gap-1.5">
@@ -246,7 +255,7 @@ export function CardsSection() {
                     <span className="flex min-w-0 items-center gap-2">
                       <span
                         className="flex size-6 shrink-0 items-center justify-center rounded-md border border-white/10"
-                        style={getCardChipStyle(card)}
+                        style={getCardChipStyle(card, { visualTheme })}
                       >
                         <span
                           className="size-2.5 rounded-full"

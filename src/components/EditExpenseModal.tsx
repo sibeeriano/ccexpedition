@@ -444,7 +444,7 @@ function EditForm({ card, expense }: { card: Card; expense: Expense }) {
                     </span>
                   )}
                 </span>
-                <span className="font-mono text-zinc-100">
+                <span className="font-mono text-money text-zinc-100">
                   {row.amount > 0 && formatMoney(row.amount, "ARS")}
                   {row.amount > 0 && row.amountUsd > 0 && " · "}
                   {row.amountUsd > 0 && <UsdAmount amount={row.amountUsd} />}

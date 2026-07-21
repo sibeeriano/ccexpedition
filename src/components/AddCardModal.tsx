@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import {
-  CARD_BACKGROUND_PRESETS,
   CARD_COLOR_PRESETS,
-  DEFAULT_CARD_BACKGROUND,
+  getCardBackgroundPresetsForTheme,
   getCardChipStyle,
+  getDefaultCardBackgroundForTheme,
 } from "../utils/theme";
 import { Modal, useModalClose } from "./Modal";
 
@@ -66,13 +66,16 @@ function ColorSwatchPicker({
 
 function CardForm() {
   const { t } = useTranslation();
-  const { addCard } = useApp();
+  const { state, addCard } = useApp();
+  const visualTheme = state.settings.visualTheme;
+  const backgroundPresets = getCardBackgroundPresetsForTheme(visualTheme);
+  const defaultBackground = getDefaultCardBackgroundForTheme(visualTheme);
   const close = useModalClose();
   const [name, setName] = useState("");
   const [holder, setHolder] = useState("");
   const [color, setColor] = useState(CARD_COLOR_PRESETS[0].color);
   const [useBackground, setUseBackground] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState(DEFAULT_CARD_BACKGROUND);
+  const [backgroundColor, setBackgroundColor] = useState(defaultBackground);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -152,7 +155,13 @@ function CardForm() {
           <input
             type="checkbox"
             checked={useBackground}
-            onChange={(e) => setUseBackground(e.target.checked)}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setUseBackground(checked);
+              if (checked) {
+                setBackgroundColor(defaultBackground);
+              }
+            }}
             className="mt-0.5 size-4 shrink-0 rounded border-white/20 bg-base text-white focus:ring-white/20"
           />
           <span className="min-w-0">
@@ -168,7 +177,7 @@ function CardForm() {
           <ColorSwatchPicker
             name="card-background"
             value={backgroundColor}
-            presets={CARD_BACKGROUND_PRESETS}
+            presets={backgroundPresets}
             onChange={setBackgroundColor}
             getAriaLabel={(hex) => t("addCard.colorOption", { hex })}
           />
@@ -182,7 +191,7 @@ function CardForm() {
             color,
             backgroundColor: useBackground ? backgroundColor : null,
           },
-          { selected: true },
+          { selected: true, visualTheme },
         )}
       >
         <span className="flex items-center gap-1.5">

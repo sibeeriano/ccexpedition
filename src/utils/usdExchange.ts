@@ -30,7 +30,18 @@ export type LatestUsdQuote = {
   casa: UserUsdExchangeCasa;
 };
 
-const API_BASE = "https://api.argentinadatos.com/v1/cotizaciones/dolares";
+const DOLAR_API_BASE = "https://dolarapi.com/v1/dolares";
+const ARGENTINA_DATOS_BASE =
+  "https://api.argentinadatos.com/v1/cotizaciones/dolares";
+
+type DolarApiQuote = {
+  moneda?: string;
+  casa: string;
+  nombre?: string;
+  compra: number;
+  venta: number;
+  fechaActualizacion: string;
+};
 
 export function isUserUsdExchangeCasa(
   value: unknown,
@@ -41,9 +52,21 @@ export function isUserUsdExchangeCasa(
   );
 }
 
-function todayIsoDate(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+function argentinaIsoDate(from: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(from);
+}
+
+function isoDateFromTimestamp(iso: string): string {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) {
+    return argentinaIsoDate();
+  }
+  return argentinaIsoDate(parsed);
 }
 
 function parseQuoteNumber(value: unknown): number | null {
@@ -52,11 +75,36 @@ function parseQuoteNumber(value: unknown): number | null {
     : null;
 }
 
-/** Latest venta rate for the given casa (uses today's quote when available). */
-export async function fetchLatestUsdVenta(
-  casa: UserUsdExchangeCasa = DEFAULT_USER_USD_EXCHANGE_CASA,
+async function fetchFromDolarApi(
+  casa: UserUsdExchangeCasa,
 ): Promise<LatestUsdQuote> {
-  const response = await fetch(`${API_BASE}/${casa}`);
+  const response = await fetch(`${DOLAR_API_BASE}/${casa}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`USD rate fetch failed (${response.status})`);
+  }
+
+  const quote = (await response.json()) as DolarApiQuote;
+  const venta = parseQuoteNumber(quote.venta);
+  if (venta === null) {
+    throw new Error("USD rate invalid");
+  }
+
+  return {
+    venta,
+    compra: parseQuoteNumber(quote.compra),
+    fecha: isoDateFromTimestamp(quote.fechaActualizacion),
+    casa,
+  };
+}
+
+async function fetchFromArgentinaDatos(
+  casa: UserUsdExchangeCasa,
+): Promise<LatestUsdQuote> {
+  const response = await fetch(`${ARGENTINA_DATOS_BASE}/${casa}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error(`USD rate fetch failed (${response.status})`);
   }
@@ -66,7 +114,7 @@ export async function fetchLatestUsdVenta(
     throw new Error("USD rate response empty");
   }
 
-  const today = todayIsoDate();
+  const today = argentinaIsoDate();
   const todayQuotes = quotes.filter((quote) => quote.fecha === today);
   const latest = (todayQuotes.length > 0 ? todayQuotes : quotes).at(-1);
 
@@ -81,4 +129,15 @@ export async function fetchLatestUsdVenta(
     fecha: latest.fecha,
     casa,
   };
+}
+
+/** Latest venta rate for the given casa (DolarAPI first, ArgentinaDatos fallback). */
+export async function fetchLatestUsdVenta(
+  casa: UserUsdExchangeCasa = DEFAULT_USER_USD_EXCHANGE_CASA,
+): Promise<LatestUsdQuote> {
+  try {
+    return await fetchFromDolarApi(casa);
+  } catch {
+    return fetchFromArgentinaDatos(casa);
+  }
 }

@@ -43,7 +43,7 @@ export function MonthlyBalanceCell({
   return (
     <td className="px-2 py-2 text-right align-top">
       <span
-        className={`font-mono text-sm font-medium money-balance ${
+        className={`font-mono text-money font-medium money-balance ${
           balance >= 0 ? "money-balance--positive" : "money-balance--negative"
         }`}
         aria-label={t("consolidated.balanceForMonth", {

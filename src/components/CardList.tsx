@@ -5,10 +5,13 @@ import { getOutstandingDebt } from "../utils/expenses";
 import { getMonthsRange } from "../utils/months";
 import {
   getCardChipStyle,
-  hasCardBackground,
+  hasEffectiveCardBackground,
+  isLiquidGlassTheme,
   isNeobrutalismTheme,
-  isPresetVisualTheme,
   isWin95Theme,
+  GLASS_ALL_CARDS_CHIP_BG,
+  GLASS_BORDER,
+  GLASS_SHADOW,
   NEO_ALL_CARDS_CHIP_BG,
   NEO_SHADOW,
   RETRO_ALL_CARDS_CHIP_BG,
@@ -28,7 +31,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   const visualTheme = state.settings.visualTheme;
   const isWin95 = isWin95Theme(visualTheme);
   const isNeo = isNeobrutalismTheme(visualTheme);
-  const isPreset = isPresetVisualTheme(visualTheme);
+  const isGlass = isLiquidGlassTheme(visualTheme);
 
   const monthsRange = useMemo(
     () =>
@@ -135,6 +138,17 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       : isNeo
         ? { border: "2px solid #000", boxShadow: NEO_SHADOW }
         : undefined),
+    ...(isGlass
+      ? {
+          backgroundColor: isAllSelected
+            ? "rgba(255, 255, 255, 0.82)"
+            : GLASS_ALL_CARDS_CHIP_BG,
+          border: `1px solid ${GLASS_BORDER}`,
+          boxShadow: GLASS_SHADOW,
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }
+      : undefined),
   };
 
   return (
@@ -155,9 +169,13 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
               ? isAllSelected
                 ? "card-chip--neo card-chip--neo-selected"
                 : "card-chip--neo bg-white hover:translate-x-px hover:translate-y-px"
-              : isAllSelected
-                ? "border-white/40 bg-surface"
-                : "border-white/5 bg-transparent hover:bg-surface/60"
+              : isGlass
+                ? isAllSelected
+                  ? "card-chip--glass card-chip--glass-selected"
+                  : "card-chip--glass hover:bg-white/70"
+                : isAllSelected
+                  ? "border-white/40 bg-surface"
+                  : "border-white/5 bg-transparent hover:bg-surface/60"
         }`}
       >
         <span className="truncate text-sm font-medium text-white">
@@ -176,7 +194,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
       {state.cards.map((card, index) => {
         const isSelected = card.id === selectedId;
         const debt = debtByCard.get(card.id) ?? { ars: 0, usd: 0 };
-        const customBg = hasCardBackground(card) && !isPreset;
+        const customBg = hasEffectiveCardBackground(card, visualTheme);
 
         return (
           <button
@@ -185,6 +203,8 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
             type="button"
             onClick={() => onSelect(card.id)}
             className={`${chipClass} ${
+              customBg ? "card-chip--custom-bg " : ""
+            }${
               isWin95
                 ? isSelected
                   ? "card-chip--retro border-[#808080]"
@@ -193,13 +213,17 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
                   ? isSelected
                     ? "card-chip--neo card-chip--neo-selected"
                     : "card-chip--neo hover:translate-x-px hover:translate-y-px"
-                  : isSelected
-                    ? customBg
-                      ? "border-transparent"
-                      : "border-transparent bg-surface"
-                    : customBg
-                      ? "border-white/5 hover:brightness-110"
-                      : "border-white/5 bg-transparent hover:bg-surface/60"
+                  : isGlass
+                    ? isSelected
+                      ? "card-chip--glass card-chip--glass-selected"
+                      : "card-chip--glass hover:bg-white/70"
+                    : isSelected
+                      ? customBg
+                        ? "border-transparent"
+                        : "border-transparent bg-surface"
+                      : customBg
+                        ? "border-white/5 hover:brightness-110"
+                        : "border-white/5 bg-transparent hover:bg-surface/60"
             }`}
             style={{
               ...chipStyle,

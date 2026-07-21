@@ -68,9 +68,6 @@
     "premiumBefore": "As a thank-you, your account will get a ",
     "premiumHighlight": "lifetime Premium",
     "premiumAfter": " subscription when the beta ends.",
-    "betaBefore": "The trial beta ends on ",
-    "betaDate": "July 9, 2026",
-    "betaAfter": ".",
     "footerBefore": "Enjoy exploring ",
     "footerAfter": "!",
     "cta": "Let's go!"
@@ -130,7 +127,7 @@
     },
     "monthBar": {
       "title": "Months",
-      "body": "Browse months to see which expenses hit in each billing period. It opens on next month by default."
+      "body": "Browse months to see which expenses hit in each billing period. It opens on the current month by default."
     },
     "addExpense": {
       "title": "Add expense",
@@ -325,6 +322,28 @@
     "cta": "Profile",
     "ctaShort": "Profile",
     "title": "Profile",
+    "settingsTitle": "Settings",
+    "settingsSubtitle": "Appearance, preferences, cards, and account in one place.",
+    "settingsNav": "Settings sections",
+    "settingsSummary": "Your workspace",
+    "cardCount_one": "{{count}} card",
+    "cardCount_other": "{{count}} cards",
+    "nav": {
+      "appearance": "Appearance",
+      "preferences": "Preferences",
+      "cards": "Cards",
+      "account": "Account",
+      "help": "Help"
+    },
+    "appearanceHint": "Visual theme, workspace title, and advanced colors.",
+    "preferencesHint": "Language, currency, grid, USD rate, and export.",
+    "helpHint": "Replay guided tours whenever you need them.",
+    "helpIntro": "Choose which tutorial you want to replay.",
+    "advancedColors": "Customize colors",
+    "advancedColorsHint": "Background, tabs, spending alert, and grid column.",
+    "currencyHint": "Currency used for the monthly spending limit alert.",
+    "securitySection": "Security",
+    "dangerZone": "Danger zone",
     "subtitle": "Customize the app, manage your cards, and your account.",
     "backToApp": "Back to app",
     "tutorialHint": "Choose which guided tour you want to replay.",
@@ -342,7 +361,7 @@
     "data": "Data",
     "dataHint": "Export your expenses and check today's dollar exchange rate.",
     "usdRateTitle": "Today's exchange rate",
-    "usdRateSubtitle": "Source: ArgentinaDatos. Pick which dollar rate to view and use for USD conversions.",
+    "usdRateSubtitle": "Live exchange rates (dolarapi.com). Pick which dollar rate to view and use for USD conversions.",
     "usdExchange": {
       "oficial": "Official",
       "tarjeta": "Card",
@@ -350,10 +369,15 @@
     },
     "usdRateCurrentTitle": "{{type}} dollar",
     "usdRateBuySell": "Buy: ARS {{buy}} · Sell: ARS {{sell}}",
+    "usdRateBuy": "Buy: ARS {{buy}}",
+    "usdRateSell": "Sell: ARS {{sell}}",
     "usdRateDate": "Updated: {{date}}",
     "usdRateConversionNote": "USD→ARS conversions use the sell price.",
     "convertUsdToArs": "Convert USD to pesos in the app",
     "convertUsdToArsHint": "Shows the peso equivalent in parentheses next to each dollar amount and adds that conversion to ARS totals, using the sell rate selected above.",
+    "showUsdRateOnHome": "Show on main page",
+    "showUsdRateOnHomeHint": "Displays today's exchange rate below the grid, next to the spending limit notice.",
+    "usdRateHomeTitle": "Today's rate",
     "usdRateLoading": "Fetching exchange rate…",
     "usdRateError": "Could not load the exchange rate. Check your connection and try again.",
     "exportCsv": "Export CSV",
@@ -361,7 +385,7 @@
     "exportComingSoon": "Coming soon",
     "exportComingSoonHint": "CSV export is still on the way.",
     "account": "Account",
-    "accountHint": "Login details and language preference.",
+    "accountHint": "Email, password, and session options.",
     "userEmail": "User email",
     "changePassword": "Change password",
     "changePasswordHint": "Enter a new password with at least 6 characters.",
@@ -439,6 +463,9 @@
   },
   "consolidated": {
     "budgetAlert": "Monthly spending limit:",
+    "budgetAlertOk": "OK",
+    "budgetAlertInput": "Monthly spending limit",
+    "editBudgetAlert": "Edit monthly spending limit",
     "importXlsx": "Import XLSX",
     "card": "Card/Expense/Credit",
     "totalAllCards": "Monthly totals",
@@ -576,7 +603,9 @@
     "cardBackground": "Background color",
     "cardBackgroundHint": "Optional. Tints the card chip in the top bar.",
     "cardPreview": "Preview",
-    "saved": "Saved"
+    "saved": "Saved",
+    "themeLiquidGlass": "Liquid Glass",
+    "glassColorsLocked": "Fixed macOS-style colors: translucent panels, blur, and blue accent. You can still adjust the card column in the grid."
   },
   "theme": {
     "presets": {

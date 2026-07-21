@@ -20,7 +20,7 @@ import {
   CardDetailTotalArsCell,
   CardDetailTotalUsdCell,
 } from "./CardDetailExpenseAmounts";
-import { addMonths, getMonthsRange, monthDiff } from "../utils/months";
+import { getMonthsRange, monthDiff } from "../utils/months";
 import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { getCategoryDisplayName } from "../utils/expenseCategories";
 
@@ -46,7 +46,6 @@ export function CardDetail({
   const { state, deleteExpense, deleteBalanceAdjustment } = useApp();
   useCardDetailTour({ userId: session?.user.id, paused: tourPaused });
   const currentMonth = getCurrentMonth();
-  const nextMonth = addMonths(currentMonth, 1);
   const monthsRange = getMonthsRange(
     state.expenses,
     state.balanceAdjustments,
@@ -54,7 +53,6 @@ export function CardDetail({
   );
 
   function defaultSelectedMonth(range: string[]): string {
-    if (range.includes(nextMonth)) return nextMonth;
     if (range.includes(currentMonth)) return currentMonth;
     return range[0] ?? currentMonth;
   }
@@ -490,7 +488,7 @@ export function CardDetail({
                     <td className="max-w-[8rem] truncate px-3.5 py-2.5 text-right text-zinc-400">
                       {categoryLabel(expense.categoryId)}
                     </td>
-                    <td className="px-3.5 py-2.5 text-right font-mono text-zinc-100">
+                    <td className="px-3.5 py-2.5 text-right font-mono text-money text-zinc-100">
                       <CardDetailTotalUsdCell amount={expense.totalAmountUsd} />
                     </td>
                     <td className="px-3.5 py-2.5 text-right">

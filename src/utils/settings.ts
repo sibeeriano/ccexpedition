@@ -38,6 +38,7 @@ export type AppSettings = {
   currency: CurrencySymbol;
   /** 0 = alert disabled */
   budgetAlert: number;
+  budgetAlertConfirmed: boolean;
   budgetAlertColor: string;
   cardColumnColor: string;
   showPreviousMonths: boolean;
@@ -57,6 +58,8 @@ export type AppSettings = {
   tabProfileTextColor: string;
   /** When true, show USD amounts with ARS equivalent and add converted USD to ARS totals. */
   convertUsdToArs: boolean;
+  /** Show today's USD rate on the consolidated home view. */
+  showUsdRateOnHome: boolean;
   /** ArgentinaDatos dollar rate used for USD→ARS conversion. */
   usdExchangeCasa: UserUsdExchangeCasa;
   /** Workspace visual theme preset. */
@@ -73,6 +76,7 @@ export function getDefaultSettings(): AppSettings {
   return {
     currency: "$",
     budgetAlert: 0,
+    budgetAlertConfirmed: false,
     budgetAlertColor: DEFAULT_BUDGET_ALERT_COLOR,
     cardColumnColor: DEFAULT_CARD_COLUMN_COLOR,
     showPreviousMonths: true,
@@ -91,6 +95,7 @@ export function getDefaultSettings(): AppSettings {
     tabProfileColor: DEFAULT_TAB_PROFILE_COLOR,
     tabProfileTextColor: DEFAULT_TAB_PROFILE_TEXT_COLOR,
     convertUsdToArs: false,
+    showUsdRateOnHome: false,
     usdExchangeCasa: DEFAULT_USER_USD_EXCHANGE_CASA,
     visualTheme: "expedition",
   };
@@ -109,6 +114,10 @@ export function parseAppSettings(
       typeof parsed.budgetAlert === "number" && parsed.budgetAlert >= 0
         ? parsed.budgetAlert
         : defaults.budgetAlert,
+    budgetAlertConfirmed:
+      typeof parsed.budgetAlertConfirmed === "boolean"
+        ? parsed.budgetAlertConfirmed
+        : typeof parsed.budgetAlert === "number" && parsed.budgetAlert > 0,
     budgetAlertColor: isValidHexColor(parsed.budgetAlertColor ?? "")
       ? parsed.budgetAlertColor!
       : defaults.budgetAlertColor,
@@ -158,6 +167,7 @@ export function parseAppSettings(
       ? parsed.tabProfileTextColor!
       : defaults.tabProfileTextColor,
     convertUsdToArs: parsed.convertUsdToArs === true,
+    showUsdRateOnHome: parsed.showUsdRateOnHome === true,
     usdExchangeCasa: isUserUsdExchangeCasa(parsed.usdExchangeCasa)
       ? parsed.usdExchangeCasa
       : defaults.usdExchangeCasa,

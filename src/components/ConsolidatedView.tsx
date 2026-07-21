@@ -12,10 +12,12 @@ import { AmountDisplay } from "./AmountDisplay";
 import { PaidMonthCell } from "./PaidMonthCell";
 import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
 import { MonthlyBalanceCell } from "./MonthlyBalanceCell";
-import { addMonths, filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
+import { filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
 import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
+import { UsdRateHomeNotice } from "./UsdRateHomeNotice";
+import { BudgetAlertField } from "./BudgetAlertField";
 
 type CellPopover = {
   cardId: string;
@@ -31,15 +33,14 @@ const STICKY_CARD_COL_TOTAL =
 
 export function ConsolidatedView() {
   const { t } = useTranslation();
-  const { state, setBudgetAlert, flushSettingsPersist } = useApp();
-  const { currency, budgetAlert, showPreviousMonths, showPaidRow } =
+  const { state } = useApp();
+  const { currency, budgetAlert, showPreviousMonths, showPaidRow, showUsdRateOnHome } =
     state.settings;
   const { primaryTotal } = useMoneyDisplay();
   const currentMonth = getCurrentMonth();
-  const nextMonth = addMonths(currentMonth, 1);
   const [popover, setPopover] = useState<CellPopover | null>(null);
 
-  const isNextMonthColumn = (month: string) => month === nextMonth;
+  const isCurrentMonthColumn = (month: string) => month === currentMonth;
 
   useEffect(() => {
     if (!popover) return;
@@ -58,7 +59,7 @@ export function ConsolidatedView() {
     ),
     showPreviousMonths,
   );
-  const showNextMonthColumn = monthsRange.includes(nextMonth);
+  const showCurrentMonthColumn = monthsRange.includes(currentMonth);
 
   const rows = state.cards.map((card) => ({
     card,
@@ -106,19 +107,19 @@ export function ConsolidatedView() {
 
   const tableWrapRef = useRef<HTMLDivElement>(null);
   const tableInnerRef = useRef<HTMLDivElement>(null);
-  const nextMonthColumnRef = useRef<HTMLDivElement>(null);
+  const currentMonthColumnRef = useRef<HTMLDivElement>(null);
   const initialScrollDone = useRef(false);
 
   useEffect(() => {
     const inner = tableInnerRef.current;
-    const marker = nextMonthColumnRef.current;
-    if (!inner || !marker || !showNextMonthColumn) return;
+    const marker = currentMonthColumnRef.current;
+    if (!inner || !marker || !showCurrentMonthColumn) return;
 
     const scrollWrap = tableWrapRef.current;
 
     function updateMarker() {
       const th = inner?.querySelector<HTMLElement>(
-        `th[data-month="${nextMonth}"]`,
+        `th[data-month="${currentMonth}"]`,
       );
       const cardHeader = inner?.querySelector<HTMLElement>("thead th:first-child");
       if (!th || !marker || !inner) {
@@ -152,8 +153,8 @@ export function ConsolidatedView() {
       window.removeEventListener("resize", updateMarker);
     };
   }, [
-    nextMonth,
-    showNextMonthColumn,
+    currentMonth,
+    showCurrentMonthColumn,
     monthsRange.length,
     rows.length,
     state.cards.length,
@@ -239,27 +240,7 @@ export function ConsolidatedView() {
     <section className="flex w-full min-w-0 shrink-0 flex-col gap-4">
       {/* Toolbar */}
       <div data-tour="consolidated-toolbar" className="flex flex-wrap items-center gap-3">
-        <label
-          data-tour="budget-alert"
-          className="flex items-center gap-2 text-xs font-medium text-zinc-400"
-        >
-          {t("consolidated.budgetAlert")}
-          <span className="flex items-center gap-1 rounded-md border border-white/10 bg-surface px-2 py-1.5 focus-within:border-white/30">
-            <span className="text-zinc-500">{currency}</span>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              placeholder="0"
-              value={budgetAlert > 0 ? budgetAlert : ""}
-              onChange={(e) =>
-                setBudgetAlert(Number.parseFloat(e.target.value) || 0)
-              }
-              onBlur={flushSettingsPersist}
-              className="w-24 bg-transparent font-mono text-sm text-white placeholder:text-zinc-600 focus:outline-none"
-            />
-          </span>
-        </label>
+        <BudgetAlertField />
       </div>
 
       {/* Consolidated table */}
@@ -270,9 +251,9 @@ export function ConsolidatedView() {
           className="consolidated-table-scroll min-w-0"
         >
         <div ref={tableInnerRef} className="relative w-max min-w-full">
-          {showNextMonthColumn && (
+          {showCurrentMonthColumn && (
             <div
-              ref={nextMonthColumnRef}
+              ref={currentMonthColumnRef}
               className="pointer-events-none absolute top-0 z-0 box-border border border-white/40"
               aria-hidden
             />
@@ -290,7 +271,7 @@ export function ConsolidatedView() {
                   key={month}
                   data-month={month}
                   className={`px-3.5 py-2.5 text-right font-medium whitespace-nowrap ${
-                    isNextMonthColumn(month)
+                    isCurrentMonthColumn(month)
                       ? "text-zinc-100"
                       : month < currentMonth
                         ? "text-zinc-600"
@@ -429,15 +410,32 @@ export function ConsolidatedView() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {budgetAlert > 0 && overBudgetMonths.length > 0 && (
-          <BudgetExceededNotice
-            months={overBudgetMonths}
-            budgetAlert={budgetAlert}
-            currency={currency}
-          />
-        )}
-      </div>
+      {(showUsdRateOnHome ||
+        (budgetAlert > 0 && overBudgetMonths.length > 0)) && (
+        <div
+          className={`flex min-w-0 flex-col gap-4 sm:items-end ${
+            showUsdRateOnHome &&
+            budgetAlert > 0 &&
+            overBudgetMonths.length > 0
+              ? "sm:flex-row sm:justify-between sm:gap-6"
+              : "sm:max-w-lg"
+          }`}
+        >
+          {budgetAlert > 0 && overBudgetMonths.length > 0 && (
+            <BudgetExceededNotice
+              months={overBudgetMonths}
+              budgetAlert={budgetAlert}
+              currency={currency}
+            />
+          )}
+          {showUsdRateOnHome && (
+            <UsdRateHomeNotice
+              language={state.settings.language}
+              defaultCasa={state.settings.usdExchangeCasa}
+            />
+          )}
+        </div>
+      )}
 
       {/* Cell detail popover */}
       {popover && popoverCard && (

@@ -25,17 +25,21 @@ export function CardDetailThisMonthCell({
 
   if (!hasArs && !hasUsd) {
     return (
-      <span className={className}>{formatMoney(0, "ARS")}</span>
+      <span className={`font-mono text-money ${className}`.trim()}>
+        {formatMoney(0, "ARS")}
+      </span>
     );
   }
 
   return (
     <span className={`flex flex-col ${className}`}>
       {hasArs && (
-        <span className="font-mono">{formatMoney(ars, "ARS")}</span>
+        <span className="font-mono text-money">{formatMoney(ars, "ARS")}</span>
       )}
       {hasUsd && (
-        <span className={`font-mono ${hasArs ? "text-zinc-400" : ""}`}>
+        <span
+          className={`font-mono text-money ${hasArs ? "text-zinc-400" : ""}`}
+        >
           {formatMoney(usd, "$")}
         </span>
       )}
@@ -57,7 +61,7 @@ export function CardDetailTotalArsCell({
 
   if (totalAmount > 0) {
     return (
-      <span className="font-mono text-zinc-100">
+      <span className="font-mono text-money text-zinc-100">
         {formatMoney(totalAmount, "ARS")}
       </span>
     );
@@ -66,7 +70,7 @@ export function CardDetailTotalArsCell({
   if (convertUsdToArs && usdRate && monthlyUsd > 0) {
     const converted = resolve(0, monthlyUsd).convertedUsdToArs;
     return (
-      <span className="font-mono text-zinc-100">
+      <span className="font-mono text-money text-zinc-100">
         {formatMoney(converted, "ARS")}
       </span>
     );
@@ -86,6 +90,8 @@ export function CardDetailTotalUsdCell({ amount }: CardDetailTotalUsdCellProps) 
   }
 
   return (
-    <span className="font-mono text-zinc-100">{formatMoney(amount, "$")}</span>
+    <span className="font-mono text-money text-zinc-100">
+      {formatMoney(amount, "$")}
+    </span>
   );
 }

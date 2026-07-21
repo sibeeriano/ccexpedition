@@ -68,9 +68,6 @@
     "premiumBefore": "Como agradecimiento, tu cuenta tendrá la suscripción ",
     "premiumHighlight": "Premium de por vida",
     "premiumAfter": " cuando finalice la beta.",
-    "betaBefore": "La beta de prueba finaliza el ",
-    "betaDate": "9 de julio de 2026",
-    "betaAfter": ".",
     "footerBefore": "¡Disfruta explorando ",
     "footerAfter": "!",
     "cta": "¡Empezar!"
@@ -130,7 +127,7 @@
     },
     "monthBar": {
       "title": "Meses",
-      "body": "Navegá entre meses para ver qué gastos impactan en cada período. Por defecto se abre en el mes siguiente."
+      "body": "Navegá entre meses para ver qué gastos impactan en cada período. Por defecto se abre en el mes actual."
     },
     "addExpense": {
       "title": "Agregar gasto",
@@ -325,6 +322,28 @@
     "cta": "Perfil",
     "ctaShort": "Perfil",
     "title": "Perfil",
+    "settingsTitle": "Configuración",
+    "settingsSubtitle": "Apariencia, preferencias, tarjetas y cuenta en un solo lugar.",
+    "settingsNav": "Secciones de configuración",
+    "settingsSummary": "Tu workspace",
+    "cardCount_one": "{{count}} tarjeta",
+    "cardCount_other": "{{count}} tarjetas",
+    "nav": {
+      "appearance": "Apariencia",
+      "preferences": "Preferencias",
+      "cards": "Tarjetas",
+      "account": "Cuenta",
+      "help": "Ayuda"
+    },
+    "appearanceHint": "Tema visual, título del workspace y colores avanzados.",
+    "preferencesHint": "Idioma, moneda, grilla, cotización USD y exportación.",
+    "helpHint": "Repetí los recorridos guiados cuando lo necesites.",
+    "helpIntro": "Elegí qué tutorial querés repetir.",
+    "advancedColors": "Personalizar colores",
+    "advancedColorsHint": "Fondo, tabs, alerta de gasto y columna de la grilla.",
+    "currencyHint": "Moneda usada en la alerta de límite de gasto mensual.",
+    "securitySection": "Seguridad",
+    "dangerZone": "Zona de peligro",
     "subtitle": "Personalizá la app, gestioná tus tarjetas y tu cuenta.",
     "backToApp": "Volver a la app",
     "tutorialHint": "Elegí qué recorrido guiado querés repetir.",
@@ -342,7 +361,7 @@
     "data": "Datos",
     "dataHint": "Exportá tus gastos y consultá la cotización del dólar del día.",
     "usdRateTitle": "Cotización del día",
-    "usdRateSubtitle": "Fuente: ArgentinaDatos. Elegí qué tipo de dólar querés ver y usar para convertir montos en USD.",
+    "usdRateSubtitle": "Cotizaciones en tiempo real (dolarapi.com). Elegí qué tipo de dólar querés ver y usar para convertir montos en USD.",
     "usdExchange": {
       "oficial": "Oficial",
       "tarjeta": "Tarjeta",
@@ -350,10 +369,15 @@
     },
     "usdRateCurrentTitle": "Dólar {{type}}",
     "usdRateBuySell": "Compra: ARS {{buy}} · Venta: ARS {{sell}}",
+    "usdRateBuy": "Compra: ARS {{buy}}",
+    "usdRateSell": "Venta: ARS {{sell}}",
     "usdRateDate": "Actualizado: {{date}}",
     "usdRateConversionNote": "Para convertir USD a pesos se usa el precio venta.",
     "convertUsdToArs": "Convertir USD a pesos en la app",
     "convertUsdToArsHint": "Muestra el equivalente en pesos entre paréntesis junto a cada monto en dólares y suma esa conversión a los totales en ARS, usando la cotización venta elegida arriba.",
+    "showUsdRateOnHome": "Mostrar en la página principal",
+    "showUsdRateOnHomeHint": "Muestra la cotización del día debajo de la grilla, al lado del aviso de límite de gasto.",
+    "usdRateHomeTitle": "Cotización del día",
     "usdRateLoading": "Obteniendo cotización…",
     "usdRateError": "No se pudo cargar la cotización. Revisá tu conexión e intentá de nuevo.",
     "exportCsv": "Exportar CSV",
@@ -361,7 +385,7 @@
     "exportComingSoon": "Próximamente",
     "exportComingSoonHint": "La exportación CSV todavía está en camino.",
     "account": "Cuenta",
-    "accountHint": "Datos de acceso y preferencias de idioma.",
+    "accountHint": "Email, contraseña y opciones de sesión.",
     "userEmail": "Mail de usuario",
     "changePassword": "Cambiar contraseña",
     "changePasswordHint": "Ingresá una contraseña nueva de al menos 6 caracteres.",
@@ -439,6 +463,9 @@
   },
   "consolidated": {
     "budgetAlert": "Límite de gasto mensual:",
+    "budgetAlertOk": "OK",
+    "budgetAlertInput": "Límite de gasto mensual",
+    "editBudgetAlert": "Editar límite de gasto mensual",
     "importXlsx": "Importar XLSX",
     "card": "Tarjeta/Gasto/Crédito",
     "totalAllCards": "Totales mensuales",
@@ -576,7 +603,9 @@
     "cardBackground": "Color de fondo",
     "cardBackgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",
     "cardPreview": "Vista previa",
-    "saved": "Guardado"
+    "saved": "Guardado",
+    "themeLiquidGlass": "Liquid Glass",
+    "glassColorsLocked": "Colores fijos estilo macOS: paneles translúcidos, blur y acento azul. Podés ajustar la columna de tarjetas en la grilla."
   },
   "theme": {
     "presets": {

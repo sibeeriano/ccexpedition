@@ -23,6 +23,32 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "tema-liquid-glass",
+    date: "2026-07-08",
+    title: {
+      es: "Tema Liquid Glass",
+      en: "Liquid Glass theme",
+    },
+    excerpt: {
+      es: "Estilo macOS 27: paneles translúcidos, blur suave y acento azul sistema.",
+      en: "macOS 27 style: translucent panels, soft blur, and system blue accent.",
+    },
+    body: [
+      {
+        es: "En Perfil, Personalizar, elegi Liquid Glass. Inspirado en el UI Kit de macOS 27: fondo lavanda-gris, paneles con vidrio esmerilado, bordes claros y sombra suave.",
+        en: "In Profile, Personalize, pick Liquid Glass. Inspired by the macOS 27 UI Kit: lavender-gray background, frosted-glass panels, light borders, and soft shadows.",
+      },
+      {
+        es: "Los botones usan azul sistema, las pestanas son pasteles translúcidas y los chips de tarjetas llevan blur. El navbar tambien queda con efecto glass.",
+        en: "Buttons use system blue, tabs are translucent pastels, and card chips get blur. The navbar also gets the glass treatment.",
+      },
+      {
+        es: "Los colores del workspace quedan fijos en este tema, salvo la columna de tarjetas en la grilla. Lo seguimos puliendo: si algo no cierra visualmente, contanos.",
+        en: "Workspace colors are fixed in this theme, except the card column in the grid. We are still polishing it — if something looks off, let us know.",
+      },
+    ],
+  },
+  {
     id: "tema-neobrutalism",
     date: "2026-07-04",
     title: {

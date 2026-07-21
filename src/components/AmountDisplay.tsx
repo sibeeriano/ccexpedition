@@ -28,7 +28,11 @@ export function AmountDisplay({
     convertUsdToArs && usdRate && usdRate > 0 && hasUsd && convertedUsdToArs !== 0;
 
   if (!hasArs && !hasUsd) {
-    return <span className={className}>{formatMoney(0, "ARS")}</span>;
+    return (
+      <span className={`font-mono text-money ${className}`.trim()}>
+        {formatMoney(0, "ARS")}
+      </span>
+    );
   }
 
   const usdText = (
@@ -45,7 +49,7 @@ export function AmountDisplay({
 
   if (inline && showArsLine && hasUsd) {
     return (
-      <span className={className}>
+      <span className={`font-mono text-money ${className}`.trim()}>
         {formatMoney(displayArs, "ARS")} · {usdText}
       </span>
     );
@@ -54,10 +58,14 @@ export function AmountDisplay({
   return (
     <span className={`flex flex-col ${className}`}>
       {showArsLine && (
-        <span className="font-mono">{formatMoney(displayArs, "ARS")}</span>
+        <span className="font-mono text-money">
+          {formatMoney(displayArs, "ARS")}
+        </span>
       )}
       {hasUsd && (
-        <span className={`font-mono ${showArsLine ? "text-zinc-400" : ""}`}>
+        <span
+          className={`font-mono text-money ${showArsLine ? "text-zinc-400" : ""}`}
+        >
           {usdText}
         </span>
       )}

@@ -54,7 +54,7 @@ export function MonthlyIncomeCell({
     return (
       <td className="px-2 py-2 text-right align-top">
         <div className="flex items-center justify-end gap-1.5">
-          <span className="font-mono text-sm font-medium text-zinc-100">
+          <span className="font-mono text-money font-medium text-zinc-100">
             {formatMoney(entry.amount, currency)}
           </span>
           <button
@@ -89,7 +89,7 @@ export function MonthlyIncomeCell({
             aria-label={t("consolidated.monthlyIncomeInput", {
               month: formatMonthLabel(month),
             })}
-            className="w-16 bg-transparent text-right font-mono text-xs text-white placeholder:text-zinc-600 focus:outline-none sm:w-20 sm:text-sm"
+            className="w-16 bg-transparent text-right font-mono text-money text-white placeholder:text-zinc-600 focus:outline-none sm:w-20"
             placeholder="0"
           />
         </span>

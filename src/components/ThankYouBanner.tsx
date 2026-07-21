@@ -28,12 +28,6 @@ export function ThankYouBanner() {
             {t("thankYou.premiumHighlight")}
           </span>
           {t("thankYou.premiumAfter")}
-          <span className="hidden sm:inline">
-            {" · "}
-            {t("thankYou.betaBefore")}
-            <span className="text-zinc-300">{t("thankYou.betaDate")}</span>
-            {t("thankYou.betaAfter")}
-          </span>
         </p>
       </div>
     </div>

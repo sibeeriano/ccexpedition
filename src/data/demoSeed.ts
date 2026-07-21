@@ -158,6 +158,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
       ...getDefaultSettings(),
       language,
       budgetAlert: 80_000,
+      budgetAlertConfirmed: true,
       titleText: getDemoWorkspaceTitle(language),
       showPaidRow: true,
       showPreviousMonths: true,

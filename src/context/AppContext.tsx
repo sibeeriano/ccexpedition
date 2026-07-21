@@ -136,6 +136,10 @@ type AppContextValue = {
   clearMonthlyPayment: (cardId: string, month: string) => Promise<string | null>;
   isMonthPaid: (cardId: string, month: string) => boolean;
   setBudgetAlert: (amount: number) => void;
+  updateBudgetAlert: (update: {
+    amount: number;
+    confirmed: boolean;
+  }) => void;
   /** Flush any pending auto-saved settings (e.g. budget alert on blur). */
   flushSettingsPersist: () => void;
   setLanguage: (language: AppLanguage) => void;
@@ -561,39 +565,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const casa = settings.usdExchangeCasa;
     let cancelled = false;
-    setUsdExchange((prev) => ({
-      ...prev,
-      casa,
-      loading: true,
-      error: false,
-    }));
 
-    void fetchLatestUsdVenta(casa)
-      .then((quote) => {
-        if (cancelled) return;
-        setUsdExchange({
-          rate: quote.venta,
-          compra: quote.compra,
-          fecha: quote.fecha,
-          casa: quote.casa,
-          loading: false,
-          error: false,
+    const loadQuote = () => {
+      setUsdExchange((prev) => ({
+        ...prev,
+        casa,
+        loading: true,
+        error: false,
+      }));
+
+      void fetchLatestUsdVenta(casa)
+        .then((quote) => {
+          if (cancelled) return;
+          setUsdExchange({
+            rate: quote.venta,
+            compra: quote.compra,
+            fecha: quote.fecha,
+            casa: quote.casa,
+            loading: false,
+            error: false,
+          });
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setUsdExchange({
+            rate: null,
+            compra: null,
+            fecha: null,
+            casa,
+            loading: false,
+            error: true,
+          });
         });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setUsdExchange({
-          rate: null,
-          compra: null,
-          fecha: null,
-          casa,
-          loading: false,
-          error: true,
-        });
-      });
+    };
+
+    loadQuote();
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadQuote();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [settings.usdExchangeCasa]);
 
@@ -1582,7 +1600,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   function setBudgetAlert(amount: number) {
     setSettings((prev) => {
-      const next = { ...prev, budgetAlert: Math.max(0, amount) };
+      const next = {
+        ...prev,
+        budgetAlert: Math.max(0, amount),
+        budgetAlertConfirmed: amount > 0 ? prev.budgetAlertConfirmed : false,
+      };
+      scheduleAutoPersistSettings(next);
+      return next;
+    });
+  }
+
+  function updateBudgetAlert(update: {
+    amount: number;
+    confirmed: boolean;
+  }) {
+    setSettings((prev) => {
+      const amount = Math.max(0, update.amount);
+      const next = {
+        ...prev,
+        budgetAlert: amount,
+        budgetAlertConfirmed: update.confirmed && amount > 0,
+      };
       scheduleAutoPersistSettings(next);
       return next;
     });
@@ -1647,6 +1685,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clearMonthlyPayment,
         isMonthPaid,
         setBudgetAlert,
+        updateBudgetAlert,
         flushSettingsPersist,
         setLanguage,
         updateMonthlyIncome,

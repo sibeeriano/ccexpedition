@@ -22,7 +22,9 @@ export function UsdAmount({
     convertUsdToArs && usdRate && usdRate > 0 && convertedUsdToArs !== 0;
 
   return (
-    <span className={`font-mono ${muted ? "text-zinc-400" : ""} ${className}`}>
+    <span
+      className={`font-mono text-money ${muted ? "text-zinc-400" : ""} ${className}`}
+    >
       {formatMoney(amount, "$")}
       {showConversion && (
         <span className="text-zinc-500">
