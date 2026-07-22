@@ -39,6 +39,8 @@ import {
   type AppSettings,
   getDefaultSettings,
   loadSettingsFromLocalStorage,
+  mergeSettingsPreservingLocalEdits,
+  parseAppSettings,
   reconcileAppSettings,
   saveSettingsToLocalStorage,
   settingsSnapshot,
@@ -153,6 +155,7 @@ type AppContextValue = {
 
 type UserSettingsRow = {
   settings: Partial<AppSettings>;
+  updated_at?: string;
 };
 
 function applySettingsTheme(settings: AppSettings) {
@@ -342,6 +345,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   expenseCategoriesRef.current = expenseCategories;
   const expenseCategorySchemaRef = useRef(true);
   const settingsHydratedForUserRef = useRef<string | null>(null);
+  const settingsRemoteUpdatedAtRef = useRef<string | null>(null);
   const persistedSettingsRef = useRef(settingsSnapshot(getDefaultSettings()));
   const settingsAutoPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -349,6 +353,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   function markSettingsPersisted(value: AppSettings) {
     persistedSettingsRef.current = settingsSnapshot(value);
+  }
+
+  function baselineSettings(): AppSettings {
+    try {
+      return parseAppSettings(
+        JSON.parse(persistedSettingsRef.current) as Partial<AppSettings>,
+      );
+    } catch {
+      return getDefaultSettings();
+    }
   }
 
   async function persistSettingsToStorage(
@@ -374,11 +388,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
+    let toSave = value;
+    const { data: remoteRow, error: remoteError } = await supabase
+      .from("user_settings")
+      .select("settings, updated_at")
+      .eq("user_id", activeUserId)
+      .maybeSingle();
+
+    if (remoteError) {
+      console.error("Failed to read user settings before save:", remoteError);
+    } else if (remoteRow?.settings && typeof remoteRow.settings === "object") {
+      toSave = mergeSettingsPreservingLocalEdits(
+        value,
+        parseAppSettings(remoteRow.settings as Partial<AppSettings>),
+        baselineSettings(),
+      );
+    }
+
+    const updatedAt = new Date().toISOString();
     const { error } = await supabase.from("user_settings").upsert(
       {
         user_id: activeUserId,
-        settings: value,
-        updated_at: new Date().toISOString(),
+        settings: toSave,
+        updated_at: updatedAt,
       },
       { onConflict: "user_id" },
     );
@@ -388,7 +420,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return error.message;
     }
 
-    markSettingsPersisted(value);
+    settingsRemoteUpdatedAtRef.current = updatedAt;
+    markSettingsPersisted(toSave);
+    saveSettingsToLocalStorage(activeUserId, toSave);
+    if (settingsSnapshot(toSave) !== settingsSnapshot(value)) {
+      setSettings(toSave);
+    }
     return null;
   }
 
@@ -474,6 +511,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (!userId) {
       settingsHydratedForUserRef.current = null;
+      settingsRemoteUpdatedAtRef.current = null;
       const guest = loadSettingsFromLocalStorage(null);
       setSettings(guest);
       markSettingsPersisted(guest);
@@ -488,7 +526,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const fromLocal = loadSettingsFromLocalStorage(userId);
       const { data, error } = await supabase
         .from("user_settings")
-        .select("settings")
+        .select("settings, updated_at")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -507,24 +545,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
         loaded = reconciled.settings;
         shouldSyncToRemote = reconciled.shouldSyncToRemote;
+        settingsRemoteUpdatedAtRef.current =
+          typeof data.updated_at === "string" ? data.updated_at : null;
       } else {
         loaded = fromLocal;
         shouldSyncToRemote = true;
+        settingsRemoteUpdatedAtRef.current = null;
       }
 
       saveSettingsToLocalStorage(userId, loaded);
 
       if (shouldSyncToRemote) {
+        const updatedAt = new Date().toISOString();
         const { error: syncError } = await supabase.from("user_settings").upsert(
           {
             user_id: userId,
             settings: loaded,
-            updated_at: new Date().toISOString(),
+            updated_at: updatedAt,
           },
           { onConflict: "user_id" },
         );
         if (syncError) {
           console.error("Failed to sync user settings:", syncError);
+        } else {
+          settingsRemoteUpdatedAtRef.current = updatedAt;
         }
       }
 
@@ -548,8 +592,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
       flushSettingsPersist();
     }
 
+    async function reloadSettingsIfRemoteNewer() {
+      if (settingsHydratedForUserRef.current !== userId) return;
+
+      const { data, error } = await supabase
+        .from("user_settings")
+        .select("settings, updated_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error || !data?.settings || typeof data.settings !== "object") {
+        if (error) console.error("Failed to refresh user settings:", error);
+        return;
+      }
+
+      const remoteUpdatedAt =
+        typeof data.updated_at === "string" ? data.updated_at : null;
+      if (
+        remoteUpdatedAt &&
+        settingsRemoteUpdatedAtRef.current &&
+        remoteUpdatedAt <= settingsRemoteUpdatedAtRef.current
+      ) {
+        return;
+      }
+
+      const remote = parseAppSettings(data.settings as Partial<AppSettings>);
+      const merged = mergeSettingsPreservingLocalEdits(
+        settingsRef.current,
+        remote,
+        baselineSettings(),
+      );
+
+      settingsRemoteUpdatedAtRef.current = remoteUpdatedAt;
+      setSettings(merged);
+      markSettingsPersisted(merged);
+      saveSettingsToLocalStorage(userId, merged);
+      applySettingsTheme(merged);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void reloadSettingsIfRemoteNewer();
+      }
+    }
+
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [userId, isDemo]);
 
   useEffect(() => {

@@ -63,6 +63,9 @@ export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps)
   const [exportComingSoonOpen, setExportComingSoonOpen] = useState(false);
   const savedSettingsRef = useRef(state.settings);
   savedSettingsRef.current = state.settings;
+  const draftSyncedSnapshotRef = useRef(settingsSnapshot(state.settings));
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   const settingsDirty =
     settingsSnapshot(draft) !== settingsSnapshot(state.settings);
@@ -80,6 +83,14 @@ export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps)
   }
 
   useEffect(() => {
+    const incoming = settingsSnapshot(state.settings);
+    if (settingsSnapshot(draftRef.current) === draftSyncedSnapshotRef.current) {
+      setDraft({ ...state.settings });
+      draftSyncedSnapshotRef.current = incoming;
+    }
+  }, [state.settings]);
+
+  useEffect(() => {
     return () => {
       applyPersonalizationTheme(savedSettingsRef.current);
     };
@@ -94,6 +105,7 @@ export function ProfileView({ onStartTour, demoMode = false }: ProfileViewProps)
       setSaveError(errorMessage);
       return;
     }
+    draftSyncedSnapshotRef.current = settingsSnapshot(draft);
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2000);
   }

@@ -244,6 +244,56 @@ export function reconcileAppSettings(
   return { settings: parseAppSettings(merged), shouldSyncToRemote };
 }
 
+/**
+ * When persisting from one session, keep remote values for keys this session
+ * did not edit since `baseline` (last known saved snapshot). Prevents a stale
+ * tab from overwriting prefs like showUsdRateOnHome set elsewhere.
+ */
+export function mergeSettingsPreservingLocalEdits(
+  local: AppSettings,
+  remote: AppSettings,
+  baseline: AppSettings,
+): AppSettings {
+  const keys = Object.keys(getDefaultSettings()) as (keyof AppSettings)[];
+  const merged: Partial<AppSettings> = { ...remote };
+
+  for (const key of keys) {
+    if (key === "monthlyIncomeByMonth") {
+      const months = new Set([
+        ...Object.keys(remote.monthlyIncomeByMonth),
+        ...Object.keys(local.monthlyIncomeByMonth),
+        ...Object.keys(baseline.monthlyIncomeByMonth),
+      ]);
+      const income: Record<string, MonthlyIncomeEntry> = {
+        ...remote.monthlyIncomeByMonth,
+      };
+      for (const month of months) {
+        const localEntry = local.monthlyIncomeByMonth[month];
+        const remoteEntry = remote.monthlyIncomeByMonth[month];
+        const baselineEntry = baseline.monthlyIncomeByMonth[month];
+        const localUnchanged =
+          JSON.stringify(localEntry ?? null) ===
+          JSON.stringify(baselineEntry ?? null);
+        if (localUnchanged) {
+          if (remoteEntry) income[month] = remoteEntry;
+          else delete income[month];
+        } else if (localEntry) {
+          income[month] = localEntry;
+        } else {
+          delete income[month];
+        }
+      }
+      merged.monthlyIncomeByMonth = income;
+      continue;
+    }
+
+    const localEdited = local[key] !== baseline[key];
+    merged[key] = (localEdited ? local[key] : remote[key]) as never;
+  }
+
+  return parseAppSettings(merged);
+}
+
 function parseMonthlyIncomeByMonth(
   raw: unknown,
 ): Record<string, MonthlyIncomeEntry> {

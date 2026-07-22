@@ -32,4 +32,18 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+// Keep resources in sync when locale JSON hot-reloads in dev.
+if (import.meta.hot) {
+  import.meta.hot.accept("./locales/es.json", (mod) => {
+    if (mod?.default) {
+      i18n.addResourceBundle("es", "translation", mod.default, true, true);
+    }
+  });
+  import.meta.hot.accept("./locales/en.json", (mod) => {
+    if (mod?.default) {
+      i18n.addResourceBundle("en", "translation", mod.default, true, true);
+    }
+  });
+}
+
 export default i18n;
