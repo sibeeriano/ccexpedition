@@ -8,6 +8,7 @@ create table public.cards (
   holder text not null,
   color text not null,
   background_color text,
+  is_monthly_expense boolean not null default false,
   created_at timestamptz not null default now()
 );
 

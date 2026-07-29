@@ -19,6 +19,8 @@ export const DEMO_CARD_IDS = {
   visa: "demo-visa",
   master: "demo-master",
   mp: "demo-mp",
+  super: "demo-super",
+  cine: "demo-cine",
 } as const;
 
 export type DemoSeed = {
@@ -44,6 +46,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         holder: "Expedición",
         color: "#2563eb",
         backgroundColor: null,
+        isMonthlyExpense: false,
       },
       {
         id: DEMO_CARD_IDS.master,
@@ -51,6 +54,7 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         holder: "Expedición",
         color: "#dc2626",
         backgroundColor: null,
+        isMonthlyExpense: false,
       },
       {
         id: DEMO_CARD_IDS.mp,
@@ -58,6 +62,23 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         holder: "Expedición",
         color: "#009ee3",
         backgroundColor: null,
+        isMonthlyExpense: false,
+      },
+      {
+        id: DEMO_CARD_IDS.super,
+        name: "Super",
+        holder: "Efectivo",
+        color: "#059669",
+        backgroundColor: null,
+        isMonthlyExpense: true,
+      },
+      {
+        id: DEMO_CARD_IDS.cine,
+        name: "Cine",
+        holder: "Ocio",
+        color: "#7c3aed",
+        backgroundColor: null,
+        isMonthlyExpense: true,
       },
     ],
     expenseCategories: [
@@ -131,6 +152,28 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
         isMonthlyCharge: false,
         categoryId: null,
       },
+      {
+        id: "demo-e7",
+        cardId: DEMO_CARD_IDS.super,
+        description: "Compra Coto",
+        totalAmount: 52_000,
+        totalAmountUsd: 0,
+        installments: 1,
+        startMonth: current,
+        isMonthlyCharge: false,
+        categoryId: "demo-cat-super",
+      },
+      {
+        id: "demo-e8",
+        cardId: DEMO_CARD_IDS.cine,
+        description: "Entradas + pochoclos",
+        totalAmount: 24_000,
+        totalAmountUsd: 0,
+        installments: 1,
+        startMonth: current,
+        isMonthlyCharge: false,
+        categoryId: null,
+      },
     ],
     balanceAdjustments: [
       {
@@ -162,6 +205,9 @@ export function createDemoSeed(language: AppLanguage): DemoSeed {
       titleText: getDemoWorkspaceTitle(language),
       showPaidRow: true,
       showPreviousMonths: true,
+      monthlyIncomeByMonth: {
+        [current]: { amount: 1_500_000, confirmed: true },
+      },
     },
   };
 }

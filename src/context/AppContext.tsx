@@ -26,6 +26,11 @@ import {
   EXPENSE_SELECT_WITH_CATEGORY,
   isExpenseCategorySchemaError,
 } from "../utils/expenseSchema";
+import {
+  CARD_SELECT_LEGACY,
+  CARD_SELECT_WITH_MONTHLY_FLAG,
+  isCardMonthlyExpenseSchemaError,
+} from "../utils/cardSchema";
 import { getMonthlyDueByCard, isCardMonthPaid } from "../utils/expenses";
 import { addMonths, isBeforeCurrentMonth } from "../utils/months";
 import { supabase } from "../lib/supabase";
@@ -183,6 +188,7 @@ type CardRow = {
   holder: string;
   color: string;
   background_color: string | null;
+  is_monthly_expense?: boolean | null;
 };
 
 type ExpenseRow = {
@@ -242,6 +248,7 @@ function mapCard(row: CardRow): Card {
     holder: row.holder as CardHolder,
     color: row.color,
     backgroundColor,
+    isMonthlyExpense: row.is_monthly_expense === true,
   };
 }
 
@@ -734,7 +741,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     Promise.all([
       supabase
         .from("cards")
-        .select("id, name, holder, color, background_color")
+        .select(CARD_SELECT_WITH_MONTHLY_FLAG)
         .order("created_at"),
       supabase.from("expenses").select(EXPENSE_SELECT_WITH_CATEGORY).order("created_at"),
       supabase
@@ -769,6 +776,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       if (cardsResult.error) {
         console.error("Failed to load cards:", cardsResult.error);
+        if (isCardMonthlyExpenseSchemaError(cardsResult.error)) {
+          void supabase
+            .from("cards")
+            .select(CARD_SELECT_LEGACY)
+            .order("created_at")
+            .then(({ data, error }) => {
+              if (cancelled || error) {
+                if (error) {
+                  console.error("Failed to load legacy cards:", error);
+                }
+                return;
+              }
+              setCards((data as CardRow[]).map(mapCard));
+            });
+        }
       } else {
         setCards((cardsResult.data as CardRow[]).map(mapCard));
       }
@@ -990,17 +1012,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    const { data, error } = await supabase
+    const insertPayload = {
+      name: input.name,
+      holder: input.holder,
+      color: input.color,
+      background_color: input.backgroundColor,
+      user_id: userId,
+      ...(input.isMonthlyExpense ? { is_monthly_expense: true } : {}),
+    };
+
+    let { data, error } = await supabase
       .from("cards")
-      .insert({
-        name: input.name,
-        holder: input.holder,
-        color: input.color,
-        background_color: input.backgroundColor,
-        user_id: userId,
-      })
-      .select("id, name, holder, color, background_color")
+      .insert(insertPayload)
+      .select(CARD_SELECT_WITH_MONTHLY_FLAG)
       .single();
+
+    if (error && isCardMonthlyExpenseSchemaError(error)) {
+      if (input.isMonthlyExpense) {
+        return i18n.t("errors.monthlyExpenseSchemaRequired");
+      }
+      ({ data, error } = await supabase
+        .from("cards")
+        .insert({
+          name: input.name,
+          holder: input.holder,
+          color: input.color,
+          background_color: input.backgroundColor,
+          user_id: userId,
+        })
+        .select(CARD_SELECT_LEGACY)
+        .single());
+    }
 
     if (error || !data) {
       console.error("Failed to add card:", error);
@@ -1053,7 +1095,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         background_color: backgroundColor,
       })
       .eq("id", id)
-      .select("id, name, holder, color, background_color")
+      .select(CARD_SELECT_WITH_MONTHLY_FLAG)
       .single();
 
     if (error || !data) {

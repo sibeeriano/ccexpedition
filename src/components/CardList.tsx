@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import { getOutstandingDebt } from "../utils/expenses";
+import { getRegularCards } from "../utils/cards";
 import { getMonthsRange } from "../utils/months";
 import {
   getCardChipStyle,
@@ -43,6 +44,11 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
     [state.expenses, state.balanceAdjustments, state.pendingCarryovers],
   );
 
+  const regularCards = useMemo(
+    () => getRegularCards(state.cards),
+    [state.cards],
+  );
+
   const debtByCard = useMemo(() => {
     const map = new Map<string, { ars: number; usd: number }>();
     for (const card of state.cards) {
@@ -71,7 +77,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
   const grandDebt = useMemo(
     () =>
       getOutstandingDebt(
-        state.cards.map((card) => card.id),
+        regularCards.map((card) => card.id),
         monthsRange,
         state.expenses,
         state.balanceAdjustments,
@@ -79,7 +85,7 @@ export function CardList({ selectedId, onSelect }: CardListProps) {
         state.monthlyPayments,
       ),
     [
-      state.cards,
+      regularCards,
       monthsRange,
       state.expenses,
       state.balanceAdjustments,

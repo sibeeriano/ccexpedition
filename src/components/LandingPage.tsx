@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { formatMoney } from "../utils/format";
 import { BRAND_ACCENT, BRAND_CC_COLOR } from "../utils/theme";
 import { BrandName } from "./BrandName";
 import { DevSignature } from "./DevSignature";
@@ -8,7 +9,6 @@ import { LanguageToggle } from "./LanguageToggle";
 type LandingPageProps = {
   onSignIn: () => void;
   onSignUp: () => void;
-  onTryDemo: () => void;
 };
 
 const HOW_IT_WORKS_STEPS = [
@@ -17,6 +17,22 @@ const HOW_IT_WORKS_STEPS = [
   { image: "/gatito3.png", stepKey: "step3" },
   { image: "/gatito4.png", stepKey: "step4" },
 ] as const;
+
+const LANDING_BUDGET_PREVIEW_AMOUNT = 80_000;
+
+function PencilIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="size-3.5"
+      aria-hidden
+    >
+      <path d="m2.695 14.363-1.222 3.955a1 1 0 0 0 1.305 1.227l3.958-1.222a1 1 0 0 0 .632-.633L15.09 6.909a2.25 2.25 0 0 0 0-3.182L11.273 0a2.25 2.25 0 0 0-3.182 0L2.695 5.395a1 1 0 0 0-.633.633Z" />
+    </svg>
+  );
+}
 
 function WarningIcon() {
   return (
@@ -87,7 +103,7 @@ function HowItWorksStep({
   );
 }
 
-export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps) {
+export function LandingPage({ onSignIn, onSignUp }: LandingPageProps) {
   const { t, i18n } = useTranslation();
   const headlineBreakBeforeAccent = i18n.language !== "en";
 
@@ -105,13 +121,6 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <LanguageToggle className="mr-1 hidden sm:flex" />
-          <button
-            type="button"
-            onClick={onTryDemo}
-            className="hidden rounded-full border border-brand-accent px-3 py-1.5 text-xs font-medium text-brand-accent transition-colors hover:bg-brand-accent/10 sm:inline-flex sm:px-5 sm:py-2 sm:text-sm"
-          >
-            {t("demo.tryDemo")}
-          </button>
           <button
             type="button"
             onClick={onSignUp}
@@ -182,13 +191,6 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
                 >
                   ›
                 </span>
-              </button>
-              <button
-                type="button"
-                onClick={onTryDemo}
-                className="inline-flex w-full items-center justify-center rounded-full border border-brand-accent px-8 py-4 text-base font-semibold text-brand-accent transition-colors hover:bg-brand-accent/10 sm:w-auto sm:py-[1.125rem] sm:text-lg"
-              >
-                {t("demo.tryDemo")}
               </button>
             </div>
 
@@ -297,12 +299,17 @@ export function LandingPage({ onSignIn, onSignUp, onTryDemo }: LandingPageProps)
                 <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/80">
                   {t("landing.budgetPreview.description")}
                 </p>
-                <div className="mt-5 flex flex-col items-center gap-3">
-                  <span className="text-sm font-medium text-budget-alert">
-                    {t("landing.budgetPreview.budgetLabel")}
-                  </span>
-                  <div className="rounded-md border border-white/10 bg-[#1a1a22] px-4 py-2 font-mono text-sm text-white">
-                    {t("landing.budgetPreview.budgetValue")}
+                <div className="mt-5 flex justify-center">
+                  <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+                    {t("consolidated.budgetAlert")}
+                    <span className="flex items-center gap-1.5">
+                      <span className="font-mono text-money font-medium text-zinc-400">
+                        {formatMoney(LANDING_BUDGET_PREVIEW_AMOUNT, "$")}
+                      </span>
+                      <span className="rounded p-1 text-zinc-500" aria-hidden>
+                        <PencilIcon />
+                      </span>
+                    </span>
                   </div>
                 </div>
               </div>

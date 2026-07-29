@@ -71,6 +71,7 @@ function CardForm() {
   const backgroundPresets = getCardBackgroundPresetsForTheme(visualTheme);
   const defaultBackground = getDefaultCardBackgroundForTheme(visualTheme);
   const close = useModalClose();
+  const [isMonthlyExpense, setIsMonthlyExpense] = useState(false);
   const [name, setName] = useState("");
   const [holder, setHolder] = useState("");
   const [color, setColor] = useState(CARD_COLOR_PRESETS[0].color);
@@ -92,6 +93,7 @@ function CardForm() {
       holder: trimmedHolder,
       color,
       backgroundColor: useBackground ? backgroundColor : null,
+      isMonthlyExpense,
     });
     if (errorMessage) {
       setError(errorMessage);
@@ -106,6 +108,23 @@ function CardForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <label className="flex cursor-pointer items-start gap-2.5">
+        <input
+          type="checkbox"
+          checked={isMonthlyExpense}
+          onChange={(e) => setIsMonthlyExpense(e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 rounded border-white/20 bg-base text-white focus:ring-white/20"
+        />
+        <span className="min-w-0">
+          <span className="block text-xs font-medium text-zinc-300">
+            {t("addCard.monthlyExpense")}
+          </span>
+          <span className="mt-0.5 block text-xs text-zinc-500">
+            {t("addCard.monthlyExpenseHint")}
+          </span>
+        </span>
+      </label>
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="card-name" className="text-xs font-medium text-zinc-400">
           {t("addCard.cardName")}

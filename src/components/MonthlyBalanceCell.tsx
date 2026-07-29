@@ -7,12 +7,16 @@ type MonthlyBalanceCellProps = {
   month: string;
   monthArsTotal: number;
   monthUsdTotal: number;
+  monthlyExpenseArs?: number;
+  monthlyExpenseUsd?: number;
 };
 
 export function MonthlyBalanceCell({
   month,
   monthArsTotal,
   monthUsdTotal,
+  monthlyExpenseArs = 0,
+  monthlyExpenseUsd = 0,
 }: MonthlyBalanceCellProps) {
   const { t } = useTranslation();
   const { state } = useApp();
@@ -27,17 +31,22 @@ export function MonthlyBalanceCell({
     );
   }
 
-  const incomePrimary = primaryTotal(monthArsTotal, monthUsdTotal);
+  const cardDebtPrimary = primaryTotal(monthArsTotal, monthUsdTotal);
+  const monthlyExpensePrimary = primaryTotal(
+    monthlyExpenseArs,
+    monthlyExpenseUsd,
+  );
   const debtAmount =
     convertUsdToArs && usdRate
-      ? resolve(monthArsTotal, monthUsdTotal).combinedArs
-      : incomePrimary.amount;
+      ? resolve(monthArsTotal, monthUsdTotal).combinedArs +
+        resolve(monthlyExpenseArs, monthlyExpenseUsd).combinedArs
+      : cardDebtPrimary.amount + monthlyExpensePrimary.amount;
   const incomeAmount =
     convertUsdToArs && usdRate
-      ? toComparableArs(entry.amount, incomePrimary.currency)
+      ? toComparableArs(entry.amount, cardDebtPrimary.currency)
       : entry.amount;
   const balanceCurrency =
-    convertUsdToArs && usdRate ? "ARS" : incomePrimary.currency;
+    convertUsdToArs && usdRate ? "ARS" : cardDebtPrimary.currency;
   const balance = Math.round((incomeAmount - debtAmount) * 100) / 100;
 
   return (

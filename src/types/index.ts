@@ -14,6 +14,8 @@ export type Card = {
   color: string; // hex accent for UI
   /** Optional chip background; null = default surface */
   backgroundColor: string | null;
+  /** Gastos mensuales: no suman al total de tarjetas; restan del saldo. */
+  isMonthlyExpense: boolean;
 };
 
 export type MonthlyPayment = {

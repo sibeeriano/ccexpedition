@@ -13,6 +13,7 @@ import { PaidMonthCell } from "./PaidMonthCell";
 import { MonthlyIncomeCell } from "./MonthlyIncomeCell";
 import { MonthlyBalanceCell } from "./MonthlyBalanceCell";
 import { filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/months";
+import { isMonthlyExpenseCard, getRegularCards } from "../utils/cards";
 import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
@@ -84,14 +85,42 @@ export function ConsolidatedView() {
   }));
 
   const grandTotals = monthsRange.map((_, i) => {
-    const sum = rows.reduce((acc, row) => acc + row.totals[i], 0);
+    const sum = rows.reduce(
+      (acc, row) =>
+        isMonthlyExpenseCard(row.card) ? acc : acc + row.totals[i],
+      0,
+    );
     return Math.round(sum * 100) / 100;
   });
 
   const grandTotalsUsd = monthsRange.map((_, i) => {
-    const sum = rows.reduce((acc, row) => acc + row.totalsUsd[i], 0);
+    const sum = rows.reduce(
+      (acc, row) =>
+        isMonthlyExpenseCard(row.card) ? acc : acc + row.totalsUsd[i],
+      0,
+    );
     return Math.round(sum * 100) / 100;
   });
+
+  const monthlyExpenseTotals = monthsRange.map((_, i) => {
+    const sum = rows.reduce(
+      (acc, row) =>
+        isMonthlyExpenseCard(row.card) ? acc + row.totals[i] : acc,
+      0,
+    );
+    return Math.round(sum * 100) / 100;
+  });
+
+  const monthlyExpenseTotalsUsd = monthsRange.map((_, i) => {
+    const sum = rows.reduce(
+      (acc, row) =>
+        isMonthlyExpenseCard(row.card) ? acc + row.totalsUsd[i] : acc,
+      0,
+    );
+    return Math.round(sum * 100) / 100;
+  });
+
+  const regularCards = getRegularCards(state.cards);
 
   const monthIncomeTargets = monthsRange.map((_, i) =>
     primaryTotal(grandTotals[i], grandTotalsUsd[i]),
@@ -296,6 +325,11 @@ export function ConsolidatedView() {
                       <p className="truncate text-sm font-semibold leading-tight text-white">
                         {card.name}
                       </p>
+                      {isMonthlyExpenseCard(card) && (
+                        <p className="truncate text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                          {t("addCard.monthlyExpenseBadge")}
+                        </p>
+                      )}
                       <p className="truncate text-[11px] leading-tight text-zinc-400">
                         {card.holder}
                       </p>
@@ -370,7 +404,7 @@ export function ConsolidatedView() {
                 <PaidMonthCell
                   key={month}
                   month={month}
-                  cards={state.cards}
+                  cards={regularCards}
                 />
               ))}
             </tr>
@@ -401,6 +435,8 @@ export function ConsolidatedView() {
                   month={month}
                   monthArsTotal={grandTotals[i]}
                   monthUsdTotal={grandTotalsUsd[i]}
+                  monthlyExpenseArs={monthlyExpenseTotals[i]}
+                  monthlyExpenseUsd={monthlyExpenseTotalsUsd[i]}
                 />
               ))}
             </tr>

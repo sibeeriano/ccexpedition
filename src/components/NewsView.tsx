@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   getNewsPost,
@@ -5,6 +6,7 @@ import {
   type NewsPost,
 } from "../data/news";
 import { formatNewsDate, pickLocalized } from "../utils/news";
+import { NewsImageLightbox } from "./NewsImageLightbox";
 
 type NewsViewProps = {
   slug?: string;
@@ -20,6 +22,13 @@ function NewsImages({
   afterParagraph: number;
   lang: "es" | "en";
 }) {
+  const { t } = useTranslation();
+  const [lightbox, setLightbox] = useState<{
+    src: string;
+    alt: string;
+    caption?: string;
+  } | null>(null);
+
   const images =
     post.images?.filter((image) => image.afterParagraph === afterParagraph) ??
     [];
@@ -27,25 +36,49 @@ function NewsImages({
   if (images.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      {images.map((image) => (
-        <figure
-          key={image.src}
-          className="mx-auto w-1/2 min-w-[10rem] overflow-hidden rounded-md border border-white/10"
-        >
-          <img
-            src={image.src}
-            alt={pickLocalized(image.alt, lang)}
-            className="w-full object-cover"
-          />
-          {image.caption && (
-            <figcaption className="px-2 py-1.5 text-center text-xs text-zinc-500">
-              {pickLocalized(image.caption, lang)}
-            </figcaption>
-          )}
-        </figure>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col gap-3">
+        {images.map((image) => {
+          const alt = pickLocalized(image.alt, lang);
+          const caption = image.caption
+            ? pickLocalized(image.caption, lang)
+            : undefined;
+
+          return (
+            <figure
+              key={image.src}
+              className="mx-auto w-1/2 min-w-[10rem] overflow-hidden rounded-md border border-white/10"
+            >
+              <button
+                type="button"
+                onClick={() => setLightbox({ src: image.src, alt, caption })}
+                aria-label={t("news.expandImage")}
+                className="group block w-full cursor-zoom-in text-left transition-colors hover:border-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+              >
+                <img
+                  src={image.src}
+                  alt={alt}
+                  className="w-full object-cover transition-opacity group-hover:opacity-90"
+                />
+              </button>
+              {caption && (
+                <figcaption className="px-2 py-1.5 text-center text-xs text-zinc-500">
+                  {caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+        })}
+      </div>
+      {lightbox && (
+        <NewsImageLightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          caption={lightbox.caption}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+    </>
   );
 }
 

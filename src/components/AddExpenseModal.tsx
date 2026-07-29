@@ -11,6 +11,7 @@ import {
   type InstallmentAmountSource,
 } from "../utils/installmentFormSync";
 import { formatMoney, formatMonthLabel, getCurrentMonth } from "../utils/format";
+import { isMonthlyExpenseCard } from "../utils/cards";
 import { CategorySelectField } from "./CategorySelectField";
 import { InstallmentExpenseFields } from "./InstallmentExpenseFields";
 import { MonthSelectField } from "./MonthSelectField";
@@ -38,6 +39,7 @@ function ExpenseForm({ card }: { card: Card }) {
   const { t } = useTranslation();
   const { state, addExpense } = useApp();
   const close = useModalClose();
+  const isMonthlyExpenseItem = isMonthlyExpenseCard(card);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -62,18 +64,21 @@ function ExpenseForm({ card }: { card: Card }) {
   );
   const [startMonth, setStartMonth] = useState(currentMonth);
 
-  const isSubscription = paymentType === "one-time" && isMonthlyCharge;
+  const isSubscription =
+    !isMonthlyExpenseItem && paymentType === "one-time" && isMonthlyCharge;
   const amount = Number.parseFloat(amountInput) || 0;
   const amountUsd = Number.parseFloat(usdAmountInput) || 0;
   const subscriptionMonths = isSubscription
     ? Math.floor(Number.parseInt(subscriptionMonthsInput, 10) || 0)
     : 1;
   const installments =
-    paymentType === "installments"
-      ? Math.floor(Number.parseInt(installmentsInput, 10) || 0)
-      : isSubscription
-        ? subscriptionMonths
-        : 1;
+    isMonthlyExpenseItem
+      ? 1
+      : paymentType === "installments"
+        ? Math.floor(Number.parseInt(installmentsInput, 10) || 0)
+        : isSubscription
+          ? subscriptionMonths
+          : 1;
 
   const totalAmount = isSubscription ? amount * subscriptionMonths : amount;
   const totalAmountUsd = isSubscription
@@ -93,7 +98,7 @@ function ExpenseForm({ card }: { card: Card }) {
             totalAmount,
             totalAmountUsd,
             installments,
-            startMonth,
+            startMonth: isMonthlyExpenseItem ? currentMonth : startMonth,
             isMonthlyCharge: isSubscription,
             categoryId: null,
           },
@@ -115,6 +120,8 @@ function ExpenseForm({ card }: { card: Card }) {
       return;
     }
 
+    const expenseStartMonth = isMonthlyExpenseItem ? getCurrentMonth() : startMonth;
+
     setSaving(true);
     setError(null);
     const errorMessage = await addExpense({
@@ -123,7 +130,7 @@ function ExpenseForm({ card }: { card: Card }) {
       totalAmount,
       totalAmountUsd,
       installments,
-      startMonth,
+      startMonth: expenseStartMonth,
       isMonthlyCharge: isSubscription,
       categoryName: categoryInput,
     });
@@ -285,6 +292,7 @@ function ExpenseForm({ card }: { card: Card }) {
         </div>
       </div>
 
+      {!isMonthlyExpenseItem && (
       <fieldset>
         <legend className="mb-1.5 text-xs font-medium text-zinc-400">
           {t("addExpense.paymentType")}
@@ -317,8 +325,9 @@ function ExpenseForm({ card }: { card: Card }) {
           ))}
         </div>
       </fieldset>
+      )}
 
-      {paymentType === "one-time" && (
+      {!isMonthlyExpenseItem && paymentType === "one-time" && (
         <label className="flex cursor-pointer items-start gap-2 text-sm text-zinc-300">
           <input
             type="checkbox"
@@ -335,7 +344,7 @@ function ExpenseForm({ card }: { card: Card }) {
         </label>
       )}
 
-      {paymentType === "installments" && (
+      {!isMonthlyExpenseItem && paymentType === "installments" && (
         <InstallmentExpenseFields
           idPrefix="expense"
           installmentsInput={installmentsInput}
@@ -347,7 +356,7 @@ function ExpenseForm({ card }: { card: Card }) {
         />
       )}
 
-      {isSubscription && (
+      {!isMonthlyExpenseItem && isSubscription && (
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="expense-subscription-months"
@@ -369,6 +378,7 @@ function ExpenseForm({ card }: { card: Card }) {
         </div>
       )}
 
+      {!isMonthlyExpenseItem && (
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="expense-start-month"
@@ -384,6 +394,7 @@ function ExpenseForm({ card }: { card: Card }) {
           onChange={setStartMonth}
         />
       </div>
+      )}
 
       {previewRows.length > 0 && (
         <div className="rounded-md bg-base px-3 py-2">

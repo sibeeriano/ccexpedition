@@ -11,6 +11,7 @@ import { useAppPath } from "./hooks/useAppPath";
 import { useAuth } from "./context/AuthContext";
 import { useApp } from "./context/AppContext";
 import { useEffect, useState } from "react";
+import { DEMO_PUBLIC_ENABLED } from "./utils/featureFlags";
 
 const AUTH_INTENT_KEY = "ccexpedition-auth-intent";
 
@@ -32,7 +33,13 @@ function AppRoutes() {
     }
   }, [isDemo]);
 
-  if (isDemo) {
+  useEffect(() => {
+    if (isDemo && !DEMO_PUBLIC_ENABLED) {
+      navigate("/");
+    }
+  }, [isDemo, navigate]);
+
+  if (isDemo && DEMO_PUBLIC_ENABLED) {
     return <WorkspaceShell demoMode />;
   }
 
@@ -61,7 +68,6 @@ function AppRoutes() {
             setLoginMode("sign-up");
             setShowLogin(true);
           }}
-          onTryDemo={() => navigate("/demo")}
         />
       );
     }

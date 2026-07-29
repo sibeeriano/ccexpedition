@@ -45,8 +45,8 @@
     "workspaceTitle": "Customizable title"
   },
   "nav": {
-    "addCard": "+ Add Card",
-    "addCardShort": "+ Card",
+    "addCard": "+ Add item",
+    "addCardShort": "+ Item",
     "settings": "Settings",
     "menu": "Menu",
     "goConsolidated": "Go to consolidated view",
@@ -241,8 +241,6 @@
     "budgetPreview": {
       "title": "Expedition detected difficult terrain",
       "description": "Set a total monthly amount. If your projections go through the roof, months that exceed the limit turn red.",
-      "budgetLabel": "Monthly spending limit:",
-      "budgetValue": "$ 900000",
       "imageAlt": "Explorer cat with a map"
     }
   },
@@ -299,7 +297,9 @@
     "readMore": "Read more",
     "backToApp": "Back to app",
     "backToList": "Back to list",
-    "notFound": "We couldn't find that post."
+    "notFound": "We couldn't find that post.",
+    "expandImage": "View larger image",
+    "closeImage": "Close image"
   },
   "dashboard": {
     "cta": "Dashboard",
@@ -481,7 +481,10 @@
     "cellDetails": "{{card}}, {{month}}. Show details"
   },
   "addCard": {
-    "title": "Add Card",
+    "title": "Add item",
+    "monthlyExpense": "Variable spending",
+    "monthlyExpenseHint": "Day-to-day cash or non-card purchases: they don't add to card totals and subtract from your available balance.",
+    "monthlyExpenseBadge": "Variable expense",
     "cardName": "Expense/Card/Credit",
     "cardNamePlaceholder": "e.g. Visa",
     "holderLabel": "Reference",
@@ -490,7 +493,7 @@
     "backgroundColor": "Background color",
     "backgroundHint": "Optional. Tints the card chip in the top bar.",
     "colorOption": "Color {{hex}}",
-    "submit": "Add Card"
+    "submit": "Add item"
   },
   "expenseCategory": {
     "label": "Category",
@@ -649,6 +652,7 @@
     "holderRequired": "Cardholder name is required",
     "invalidCardColor": "Invalid card color",
     "failedAddCard": "Failed to add card",
+    "monthlyExpenseSchemaRequired": "Variable spending needs a database update. Run the is_monthly_expense migration in Supabase.",
     "failedUpdateCard": "Failed to update card",
     "failedAddExpense": "Failed to add expense",
     "failedSaveCategory": "Failed to save category",

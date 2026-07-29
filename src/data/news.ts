@@ -23,6 +23,70 @@ export type NewsPost = {
 /** Agregá entradas nuevas arriba (más reciente primero). */
 export const NEWS_POSTS: NewsPost[] = [
   {
+    id: "gastos-mensuales",
+    date: "2026-07-29",
+    title: {
+      es: "Gastos variables: controlá lo que te queda",
+      en: "Variable spending: track what's left",
+    },
+    excerpt: {
+      es: "Sumá super, cine o compras en efectivo: restan del saldo sin mezclarse con tarjetas ni cuotas.",
+      en: "Log groceries, movies, or cash purchases: they subtract from balance without mixing into cards or installments.",
+    },
+    body: [
+      {
+        es: "Los compromisos fijos — tarjetas, préstamos, suscripciones, alquiler en cuotas — siguen funcionando como siempre y definen cuánto tenés que pagar cada mes. Ahora podés agregar ítems de «Gastos variables» para lo que va pasando: super, panadería, salidas, gustitos en efectivo.",
+        en: "Fixed commitments — cards, loans, subscriptions, rent spread in installments — still work as before and define what you owe each month. You can now add «Variable spending» items for day-to-day costs: groceries, bakery runs, outings, cash treats.",
+      },
+      {
+        es: "Esos ítems llevan la etiqueta «Gasto variable», no suman al total de tarjetas ni a la deuda del chip «Todas». Cada carga resta del Saldo: ingreso mensual menos lo fijo menos lo que fuiste gastando en el mes.",
+        en: "Those items show a «Variable expense» badge, don't add to card totals or the «All» chip debt. Each entry subtracts from Balance: monthly income minus fixed costs minus what you've spent so far.",
+      },
+      {
+        es: "Al cargar un gasto variable el formulario es rápido: mes actual, pago único, sin cuotas. Ideal para anotar «fui al cine» o «compré en el super» y ver cuánta plata te queda sin abrir el banco.",
+        en: "Adding a variable expense is quick: current month, one-time payment, no installments. Handy for logging «went to the movies» or «grocery run» and seeing how much you have left without opening your banking app.",
+      },
+    ],
+    images: [
+      {
+        src: "/news/gastos-mensuales-agregar-item.png",
+        afterParagraph: 0,
+        alt: {
+          es: "Modal Agregar ítem con el checkbox Gastos variables activado.",
+          en: "Add item modal with the Variable spending checkbox enabled.",
+        },
+        caption: {
+          es: "Nuevo ítem para super, cine u otros gastos del mes.",
+          en: "New item for groceries, movies, or other monthly spending.",
+        },
+      },
+      {
+        src: "/news/gastos-mensuales-grilla.png",
+        afterParagraph: 1,
+        alt: {
+          es: "Vista consolidada con Super y Cine, badge Gasto variable y fila Saldo restando esos gastos.",
+          en: "Consolidated view with Groceries and Movies items, Variable expense badge, and Balance row subtracting those costs.",
+        },
+        caption: {
+          es: "Super y Cine separados del total de tarjetas; el saldo muestra lo que te queda.",
+          en: "Groceries and Movies kept separate from card totals; balance shows what's left.",
+        },
+      },
+      {
+        src: "/news/gastos-mensuales-agregar-gasto.png",
+        afterParagraph: 2,
+        alt: {
+          es: "Agregar gasto en Super: formulario reducido para anotar una compra del mes.",
+          en: "Add expense on Groceries: simplified form to log a purchase this month.",
+        },
+        caption: {
+          es: "Formulario rápido para cargar un gasto variable.",
+          en: "Quick form to log a variable expense.",
+        },
+      },
+    ],
+  },
+  {
     id: "tema-liquid-glass",
     date: "2026-07-08",
     title: {

@@ -45,8 +45,8 @@
     "workspaceTitle": "Titulo personalisable"
   },
   "nav": {
-    "addCard": "+ Agregar Tarjeta/Gasto",
-    "addCardShort": "+ Tarjeta/Gasto",
+    "addCard": "+ Agregar ítem",
+    "addCardShort": "+ Ítem",
     "settings": "Ajustes",
     "menu": "Menú",
     "goConsolidated": "Ir a vista consolidada",
@@ -194,11 +194,11 @@
     "logoAlt": "ccExpedition",
     "logoSmallAlt": "ccExpedition — logo",
     "tagline": "El calmante para la ansiedad financiera",
-    "headlineLine1": "Simulá tus gastos",
+    "headlineLine1": "Controla el presente",
     "headlineLine2Before": "",
-    "headlineLine2": "futuros antes de",
-    "headlineLine3": "arrepentirte y lleva un control de los actuales.",
-    "descriptionLine1": " proyecta tus tarjetas y te",
+    "headlineLine2": "y especula el futuro.",
+    "headlineLine3": "",
+    "descriptionLine1": " Controla tus gastos mensuales, proyecta tus tarjetas y te",
     "descriptionLine2": "muestra como quedarían tus proximos",
     "descriptionLine3": "resúmenes.",
     "betaCta": "Participa de la Beta",
@@ -241,8 +241,6 @@
     "budgetPreview": {
       "title": "Expedición detectó terreno complicado",
       "description": "Establece un monto mensual total. Si tus especulaciones se van por las nubes, los meses que pasen el limite se ponen en rojo.",
-      "budgetLabel": "Límite de gasto mensual:",
-      "budgetValue": "$ 900000",
       "imageAlt": "Gato explorador con mapa"
     }
   },
@@ -299,7 +297,9 @@
     "readMore": "Leer más",
     "backToApp": "Volver a la app",
     "backToList": "Volver al listado",
-    "notFound": "No encontramos esa novedad."
+    "notFound": "No encontramos esa novedad.",
+    "expandImage": "Ver imagen ampliada",
+    "closeImage": "Cerrar imagen"
   },
   "dashboard": {
     "cta": "Tablero",
@@ -481,7 +481,10 @@
     "cellDetails": "{{card}}, {{month}}. Ver detalle"
   },
   "addCard": {
-    "title": "Agregar tarjeta",
+    "title": "Agregar ítem",
+    "monthlyExpense": "Gastos variables",
+    "monthlyExpenseHint": "Compras del día a día en efectivo o fuera de tarjeta: no suman al total de tarjetas y restan del saldo disponible.",
+    "monthlyExpenseBadge": "Gasto variable",
     "cardName": "Gasto/Tarjeta/Crédito",
     "cardNamePlaceholder": "ej. Visa",
     "holderLabel": "Referencia",
@@ -490,7 +493,7 @@
     "backgroundColor": "Fondo de color",
     "backgroundHint": "Opcional. Tiñe el chip de la tarjeta en la barra superior.",
     "colorOption": "Color {{hex}}",
-    "submit": "Agregar tarjeta"
+    "submit": "Agregar ítem"
   },
   "expenseCategory": {
     "label": "Categoría",
@@ -649,6 +652,7 @@
     "holderRequired": "El nombre del titular es obligatorio",
     "invalidCardColor": "Color de tarjeta inválido",
     "failedAddCard": "No se pudo agregar la tarjeta",
+    "monthlyExpenseSchemaRequired": "Gastos variables requiere una actualización de base de datos. Ejecutá la migración is_monthly_expense en Supabase.",
     "failedUpdateCard": "No se pudo actualizar la tarjeta",
     "failedAddExpense": "No se pudo agregar el gasto",
     "failedSaveCategory": "No se pudo guardar la categoría",
