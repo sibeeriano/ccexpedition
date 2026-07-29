@@ -16,7 +16,7 @@ export function DevSignature() {
           rel="noopener noreferrer"
           className="font-medium text-zinc-500 transition-colors hover:text-zinc-300"
         >
-          sibeeriano
+          sib.deb
         </a>
       </span>
     </div>
