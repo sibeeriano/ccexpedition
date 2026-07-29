@@ -35,9 +35,10 @@ const STICKY_CARD_COL_TOTAL =
 export function ConsolidatedView() {
   const { t } = useTranslation();
   const { state } = useApp();
-  const { currency, budgetAlert, showPreviousMonths, showPaidRow, showUsdRateOnHome } =
+  const { currency, budgetAlert, budgetAlertConfirmed, showPreviousMonths, showPaidRow, showUsdRateOnHome } =
     state.settings;
-  const { primaryTotal } = useMoneyDisplay();
+  const { primaryTotal, toComparableArs, resolve, convertUsdToArs, usdRate } =
+    useMoneyDisplay();
   const currentMonth = getCurrentMonth();
   const [popover, setPopover] = useState<CellPopover | null>(null);
 
@@ -126,12 +127,19 @@ export function ConsolidatedView() {
     primaryTotal(grandTotals[i], grandTotalsUsd[i]),
   );
 
-  const isOverBudget = monthIncomeTargets.map(
-    (primary) =>
-      budgetAlert > 0 &&
-      primary.currency === currency &&
-      primary.amount > budgetAlert,
-  );
+  const budgetLimitActive = budgetAlert > 0 && budgetAlertConfirmed === true;
+
+  const isOverBudget = monthsRange.map((_, i) => {
+    if (!budgetLimitActive) return false;
+    const resolved = resolve(grandTotals[i], grandTotalsUsd[i]);
+    const primary = monthIncomeTargets[i];
+    const totalToCompare =
+      convertUsdToArs && usdRate && usdRate > 0
+        ? resolved.combinedArs
+        : toComparableArs(primary.amount, primary.currency);
+    const limitToCompare = toComparableArs(budgetAlert, currency);
+    return totalToCompare > limitToCompare;
+  });
   const overBudgetMonths = monthsRange.filter((_, index) => isOverBudget[index]);
 
   const tableWrapRef = useRef<HTMLDivElement>(null);
@@ -377,12 +385,14 @@ export function ConsolidatedView() {
                   key={monthsRange[i]}
                   className={`px-3 py-1.5 text-right ${
                     isOverBudget[i]
-                      ? "bg-budget-alert-fill"
+                      ? "bg-budget-alert-fill text-budget-alert"
                       : "bg-white/[0.03]"
                   } ${
-                    monthsRange[i] < currentMonth
-                      ? "text-zinc-400"
-                      : "text-zinc-100"
+                    isOverBudget[i]
+                      ? ""
+                      : monthsRange[i] < currentMonth
+                        ? "text-zinc-400"
+                        : "text-zinc-100"
                   }`}
                 >
                   <AmountDisplay
@@ -447,17 +457,17 @@ export function ConsolidatedView() {
       </div>
 
       {(showUsdRateOnHome ||
-        (budgetAlert > 0 && overBudgetMonths.length > 0)) && (
+        (budgetLimitActive && overBudgetMonths.length > 0)) && (
         <div
           className={`flex min-w-0 flex-col gap-4 sm:items-end ${
             showUsdRateOnHome &&
-            budgetAlert > 0 &&
+            budgetLimitActive &&
             overBudgetMonths.length > 0
               ? "sm:flex-row sm:justify-between sm:gap-6"
               : "sm:max-w-lg"
           }`}
         >
-          {budgetAlert > 0 && overBudgetMonths.length > 0 && (
+          {budgetLimitActive && overBudgetMonths.length > 0 && (
             <BudgetExceededNotice
               months={overBudgetMonths}
               budgetAlert={budgetAlert}
