@@ -16,6 +16,7 @@ import { filterMonthsForDisplay, getMonthsRange, monthDiff } from "../utils/mont
 import { isMonthlyExpenseCard, getRegularCards } from "../utils/cards";
 import { formatMonthLabel, getCurrentMonth } from "../utils/format";
 import { useMoneyDisplay } from "../hooks/useMoneyDisplay";
+import { isMonthOverBudget } from "../utils/moneyTotals";
 import { BudgetExceededNotice } from "./BudgetExceededNotice";
 import { UsdRateHomeNotice } from "./UsdRateHomeNotice";
 import { BudgetAlertField } from "./BudgetAlertField";
@@ -37,8 +38,7 @@ export function ConsolidatedView() {
   const { state } = useApp();
   const { currency, budgetAlert, budgetAlertConfirmed, showPreviousMonths, showPaidRow, showUsdRateOnHome } =
     state.settings;
-  const { primaryTotal, toComparableArs, resolve, convertUsdToArs, usdRate } =
-    useMoneyDisplay();
+  const { primaryTotal, convertUsdToArs, usdRate } = useMoneyDisplay();
   const currentMonth = getCurrentMonth();
   const [popover, setPopover] = useState<CellPopover | null>(null);
 
@@ -131,14 +131,10 @@ export function ConsolidatedView() {
 
   const isOverBudget = monthsRange.map((_, i) => {
     if (!budgetLimitActive) return false;
-    const resolved = resolve(grandTotals[i], grandTotalsUsd[i]);
-    const primary = monthIncomeTargets[i];
-    const totalToCompare =
-      convertUsdToArs && usdRate && usdRate > 0
-        ? resolved.combinedArs
-        : toComparableArs(primary.amount, primary.currency);
-    const limitToCompare = toComparableArs(budgetAlert, currency);
-    return totalToCompare > limitToCompare;
+    return isMonthOverBudget(grandTotals[i], grandTotalsUsd[i], budgetAlert, {
+      convertUsdToArs,
+      usdRate,
+    });
   });
   const overBudgetMonths = monthsRange.filter((_, index) => isOverBudget[index]);
 

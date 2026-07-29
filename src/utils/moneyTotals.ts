@@ -61,3 +61,29 @@ export function effectivePrimaryMonthTotal(
   }
   return primaryMonthTotal(ars, usd);
 }
+
+/** Compare consolidated monthly total (ARS row) against the spending limit. */
+export function isMonthOverBudget(
+  arsTotal: number,
+  usdTotal: number,
+  budgetAlert: number,
+  options: Pick<MoneyTotalsInput, "convertUsdToArs" | "usdRate">,
+): boolean {
+  if (budgetAlert <= 0) return false;
+
+  const resolved = resolveMoneyTotals({
+    ars: arsTotal,
+    usd: usdTotal,
+    ...options,
+  });
+
+  const monthTotal =
+    options.convertUsdToArs && options.usdRate && options.usdRate > 0
+      ? resolved.combinedArs
+      : arsTotal > 0
+        ? arsTotal
+        : usdTotal;
+
+  // Limit is compared as entered: same numeric scale as ARS totals in the grid.
+  return monthTotal > budgetAlert;
+}
