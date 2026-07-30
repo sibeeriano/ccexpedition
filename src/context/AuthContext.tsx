@@ -15,6 +15,9 @@ type AuthContextValue = {
   session: Session | null;
   /** True while the initial session is being restored. */
   loading: boolean;
+  /** True while the admin profile flag is loading. */
+  adminLoading: boolean;
+  isAdmin: boolean;
   signIn: (
     email: string,
     password: string,
@@ -37,6 +40,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
@@ -55,6 +60,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     return () => subscription.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const userId = session?.user.id;
+    if (!userId) {
+      setIsAdmin(false);
+      setAdminLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAdminLoading(true);
+
+    void (async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Failed to load admin profile:", error);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(data?.is_admin === true);
+      }
+      setAdminLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user.id]);
 
   async function signIn(email: string, password: string, remember = true) {
     setRememberMe(remember);
@@ -115,6 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         session,
         loading,
+        adminLoading,
+        isAdmin,
         signIn,
         signUp,
         resetPassword,

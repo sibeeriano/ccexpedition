@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { validateNewPassword } from "../utils/authErrors";
+import {
+  isAdminLoginAlias,
+  markAdminRedirectIntent,
+  resolveLoginEmail,
+} from "../utils/adminAuth";
 import { DevSignature } from "./DevSignature";
 import { LanguageToggle } from "./LanguageToggle";
 import { PasswordField } from "./PasswordField";
@@ -89,10 +94,18 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
       return;
     }
 
-    const signInError = await signIn(email, password, remember);
+    const signInError = await signIn(
+      resolveLoginEmail(email),
+      password,
+      remember,
+    );
     setSubmitting(false);
     if (signInError) {
       setError(signInError);
+      return;
+    }
+    if (mode === "sign-in" && isAdminLoginAlias(email)) {
+      markAdminRedirectIntent();
     }
   }
 
@@ -144,10 +157,10 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
             </label>
             <input
               id="login-email"
-              type="email"
+              type="text"
               required
               autoFocus
-              autoComplete="email"
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"

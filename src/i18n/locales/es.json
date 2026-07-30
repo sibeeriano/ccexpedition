@@ -25,6 +25,37 @@
     "selectCard": "Elegir tarjeta…",
     "past": "(pasado)"
   },
+  "admin": {
+    "title": "Administración",
+    "nav": {
+      "home": "Inicio",
+      "users": "Usuarios",
+      "backToApp": "Volver a la app",
+      "logout": "Salir"
+    },
+    "dashboard": {
+      "title": "Resumen",
+      "subtitle": "Usuarios registrados y actividad en la app.",
+      "newUsers": "Usuarios nuevos",
+      "totalUsers": "Usuarios totales",
+      "totalCards": "Tarjetas cargadas",
+      "totalExpenses": "Gastos registrados",
+      "lastDays": "Últimos {{days}} días",
+      "inDatabase": "En la base",
+      "allUsers": "Todos los usuarios",
+      "recentUsers": "Últimos registros",
+      "noUsers": "Todavía no hay usuarios."
+    },
+    "users": {
+      "title": "Usuarios",
+      "subtitle": "Cuentas registradas en ccExpedition.",
+      "email": "Email",
+      "registered": "Registro",
+      "cards": "Tarjetas",
+      "expenses": "Gastos",
+      "cardsExpenses": "{{cards}} tarjetas · {{expenses}} gastos"
+    }
+  },
   "confirmDelete": {
     "deleting": "Eliminando…",
     "cannotUndo": "Esta acción no se puede deshacer.",

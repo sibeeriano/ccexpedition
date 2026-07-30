@@ -137,3 +137,16 @@ create policy "Users manage own settings"
   on public.user_settings for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- Admin profiles (see migrations/20260730_add_admin_profiles.sql)
+create table public.profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  is_admin boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+create policy "Users read own profile"
+  on public.profiles for select
+  using (auth.uid() = user_id);

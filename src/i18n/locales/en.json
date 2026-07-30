@@ -25,6 +25,37 @@
     "selectCard": "Select a card…",
     "past": "(past)"
   },
+  "admin": {
+    "title": "Administration",
+    "nav": {
+      "home": "Home",
+      "users": "Users",
+      "backToApp": "Back to app",
+      "logout": "Sign out"
+    },
+    "dashboard": {
+      "title": "Overview",
+      "subtitle": "Registered users and app activity.",
+      "newUsers": "New users",
+      "totalUsers": "Total users",
+      "totalCards": "Cards logged",
+      "totalExpenses": "Expenses logged",
+      "lastDays": "Last {{days}} days",
+      "inDatabase": "In database",
+      "allUsers": "All users",
+      "recentUsers": "Recent sign-ups",
+      "noUsers": "No users yet."
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Accounts registered in ccExpedition.",
+      "email": "Email",
+      "registered": "Signed up",
+      "cards": "Cards",
+      "expenses": "Expenses",
+      "cardsExpenses": "{{cards}} cards · {{expenses}} expenses"
+    }
+  },
   "confirmDelete": {
     "deleting": "Deleting…",
     "cannotUndo": "This action cannot be undone.",
