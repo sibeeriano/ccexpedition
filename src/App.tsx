@@ -46,10 +46,11 @@ function AppRoutes() {
 
   useEffect(() => {
     if (!session || adminLoading || !isAdmin) return;
-    if (consumeAdminRedirectIntent()) {
+    if (!consumeAdminRedirectIntent()) return;
+    if (!adminRoute.active) {
       navigate("/admin");
     }
-  }, [session, adminLoading, isAdmin, navigate]);
+  }, [session, adminLoading, isAdmin, adminRoute.active, navigate]);
 
   useEffect(() => {
     if (!session || adminLoading) return;

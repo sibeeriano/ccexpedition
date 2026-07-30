@@ -11,6 +11,15 @@ export function isAdminLoginAlias(identifier: string): boolean {
   return identifier.trim().toLowerCase() === ADMIN_LOGIN_ALIAS;
 }
 
+/** True when signing in as the admin account (alias or full email). */
+export function isAdminLoginIdentifier(identifier: string): boolean {
+  const normalized = identifier.trim().toLowerCase();
+  return (
+    normalized === ADMIN_LOGIN_ALIAS ||
+    normalized === getAdminEmail().toLowerCase()
+  );
+}
+
 /** Maps login alias "admin" to the real Supabase Auth email. */
 export function resolveLoginEmail(identifier: string): string {
   if (isAdminLoginAlias(identifier)) {

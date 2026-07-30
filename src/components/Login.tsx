@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { validateNewPassword } from "../utils/authErrors";
 import {
-  isAdminLoginAlias,
+  isAdminLoginIdentifier,
   markAdminRedirectIntent,
   resolveLoginEmail,
 } from "../utils/adminAuth";
@@ -94,6 +94,11 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
       return;
     }
 
+    const adminLogin = mode === "sign-in" && isAdminLoginIdentifier(email);
+    if (adminLogin) {
+      markAdminRedirectIntent();
+    }
+
     const signInError = await signIn(
       resolveLoginEmail(email),
       password,
@@ -104,8 +109,8 @@ export function Login({ onBackToHome, initialMode = "sign-in" }: LoginProps) {
       setError(signInError);
       return;
     }
-    if (mode === "sign-in" && isAdminLoginAlias(email)) {
-      markAdminRedirectIntent();
+    if (adminLogin) {
+      window.location.assign("/admin");
     }
   }
 
