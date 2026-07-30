@@ -1,15 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { useAppPath } from "../../hooks/useAppPath";
 import { useAuth } from "../../context/AuthContext";
+import type { AdminSection } from "../../utils/adminRoute";
 import { LanguageToggle } from "../LanguageToggle";
 
 const links = [
   { id: "home", href: "/admin", labelKey: "admin.nav.home" },
   { id: "users", href: "/admin/usuarios", labelKey: "admin.nav.users" },
-] as const;
+  { id: "campaign", href: "/admin/campana", labelKey: "admin.nav.campaign" },
+] as const satisfies ReadonlyArray<{
+  id: AdminSection;
+  href: string;
+  labelKey: string;
+}>;
 
 type AdminNavProps = {
-  current: "home" | "users";
+  current: AdminSection;
 };
 
 export function AdminNav({ current }: AdminNavProps) {
