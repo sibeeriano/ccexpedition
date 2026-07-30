@@ -44,13 +44,17 @@
       "inDatabase": "En la base",
       "allUsers": "Todos los usuarios",
       "recentUsers": "Últimos registros",
-      "noUsers": "Todavía no hay usuarios."
+      "recentLogins": "Últimos inicios de sesión",
+      "noUsers": "Todavía no hay usuarios.",
+      "noLogins": "Todavía no hay inicios de sesión registrados."
     },
     "users": {
       "title": "Usuarios",
       "subtitle": "Cuentas registradas en ccExpedition.",
       "email": "Email",
       "registered": "Registro",
+      "lastSignIn": "Último acceso",
+      "neverSignedIn": "Sin acceso aún",
       "cards": "Tarjetas",
       "expenses": "Gastos",
       "cardsExpenses": "{{cards}} tarjetas · {{expenses}} gastos"

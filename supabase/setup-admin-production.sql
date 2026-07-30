@@ -91,6 +91,7 @@ returns table (
   user_id uuid,
   email text,
   created_at timestamptz,
+  last_sign_in_at timestamptz,
   cards_count bigint,
   expenses_count bigint
 )
@@ -108,6 +109,7 @@ begin
     u.id,
     u.email::text,
     u.created_at,
+    u.last_sign_in_at,
     (select count(*) from public.cards c where c.user_id = u.id),
     (select count(*) from public.expenses e where e.user_id = u.id)
   from auth.users u

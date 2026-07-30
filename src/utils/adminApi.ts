@@ -11,6 +11,7 @@ export type AdminUserRow = {
   user_id: string;
   email: string;
   created_at: string;
+  last_sign_in_at: string | null;
   cards_count: number;
   expenses_count: number;
 };
